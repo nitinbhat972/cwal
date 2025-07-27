@@ -1,7 +1,8 @@
-## cwal
+## Introduction
 
 <p align="center">
-  <img src="asserts/showcase.gif" alt="cwal showcase" width="700"/>
+  <img src="https://github.com/user-attachments/assets/c35fe6fa-d919-4831-98c5-640a6bbc4637"
+alt="cwal showcase" width="700"/>
 </p>
 
 `cwal` is a fast and lightweight command-line tool for generating dynamic color schemes from images. It extracts dominant colors from your chosen image and applies them to your terminal, applications, and other system components, providing a cohesive and visually appealing desktop experience.
@@ -20,28 +21,30 @@
 
 ## 🖼️ Showcase
 
+
 - Dark mode
+
 <p align="center">
-  <img src="asserts/dark/dark_screenshot_1.png" width="260"/>
-  <img src="asserts/dark/dark_screenshot_2.png" width="260"/>
-  <img src="asserts/dark/dark_screenshot_3.png" width="260"/>
+  <img src="https://github.com/user-attachments/assets/ddc1b78b-a4fd-4607-8919-071f1ef4785f"" width="260"/>
+  <img src="https://github.com/user-attachments/assets/3f0a2d95-10a2-4713-bf29-d7e270e7f15c" width="260"/>
+  <img src="https://github.com/user-attachments/assets/f41fd575-fde2-4fca-8445-9640d4f45476" width="260"/>
 </p>
 <p align="center">
-  <img src="asserts/dark/dark_screenshot_4.png" width="260"/>
-  <img src="asserts/dark/dark_screenshot_5.png" width="260"/>
-  <img src="asserts/dark/dark_screenshot_6.png" width="260"/>
+  <img src="https://github.com/user-attachments/assets/45cebfd0-ba5c-4b91-a8fd-61fb44c1cbcd" width="260"/>
+  <img src="https://github.com/user-attachments/assets/dc831594-36b5-4856-89d4-d248139d2949" width="260"/>
+  <img src="https://github.com/user-attachments/assets/0098d56e-7620-4719-b6d0-90816ec1a40a" width="260"/>
 </p>
 
 - Light mode
 <p align="center">
-  <img src="asserts/light/light_screenshot_1.png" width="260"/>
-  <img src="asserts/light/light_screenshot_2.png" width="260"/>
-  <img src="asserts/light/light_screenshot_3.png" width="260"/>
+  <img src="https://github.com/user-attachments/assets/3a14f92f-64fe-411a-abb8-3b247907b594" width="260"/>
+  <img src="https://github.com/user-attachments/assets/2c1406e2-737b-43d5-9855-4648948f1ef0" width="260"/>
+  <img src="https://github.com/user-attachments/assets/2884d220-5c6c-4e57-b14b-a9be54d8fa9c" width="260"/>
 </p>
 <p align="center">
-  <img src="asserts/light/light_screenshot_4.png" width="260"/>
-  <img src="asserts/light/light_screenshot_5.png" width="260"/>
-  <img src="asserts/light/light_screenshot_6.png" width="260"/>
+  <img src="https://github.com/user-attachments/assets/229f2491-25f7-4e3e-86fa-278c6207e59e" width="260"/>
+  <img src="https://github.com/user-attachments/assets/2b585d8c-9fd3-4382-81e9-f25ebe5d39ab" width="260"/>
+  <img src="https://github.com/user-attachments/assets/2ff60780-328d-4dbd-ba8e-4b4f776b510a" width="260"/>
 </p>
 
 
@@ -73,6 +76,11 @@ sudo pacman -S imagemagick libimagequant
 
 ```bash
 sudo dnf install ImageMagick-devel libimagequant-devel
+```
+
+**macOS**
+```bash
+brew install imagemagick libimagequant
 ```
 
 
