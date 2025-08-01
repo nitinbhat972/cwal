@@ -39,6 +39,7 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
     args->out_dir = strdup(config->out_dir); // Only out_dir is loaded from config
     args->no_reload = false;
     args->list_backends = false;
+    args->list_themes = false;
     args->quiet = false;
     args->random_dir = NULL;
     args->random_mode = RANDOM_NONE;
