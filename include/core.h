@@ -12,7 +12,7 @@ typedef struct {
 
 typedef enum { DARK, LIGHT } COLOR_MODE;
 
-typedef enum { LIGHTEN, DARKEN } SHADE_MODE;
+typedef enum { NONE, LIGHTEN, DARKEN } SHADE_MODE;
 
 typedef struct {
   const char *wallpaper;

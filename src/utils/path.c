@@ -132,9 +132,9 @@ char *get_random_image_path(const char *directory_in) {
     return NULL;
   }
 
-  srand(time(NULL));
 
-  int random_index = rand() % count;
+  unsigned int seed = time(NULL);
+  int random_index = rand_r(&seed) % count;
   char *selected_file = image_files[random_index];
 
   random_image_path = build_path(directory, selected_file);
