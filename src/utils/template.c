@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 static void generate_sequence(const char *out_path, const Palette *palette) {
   if (!out_path || !palette) {
@@ -179,9 +180,13 @@ int process_template(const char *output_dir, const Palette *palette) {
   char *out_base = build_path(output_dir, "");
 
   // Define template search paths
-  const char *template_dirs[] = {"/usr/local/share/cwal/templates/",
-                                 expand_home("~/.local/share/cwal/templates/"),
-                                 expand_home("~/.config/cwal/templates/")};
+  const char *system_template_dir = "/usr/local/share/cwal/templates/";
+  char *user_local_template_dir = expand_home("~/.local/share/cwal/templates/");
+  char *user_config_template_dir = expand_home("~/.config/cwal/templates/");
+
+  const char *template_dirs[] = {system_template_dir,
+                                 user_local_template_dir,
+                                 user_config_template_dir};
   int num_template_dirs = sizeof(template_dirs) / sizeof(template_dirs[0]);
 
   if (validate_or_create_dir(out_base) == -1) {
@@ -192,8 +197,14 @@ int process_template(const char *output_dir, const Palette *palette) {
   }
 
   for (int i = 0; i < num_template_dirs; ++i) {
-    char *current_template_dir = (char *)template_dirs[i];
+    const char *current_template_dir = template_dirs[i];
     if (current_template_dir == NULL) {
+      continue;
+    }
+
+    struct stat st = {0};
+    if (stat(current_template_dir, &st) == -1 || !S_ISDIR(st.st_mode)) {
+      logging(INFO, "Skipping non-existent template directory: %s", current_template_dir);
       continue;
     }
 
@@ -233,11 +244,11 @@ int process_template(const char *output_dir, const Palette *palette) {
       }
       closedir(dir);
     }
-    // Free memory allocated by expand_home if applicable
-    if (i == 2 || i == 3) { // Indices for ~/.local/share and ~/.config
-      free(current_template_dir);
-    }
   }
+
+  // Free memory allocated by expand_home
+  free(user_local_template_dir);
+  free(user_config_template_dir);
 
   char *out_path = build_path(out_base, "sequences");
   generate_sequence(out_path, palette);
