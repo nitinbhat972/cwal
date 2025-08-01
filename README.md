@@ -17,6 +17,7 @@ alt="cwal showcase" width="700"/>
 - **Automatic Application Reloading**: Seamlessly integrates with your system to apply changes instantly
 - **Palette Preview**: View the generated color palette directly in your terminal
 - **Random Image Selection**: Automatically pick a random image from any specified directory
+- **Theme Management**: Load predefined themes or select random themes based on mode (dark/light/all)
 
 
 ## 🖼️ Showcase
@@ -141,8 +142,10 @@ Usage: cwal [OPTIONS] --img <image_path>
 - `--script <script_path>`              Run custom script after processing
 - `--no-reload`                         Disable reloading
 - `--list-backends`                     List available backends
+- `--list-themes`                       List all available themes
 - `--quiet`                             Suppress all output
 - `--random <directory>`                Select random image from directory
+- `--theme <theme_name|random_dark|random_light|random_all>` Select a theme or a random one
 - `--preview`                           Preview palette
 - `--help`                              Help
 
@@ -153,6 +156,10 @@ cwal --img /path/to/image.jpg
 cwal --img /path/to/image.png --mode dark --saturation 0.2
 cwal --img /path/to/image.jpg --preview
 cwal --random ~/Pictures/wallpapers
+cwal --theme random_dark
+cwal --theme random_light
+cwal --theme random_all
+cwal --list-themes
 cwal --img /path/to/image.jpg --out-dir ~/.config/colors --script ~/.local/bin/reload-apps.sh
 ```
 
@@ -166,6 +173,35 @@ Templates are stored in:
 
 **Supported apps:**
 Terminal emulators (Alacritty, Kitty, Wezterm), window managers (i3, bspwm, Hyprland), text editors (Vim, Neovim, VS Code), system themes (GTK, Qt).
+
+### Color Formatting in Templates
+
+`cwal` templates support various color formatting options. You can use these formats within your templates to customize the output for different applications.
+
+| Format Specifier | Description                                     | Example Output (for color with R=255, G=128, B=0, Alpha=0.8) |
+| :--------------- | :---------------------------------------------- | :----------------------------------------------------------- |
+| `hex`            | Hexadecimal color code (e.g., `#RRGGBB`)       | `#ff8000`                                                    |
+| `xhex`           | Hexadecimal color code with `0x` prefix         | `0xff8000`                                                   |
+| `strip`          | Hexadecimal color code without prefix           | `ff8000`                                                     |
+| `rgb`            | RGB format (e.g., `rgb(R,G,B)`)                 | `rgb(255,128,0)`                                             |
+| `rgba`           | RGBA format (e.g., `rgba(R,G,B,A)`)             | `rgba(255,128,0,0.8)`                                        |
+| `red`            | Red component value (0-255)                     | `255`                                                        |
+| `green`          | Green component value (0-255)                   | `128`                                                        |
+| `blue`           | Blue component value (0-255)                    | `0`                                                          |
+| `alpha_dec`      | Alpha transparency value (0.0-1.0)              | `0.8`                                                        |
+
+**Example usage in a template:**
+
+```
+# For color0 (background)
+background = {color0.hex}
+background_rgb = {color0.rgb}
+background_alpha = {color0.rgba}
+
+# For color1 (foreground)
+foreground = {color1.strip}
+foreground_red = {color1.red}
+```
 
 ## 🔧 Advanced Usage
 
@@ -197,4 +233,3 @@ Licensed under GNU GPL v3.0 — always free and open-source.
 - [pywal](https://github.com/dylanaraps/pywal) by [dylanaraps](https://github.com/dylanaraps)
 
 - [pywal16](https://github.com/eylles/pywal16) by [eylles](https://github.com/eylles)
-
