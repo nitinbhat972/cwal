@@ -54,6 +54,7 @@ void save_palette_to_cache(const Palette *palette, const char *cache_dir,
   free(cache_dir_path);
 
   fprintf(file, "wallpaper=%s\n", palette->wallpaper);
+  fprintf(file, "alpha=%.2f\n", palette->alpha);
 
   for (int i = 0; i < PALETTE_MAX_SIZE; i++) {
     fprintf(file, "color%d=%d,%d,%d\n", i, palette->colors[i].red,
@@ -89,6 +90,7 @@ int load_palette_from_cache(Palette *palette, const char *cache_dir,
         return -1;
       }
     } else if (strcmp(key, "alpha") == 0) {
+      palette->alpha = atof(value);
     } else if (strncmp(key, "color", 5) == 0) {
       int index = atoi(key + 5);
       if (index >= 0 && index < PALETTE_MAX_SIZE) {
