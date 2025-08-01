@@ -10,6 +10,7 @@ typedef struct {
     char *backend;           // Name of the image processing backend to use.
     COLOR_MODE mode;         // Theme mode (dark or light).
     SHADE_MODE cols16_mode;  // 16-color generation mode (darken or lighten).
+    float alpha;             // Alpha value for the palette.
     char *out_dir;           // Output directory for generated files.
 } Config;
 

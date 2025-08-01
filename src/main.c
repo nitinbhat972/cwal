@@ -131,6 +131,7 @@ int main(int argv, char **argc) {
   app_config->out_dir = strdup(args.out_dir);
   app_config->mode = args.mode;
   app_config->cols16_mode = args.cols16_mode;
+  app_config->alpha = palette.alpha;
   free(app_config->backend);
   app_config->backend = strdup(args.backend);
 

@@ -35,6 +35,10 @@ static void parse_key_value(Config *config, const char *key,
       logging(ERROR, "Failed to allocate backend");
       return;
     }
+  } else if (strcmp(key, "alpha") == 0) {
+    if (strlen(value) > 0) {
+      config->alpha = atof(value);
+    }
   } else if (strcmp(key, "mode") == 0) {
     if (strlen(value) > 0) {
       if (strcmp(value, "dark") == 0) {
@@ -68,11 +72,13 @@ Config *load_config(void) {
   }
 
   // Set default values (these can be overridden by CLI arguments)
-  config->out_dir = resolve_and_strdup_path("~/.cache/cwal/"); // Default out_dir
+  config->out_dir =
+      resolve_and_strdup_path("~/.cache/cwal/"); // Default out_dir
   config->current_wallpaper = NULL; // Not loaded from config, set by CLI
-  config->backend = NULL; // Not loaded from config, set by CLI
-  config->mode = DARK; // Default mode
-  config->cols16_mode = DARKEN; // Default 16-color generation mode
+  config->backend = NULL;           // Not loaded from config, set by CLI
+  config->mode = DARK;              // Default mode
+  config->cols16_mode = DARKEN;     // Default 16-color generation mode
+  config->alpha = 1.0;              // Default alpha
 
   char *expanded_path = expand_home(CONFIG_PATH);
   FILE *file = fopen(expanded_path, "r");
@@ -96,7 +102,7 @@ Config *load_config(void) {
       trimmed_line[--len] = '\0';
     }
 
-    if (len == 0 || trimmed_line[0] == '#') {
+    if (len == 0 || trimmed_line[0] == '#' || trimmed_line[0] == ';') {
       continue;
     }
 
@@ -150,6 +156,7 @@ void save_config(const Config *config) {
   fprintf(file, "current_wallpaper = %s\n", config->current_wallpaper);
   fprintf(file, "backend = %s\n", config->backend);
   fprintf(file, "\n[theme]\n");
+  fprintf(file, "alpha = %.2f\n", config->alpha);
   fprintf(file, "mode = %s\n", config->mode == DARK ? "dark" : "light");
   fprintf(file, "cols16_mode = %s\n",
           config->cols16_mode == DARKEN ? "darken" : "lighten");
