@@ -18,8 +18,11 @@ void print_usage(const char *prog_name) {
     fprintf(stderr, "  --backend <name>       Set image processing backend (overrides config)\n");
     fprintf(stderr, "  --img <image_path>     Specify the image path (required)\n");
     fprintf(stderr, "  --script <script_path> Run a script after processing\n");
-    fprintf(stderr, "  --no-reload            Do not reload applications after processing\n"); fprintf(stderr, "  --list-backends        List all available image processing backends\n"); fprintf(stderr, "  --quiet                Suppress all output\n");
-    fprintf(stderr, "  --random <directory>   Select a random image from the specified directory\n");
+    fprintf(stderr, "  --no-reload            Do not reload applications after processing\n");
+    fprintf(stderr, "  --list-backends        List all available image processing backends\n");
+    fprintf(stderr, "  --list-themes          List all available themes\n");
+    fprintf(stderr, "  --quiet                Suppress all output\n");
+    fprintf(stderr, "  --theme <theme_name|random_dark|random_light|random_all> Select a theme or a random one\n");
     fprintf(stderr, "  --preview              show palette preview\n");
     fprintf(stderr, "  --help                 Display this help message\n");
 }
@@ -38,6 +41,8 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
     args->list_backends = false;
     args->quiet = false;
     args->random_dir = NULL;
+    args->random_mode = RANDOM_NONE;
+    args->theme = NULL;
     args->preview = false;
 
     static struct option long_options[] = {
@@ -52,8 +57,10 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
         {"out-dir", required_argument, 0, 'o'},
         {"no-reload", no_argument, 0, 'n'},
         {"list-backends", no_argument, 0, 'l'},
+        {"list-themes", no_argument, 0, 'd'},
         {"quiet", no_argument, 0, 'q'},
         {"random", required_argument, 0, 'r'},
+        {"theme", required_argument, 0, 'e'},
         {"preview", no_argument, 0, 'v'},
         {"help", no_argument, 0, 'h'},
         {0, 0, 0, 0}
@@ -121,12 +128,27 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
             case 'l':
                 args->list_backends = true;
                 break;
+            case 'd':
+                args->list_themes = true;
+                break;
             case 'q':
                 args->quiet = true;
                 break;
             case 'r':
                 free(args->random_dir);
                 args->random_dir = normalize_cli_path(optarg);
+                break;
+            case 'e':
+                if (strcmp(optarg, "random_dark") == 0) {
+                    args->random_mode = RANDOM_DARK;
+                } else if (strcmp(optarg, "random_light") == 0) {
+                    args->random_mode = RANDOM_LIGHT;
+                } else if (strcmp(optarg, "random_all") == 0) {
+                    args->random_mode = RANDOM_ALL;
+                } else {
+                    free(args->theme);
+                    args->theme = strdup(optarg);
+                }
                 break;
             case 'v':
                 args->preview = true;
@@ -140,8 +162,8 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
         }
     }
 
-    if (!args->image_path && !args->list_backends && !args->random_dir && !args->preview) {
-        logging(ERROR, "Missing --img <image_path> or --random <directory> argument.");
+    if (!args->image_path && !args->list_backends && !args->list_themes && !args->random_dir && !args->preview && !args->theme && args->random_mode == RANDOM_NONE) {
+        logging(ERROR, "Missing --img <image_path>, --random <directory>, or --theme <theme_name> argument.");
         print_usage(argv[0]);
         return 1;
     }
@@ -160,5 +182,6 @@ void free_cli_args(CliArgs *args) {
         free(args->backend);
         free(args->script_path);
         free(args->out_dir);
+        free(args->theme);
     }
 }

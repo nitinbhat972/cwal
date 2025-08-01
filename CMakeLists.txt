@@ -44,3 +44,4 @@ target_compile_options(cwal PRIVATE
 # Installation
 install(TARGETS cwal DESTINATION bin)
 install(DIRECTORY templates DESTINATION share/cwal)
+install(DIRECTORY themes DESTINATION share/cwal)

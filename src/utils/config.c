@@ -56,6 +56,8 @@ static void parse_key_value(Config *config, const char *key,
         config->cols16_mode = DARKEN;
       } else if (strcmp(value, "lighten") == 0) {
         config->cols16_mode = LIGHTEN;
+      } else if (strcmp(value, "none") == 0) {
+        config->cols16_mode = NONE;
       } else {
         logging(WARN, "Invalid cols16_mode value in config: %s. Using default.",
                 value);
@@ -159,7 +161,7 @@ void save_config(const Config *config) {
   fprintf(file, "alpha = %.2f\n", config->alpha);
   fprintf(file, "mode = %s\n", config->mode == DARK ? "dark" : "light");
   fprintf(file, "cols16_mode = %s\n",
-          config->cols16_mode == DARKEN ? "darken" : "lighten");
+          config->cols16_mode == DARKEN ? "darken" : (config->cols16_mode == LIGHTEN ? "lighten" : "none"));
 
   fclose(file);
   free(expanded_path);
