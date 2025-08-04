@@ -1,6 +1,6 @@
 #include "utils.h"
-#include "color_convertion.h"
-#include "color_operation.h"
+#include "color/color_convertion.h"
+#include "color/color_operation.h"
 #include "core.h"
 #include <stdarg.h>
 #include <stdbool.h>

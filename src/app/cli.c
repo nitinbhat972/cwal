@@ -1,6 +1,6 @@
 #include "cli.h"
-#include "utils.h"
-#include "path.h"
+#include "utils/utils.h"
+#include "utils/path.h"
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>

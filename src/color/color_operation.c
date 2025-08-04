@@ -1,9 +1,8 @@
 #include "color_operation.h"
 #include "color_convertion.h"
 #include "core.h"
-#include "image.h" // Include the new image loader
-
-#include "utils.h"
+#include "image.h"
+#include "utils/utils.h"
 #include <math.h>
 #include <stdio.h>
 

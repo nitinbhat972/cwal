@@ -1,6 +1,6 @@
 #include "config.h"
-#include "path.h"
-#include "utils.h"
+#include "utils/path.h"
+#include "utils/utils.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

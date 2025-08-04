@@ -1,6 +1,6 @@
 #include "reload.h"
-#include "path.h"
-#include "utils.h"
+#include "utils/path.h"
+#include "utils/utils.h"
 #include <dirent.h>
 #include <fcntl.h>
 #include <glob.h>

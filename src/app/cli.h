@@ -2,7 +2,7 @@
 
 #include "core.h"
 #include "config.h"
-#include "themes.h"
+#include "modules/theme/themes.h"
 
 typedef struct {
     char *image_path;       // Path to the wallpaper image.

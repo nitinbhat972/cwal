@@ -1,8 +1,8 @@
 #include "template.h"
 #include "core.h"
-#include "format_conversion.h"
-#include "path.h"
-#include "utils.h"
+#include "utils/format_conversion.h"
+#include "utils/path.h"
+#include "utils/utils.h"
 #include <ctype.h>
 #include <dirent.h>
 #include <stdio.h>
