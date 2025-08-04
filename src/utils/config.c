@@ -5,17 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-static char *resolve_and_strdup_path(const char *path) {
-  return expand_home(path);
-}
-
 static void parse_key_value(Config *config, const char *key,
                             const char *value) {
   if (strcmp(key, "out_dir") == 0) {
     // If value is empty, do not update, keep default
     if (strlen(value) > 0) {
       free(config->out_dir);
-      config->out_dir = resolve_and_strdup_path(value);
+      config->out_dir = expand_home(value);
       if (!config->out_dir) {
         logging(ERROR, "Failed to allocate out_dir");
         return;
@@ -23,7 +19,7 @@ static void parse_key_value(Config *config, const char *key,
     }
   } else if (strcmp(key, "current_wallpaper") == 0) {
     free(config->current_wallpaper);
-    config->current_wallpaper = resolve_and_strdup_path(value);
+    config->current_wallpaper = expand_home(value);
     if (!config->current_wallpaper) {
       logging(ERROR, "Failed to allocate current_wallpaper");
       return;
@@ -66,6 +62,42 @@ static void parse_key_value(Config *config, const char *key,
   }
 }
 
+static void create_config_subdirectories(const char *config_dir_path) {
+  char *templates_dir = build_path(config_dir_path, "templates");
+  if (templates_dir) {
+    if (validate_or_create_dir(templates_dir) != 0) {
+      logging(ERROR, "Failed to create templates directory: %s", templates_dir);
+    }
+    free(templates_dir);
+  }
+
+  char *themes_dir = build_path(config_dir_path, "themes");
+  if (themes_dir) {
+    if (validate_or_create_dir(themes_dir) != 0) {
+      logging(ERROR, "Failed to create themes directory: %s", themes_dir);
+    }
+
+    char *dark_themes_dir = build_path(themes_dir, "dark");
+    if (dark_themes_dir) {
+      if (validate_or_create_dir(dark_themes_dir) != 0) {
+        logging(ERROR, "Failed to create dark themes directory: %s",
+                dark_themes_dir);
+      }
+      free(dark_themes_dir);
+    }
+
+    char *light_themes_dir = build_path(themes_dir, "light");
+    if (light_themes_dir) {
+      if (validate_or_create_dir(light_themes_dir) != 0) {
+        logging(ERROR, "Failed to create light themes directory: %s",
+                light_themes_dir);
+      }
+      free(light_themes_dir);
+    }
+    free(themes_dir);
+  }
+}
+
 Config *load_config(void) {
   Config *config = calloc(1, sizeof(Config));
   if (!config) {
@@ -74,8 +106,7 @@ Config *load_config(void) {
   }
 
   // Set default values (these can be overridden by CLI arguments)
-  config->out_dir =
-      resolve_and_strdup_path("~/.cache/cwal/"); // Default out_dir
+  config->out_dir = expand_home("~/.cache/cwal/"); // Default out_dir
   config->current_wallpaper = NULL; // Not loaded from config, set by CLI
   config->backend = NULL;           // Not loaded from config, set by CLI
   config->mode = DARK;              // Default mode
@@ -128,7 +159,7 @@ Config *load_config(void) {
         if (strcmp(key, "out_dir") == 0) {
           if (strlen(value) > 0) {
             free(config->out_dir);
-            config->out_dir = resolve_and_strdup_path(value);
+            config->out_dir = expand_home(value);
             if (!config->out_dir) {
               logging(ERROR, "Failed to allocate out_dir");
               return NULL;
@@ -146,6 +177,16 @@ Config *load_config(void) {
 
 void save_config(const Config *config) {
   char *expanded_path = expand_home(CONFIG_PATH);
+  char *config_dir_path = expand_home(CONFIG_DIR);
+  if (validate_or_create_dir(config_dir_path) != 0) {
+    logging(ERROR, "Failed to create config directory: %s", config_dir_path);
+    free(config_dir_path);
+    free(expanded_path);
+    return;
+  }
+  create_config_subdirectories(config_dir_path);
+  free(config_dir_path);
+
   FILE *file = fopen(expanded_path, "w");
   if (!file) {
     logging(ERROR, "Failed to open config file for writing: %s", expanded_path);
@@ -161,7 +202,9 @@ void save_config(const Config *config) {
   fprintf(file, "alpha = %.2f\n", config->alpha);
   fprintf(file, "mode = %s\n", config->mode == DARK ? "dark" : "light");
   fprintf(file, "cols16_mode = %s\n",
-          config->cols16_mode == DARKEN ? "darken" : (config->cols16_mode == LIGHTEN ? "lighten" : "none"));
+          config->cols16_mode == DARKEN
+              ? "darken"
+              : (config->cols16_mode == LIGHTEN ? "lighten" : "none"));
 
   fclose(file);
   free(expanded_path);

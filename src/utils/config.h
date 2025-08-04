@@ -3,6 +3,7 @@
 #include "core.h"
 
 #define CONFIG_PATH "~/.config/cwal/cwal.ini"
+#define CONFIG_DIR "~/.config/cwal/"
 #define MAX_LINE_LENGTH 256
 
 typedef struct {
