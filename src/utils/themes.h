@@ -2,6 +2,8 @@
 
 #include "core.h"
 
+#define MAX_LINE_LENGTH 256
+
 typedef enum {
     RANDOM_NONE,
     RANDOM_DARK,
