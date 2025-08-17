@@ -11,10 +11,25 @@ pkg_check_modules(MagickWand REQUIRED MagickWand)
 pkg_check_modules(imagequant REQUIRED imagequant)
 
 # Collect source files
-file(GLOB_RECURSE SOURCES 
-    "${PROJECT_SOURCE_DIR}/src/*.c"
-    "${PROJECT_SOURCE_DIR}/src/utils/*.c"
-    "${PROJECT_SOURCE_DIR}/src/backends/*.c"
+set(SOURCES
+    src/app/cli.c
+    src/app/config.c
+    src/app/main.c
+    src/backends/backend.c
+    src/backends/cwal.c
+    src/backends/libimagequant.c
+    src/color/color_convertion.c
+    src/color/color_operation.c
+    src/color/colors.c
+    src/color/image.c
+    src/modules/cache/cache.c
+    src/modules/hooks/hooks.c
+    src/modules/reload/reload.c
+    src/modules/template/template.c
+    src/modules/theme/themes.c
+    src/utils/format_conversion.c
+    src/utils/path.c
+    src/utils/utils.c
 )
 
 # Create executable
@@ -23,7 +38,7 @@ add_executable(cwal ${SOURCES})
 # Include directories
 target_include_directories(cwal PRIVATE
     ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/src/utils
+    ${PROJECT_SOURCE_DIR}/src
     ${MagickWand_INCLUDE_DIRS}
     ${imagequant_INCLUDE_DIRS}
 )
