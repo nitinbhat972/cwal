@@ -76,7 +76,7 @@ static const char *get_os() {
       initialized = 1;
     } else {
       // If uname fails, set a default value
-      strcpy(sys_info.sysname, "Unknown");
+      snprintf(sys_info.sysname, sizeof(sys_info.sysname), "%s", "Unknown");
       initialized = 1;
     }
   }
@@ -109,7 +109,7 @@ static void broadcast_to_terminals(const char *sequences, size_t len) {
         // Remove newline
         line[strcspn(line, "\n")] = '\0';
         if (strlen(line) > 0) {
-          strcpy(temp_devices[device_count], line);
+          snprintf(temp_devices[device_count], 256, "%s", line);
           device_count++;
         }
       }

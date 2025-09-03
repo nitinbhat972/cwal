@@ -61,7 +61,7 @@ static char *resolve_placeholder(const char *placeholder,
   }
 
   if (strcmp(format, "value") == 0) {
-    strcpy(format, "hex");
+    snprintf(format, sizeof(format), "%s", "hex");
   }
 
   char *result = malloc(256);

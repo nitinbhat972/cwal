@@ -172,7 +172,7 @@ char *build_path(const char *path1, const char *path2) {
     logging(ERROR, "Memory allocation failed for build_path.\n");
     return NULL;
   }
-  strcpy(new_path, path1);
+  snprintf(new_path, len1 + len2 + 2, "%s", path1);
   if (new_path[len1 - 1] != '/' && path2[0] != '/') {
     strcat(new_path, "/");
   }
