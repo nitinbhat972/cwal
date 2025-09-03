@@ -85,12 +85,13 @@ int load_palette_from_cache(Palette *palette, const char *cache_dir,
     if (!key || !value)
       continue;
 
-    if (strcmp(key, "wallpaper") == 0) {
-      if (strcmp(value, palette->wallpaper) != 0) {
+    if (strncmp(key, "wallpaper", 10) == 0) {
+      if (strncmp(value, palette->wallpaper, strlen(palette->wallpaper) + 1) !=
+          0) {
         fclose(file);
         return -1;
       }
-    } else if (strcmp(key, "alpha") == 0) {
+    } else if (strncmp(key, "alpha", 6) == 0) {
       palette->alpha = atof(value);
     } else if (strncmp(key, "color", 5) == 0) {
       int index = atoi(key + 5);

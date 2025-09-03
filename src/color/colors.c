@@ -3,17 +3,24 @@
 #include "color_operation.h"
 #include <math.h>
 
+#define MIN_BRIGHTNESS_THRESHOLD 0.85f
+#define TARGET_LIGHTEN_AMOUNT 0.95f
+#define DARKEN_AMOUNT 0.70f
+#define LIGHTEN_AMOUNT 0.03f
+#define SATURATE_AMOUNT 0.40f
+#define COLOR_THRESHOLD 16
+#define MIN_VALUE 0.25f
+#define MIN_SATURATION 0.20f
+#define MIN_CONTRAST_RATIO_LIGHT 4.5f
+#define MIN_CONTRAST_RATIO_DARK 5.5f
+#define VALUE_BOOST 0.3f
+#define SATURATION_BOOST 0.4f
+
 // Pre-processes the palette to boost colors from dark images
 static void boost_dark_colors(Palette *palette) {
   // Iterate through the 6 primary accent colors
   for (int i = 1; i < 7; i++) {
     HSV hsv = rgb_to_hsv(palette->colors[i]);
-
-    // Define thresholds and boost factors
-    const float MIN_VALUE = 0.25f;       // Minimum brightness
-    const float MIN_SATURATION = 0.20f;  // Minimum colorfulness
-    const float VALUE_BOOST = 0.3f;      // How much to brighten
-    const float SATURATION_BOOST = 0.4f; // How much to saturate
 
     bool needs_boost = false;
 
@@ -58,7 +65,8 @@ static void ensure_contrast(Palette *palette, float contrast, bool light,
 
   float background_luminance = w3_luminance(background_color);
   // Define a minimum acceptable contrast ratio (e.g., WCAG AA for normal text)
-  const float MIN_CONTRAST_RATIO = light ? 4.5f : 5.5f;
+  float MIN_CONTRAST_RATIO =
+      light ? MIN_CONTRAST_RATIO_LIGHT : MIN_CONTRAST_RATIO_DARK;
 
   for (int i = 1; i < 15; i++) {
     Color current_color = palette->colors[i];
@@ -135,23 +143,24 @@ void process_colors(Palette *palette, float saturation_amount,
   // Initial background adjustment based on light/dark mode
   if (palette->mode == LIGHT) {
     float current_lum = w3_luminance(palette->colors[0]);
-    if (current_lum < 0.85f) { // If background is not bright enough
-      palette->colors[0] =
-          lighten_color(palette->colors[0],
-                        0.95f - current_lum); // Lighten to target luminance
+    if (current_lum <
+        MIN_BRIGHTNESS_THRESHOLD) { // If background is not bright enough
+      palette->colors[0] = lighten_color(
+          palette->colors[0],
+          TARGET_LIGHTEN_AMOUNT - current_lum); // Lighten to target luminance
     }
   } else {
-    bool saturate_more =
-        (palette->colors[0].red < 16 || palette->colors[0].green < 16 ||
-         palette->colors[0].blue < 16);
+    bool saturate_more = (palette->colors[0].red < COLOR_THRESHOLD ||
+                          palette->colors[0].green < COLOR_THRESHOLD ||
+                          palette->colors[0].blue < COLOR_THRESHOLD);
 
-    if (palette->colors[0].red >= 16) {
-      palette->colors[0] = darken_color(palette->colors[0], 0.70f);
+    if (palette->colors[0].red >= COLOR_THRESHOLD) {
+      palette->colors[0] = darken_color(palette->colors[0], DARKEN_AMOUNT);
     }
 
     if (saturate_more) {
-      palette->colors[0] = lighten_color(palette->colors[0], 0.03f);
-      palette->colors[0] = saturate_color(palette->colors[0], 0.40f);
+      palette->colors[0] = lighten_color(palette->colors[0], LIGHTEN_AMOUNT);
+      palette->colors[0] = saturate_color(palette->colors[0], SATURATE_AMOUNT);
     }
   }
 

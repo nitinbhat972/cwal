@@ -85,24 +85,24 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
 
   while ((opt = getopt_long(argc, argv, "", long_options, &long_index)) != -1) {
     switch (opt) {
-    case 'm':
-      if (strcmp(optarg, "dark") == 0) {
-        args->mode = DARK;
-      } else if (strcmp(optarg, "light") == 0) {
-        args->mode = LIGHT;
-      } else {
-        logging(ERROR, "Invalid mode: %s. Use 'dark' or 'light'.", optarg);
-        return 1;
-      }
-      break;
-    case 'c':
-      if (strcmp(optarg, "darken") == 0) {
-        args->cols16_mode = DARKEN;
-      } else if (strcmp(optarg, "lighten") == 0) {
-        args->cols16_mode = LIGHTEN;
-      } else {
-        logging(ERROR, "Invalid cols16-mode: %s. Use 'darken' or 'lighten'.",
-                optarg);
+     case 'm':
+       if (strncmp(optarg, "dark", 5) == 0) {
+         args->mode = DARK;
+       } else if (strncmp(optarg, "light", 6) == 0) {
+         args->mode = LIGHT;
+       } else {
+         logging(ERROR, "Invalid mode: %s. Use 'dark' or 'light'.", optarg);
+         return 1;
+       }
+       break;
+     case 'c':
+       if (strncmp(optarg, "darken", 7) == 0) {
+         args->cols16_mode = DARKEN;
+       } else if (strncmp(optarg, "lighten", 8) == 0) {
+         args->cols16_mode = LIGHTEN;
+       } else {
+         logging(ERROR, "Invalid cols16-mode: %s. Use 'darken' or 'lighten'.",
+                 optarg);
         return 1;
       }
       break;
@@ -152,14 +152,14 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       free(args->random_dir);
       args->random_dir = normalize_cli_path(optarg);
       break;
-    case 'e':
-      if (strcmp(optarg, "random_dark") == 0) {
-        args->random_mode = RANDOM_DARK;
-      } else if (strcmp(optarg, "random_light") == 0) {
-        args->random_mode = RANDOM_LIGHT;
-      } else if (strcmp(optarg, "random_all") == 0) {
-        args->random_mode = RANDOM_ALL;
-      } else {
+     case 'e':
+       if (strncmp(optarg, "random_dark", 12) == 0) {
+         args->random_mode = RANDOM_DARK;
+       } else if (strncmp(optarg, "random_light", 13) == 0) {
+         args->random_mode = RANDOM_LIGHT;
+       } else if (strncmp(optarg, "random_all", 11) == 0) {
+         args->random_mode = RANDOM_ALL;
+       } else {
         free(args->theme);
         args->theme = strdup(optarg);
       }

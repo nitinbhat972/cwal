@@ -80,10 +80,10 @@ int load_theme(Palette *palette, const char *theme_name) {
     if (!key || !value)
       continue;
 
-    if (strcmp(key, "mode") == 0) {
-      if (strcmp(value, "dark") == 0) {
+    if (strncmp(key, "mode", 5) == 0) {
+      if (strncmp(value, "dark", 5) == 0) {
         palette->mode = DARK;
-      } else if (strcmp(value, "light") == 0) {
+      } else if (strncmp(value, "light", 6) == 0) {
         palette->mode = LIGHT;
       }
     } else if (strncmp(key, "color", 5) == 0) {

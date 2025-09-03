@@ -1,5 +1,6 @@
 #include "image.h"
 #include <MagickWand/MagickWand.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,7 +21,7 @@ RawImage *image_load_from_file(const char *path) {
     fprintf(stderr, "Failed to create MagickWand.\n");
     return NULL;
   }
-  char actual_path[1024];
+  char actual_path[PATH_MAX];
 
   const char *ext = strrchr(path, '.');
   if (ext && (strcasecmp(ext, ".gif") == 0)) {

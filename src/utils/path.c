@@ -174,8 +174,10 @@ char *build_path(const char *path1, const char *path2) {
   }
   snprintf(new_path, len1 + len2 + 2, "%s", path1);
   if (new_path[len1 - 1] != '/' && path2[0] != '/') {
-    strcat(new_path, "/");
+    snprintf(new_path + strlen(new_path), len1 + len2 + 2 - strlen(new_path),
+             "%s", "/");
   }
-  strcat(new_path, path2);
+  snprintf(new_path + strlen(new_path), len1 + len2 + 2 - strlen(new_path),
+           "%s", path2);
   return new_path;
 }

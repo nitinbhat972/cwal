@@ -10,6 +10,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#define MAX_RESULT_SIZE 256
+
 static void generate_sequence(const char *out_path, const Palette *palette) {
   if (!out_path || !palette) {
     fprintf(stderr, "Invalid arguments\n");
@@ -60,11 +62,11 @@ static char *resolve_placeholder(const char *placeholder,
     key[sizeof(key) - 1] = '\0';
   }
 
-  if (strcmp(format, "value") == 0) {
+  if (strncmp(format, "value", 6) == 0) {
     snprintf(format, sizeof(format), "%s", "hex");
   }
 
-  char *result = malloc(256);
+  char *result = malloc(MAX_RESULT_SIZE);
   if (!result)
     return NULL;
 
@@ -74,23 +76,24 @@ static char *resolve_placeholder(const char *placeholder,
       char *endptr;
       long index = strtol(num_str, &endptr, 10);
       if (*endptr == '\0' && index >= 0 && index < PALETTE_MAX_SIZE) {
-        format_color(&palette->colors[index], format, result, 256,
+        format_color(&palette->colors[index], format, result, MAX_RESULT_SIZE,
                      palette->alpha);
       } else {
-        snprintf(result, 256, "{%s}", placeholder);
+        snprintf(result, MAX_RESULT_SIZE, "{%s}", placeholder);
       }
     } else {
-      snprintf(result, 256, "{%s}", placeholder);
+      snprintf(result, MAX_RESULT_SIZE, "{%s}", placeholder);
     }
-  } else if (strcmp(key, "background") == 0) {
-    format_color(&palette->colors[0], format, result, 256, palette->alpha);
-  } else if ((strcmp(key, "foreground") == 0 || strcmp(key, "cursor") == 0)) {
-    format_color(&palette->colors[PALETTE_MAX_SIZE - 1], format, result, 256,
+  } else if (strncmp(key, "background", 11) == 0) {
+    format_color(&palette->colors[0], format, result, MAX_RESULT_SIZE, palette->alpha);
+  } else if ((strncmp(key, "foreground", 11) == 0 ||
+              strncmp(key, "cursor", 7) == 0)) {
+    format_color(&palette->colors[PALETTE_MAX_SIZE - 1], format, result, MAX_RESULT_SIZE,
                  palette->alpha);
-  } else if (strcmp(key, "wallpaper") == 0 && palette->wallpaper) {
-    snprintf(result, 256, "%s", palette->wallpaper);
+  } else if (strncmp(key, "wallpaper", 10) == 0 && palette->wallpaper) {
+    snprintf(result, MAX_RESULT_SIZE, "%s", palette->wallpaper);
   } else {
-    snprintf(result, 256, "{%s}", placeholder);
+    snprintf(result, MAX_RESULT_SIZE, "{%s}", placeholder);
   }
 
   return result;
@@ -119,7 +122,8 @@ static void replacement(FILE *in, FILE *out, const Palette *palette) {
   while (*cursor) {
     char *start = strchr(cursor, '{');
     if (!start) {
-      strcat(result, cursor);
+      size_t remaining = result_cap - strlen(result);
+      snprintf(result + strlen(result), remaining, "%s", cursor);
       break;
     }
 
@@ -128,7 +132,8 @@ static void replacement(FILE *in, FILE *out, const Palette *palette) {
 
     char *end = strchr(start + 1, '}');
     if (!end) {
-      strcat(result, start);
+      size_t remaining = result_cap - strlen(result);
+      snprintf(result + strlen(result), remaining, "%s", start);
       break;
     }
 
@@ -159,7 +164,8 @@ static void replacement(FILE *in, FILE *out, const Palette *palette) {
           result_cap = (result_len + resolved_len) * 2;
           result = realloc(result, result_cap);
         }
-        strcat(result, resolved);
+        size_t remaining = result_cap - result_len;
+        snprintf(result + result_len, remaining, "%s", resolved);
         result_len += resolved_len;
         free(resolved);
       }
@@ -184,8 +190,7 @@ int process_template(const char *output_dir, const Palette *palette) {
   char *user_local_template_dir = expand_home("~/.local/share/cwal/templates/");
   char *user_config_template_dir = expand_home("~/.config/cwal/templates/");
 
-  const char *template_dirs[] = {system_template_dir,
-                                 user_local_template_dir,
+  const char *template_dirs[] = {system_template_dir, user_local_template_dir,
                                  user_config_template_dir};
   int num_template_dirs = sizeof(template_dirs) / sizeof(template_dirs[0]);
 
@@ -204,7 +209,8 @@ int process_template(const char *output_dir, const Palette *palette) {
 
     struct stat st = {0};
     if (stat(current_template_dir, &st) == -1 || !S_ISDIR(st.st_mode)) {
-      logging(INFO, "Skipping non-existent template directory: %s", current_template_dir);
+      logging(INFO, "Skipping non-existent template directory: %s",
+              current_template_dir);
       continue;
     }
 

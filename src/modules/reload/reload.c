@@ -12,6 +12,9 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
+#define MAX_DEVICES 100
+#define LINE_BUFFER_SIZE 256
+
 static int command_exists(const char *cmd) {
   char *path_copy = strdup(getenv("PATH"));
   if (!path_copy)
@@ -48,7 +51,7 @@ static int get_pid(const char *process) {
     char *cmdline_path = build_path(path, "cmdline");
     FILE *file = fopen(cmdline_path, "r");
     if (file) {
-      char cmdline[256];
+      char cmdline[LINE_BUFFER_SIZE];
       if (fgets(cmdline, sizeof(cmdline), file)) {
         if (strstr(cmdline, process)) {
           fclose(file);
@@ -90,26 +93,26 @@ static void broadcast_to_terminals(const char *sequences, size_t len) {
   char **devices = NULL;
   int device_count = 0;
 
-  if (strcmp(os, "Darwin") == 0) {
+  if (strncmp(os, "Darwin", 7) == 0) {
     // macOS: Use /dev/ttys00[0-9]*
     if (glob("/dev/ttys00[0-9]*", 0, NULL, &glob_result) == 0) {
       devices = glob_result.gl_pathv;
       device_count = glob_result.gl_pathc;
     }
-  } else if (strcmp(os, "OpenBSD") == 0) {
+  } else if (strncmp(os, "OpenBSD", 8) == 0) {
     // OpenBSD: Use ps command output
     FILE *ps_output =
         popen("ps -o tty | sed -e 1d -e s#^#/dev/# | sort | uniq", "r");
     if (ps_output) {
-      char line[256];
-      char temp_devices[100][256];
+      char line[LINE_BUFFER_SIZE];
+      char temp_devices[MAX_DEVICES][LINE_BUFFER_SIZE];
       device_count = 0;
 
-      while (fgets(line, sizeof(line), ps_output) && device_count < 100) {
+      while (fgets(line, sizeof(line), ps_output) && device_count < MAX_DEVICES) {
         // Remove newline
         line[strcspn(line, "\n")] = '\0';
         if (strlen(line) > 0) {
-          snprintf(temp_devices[device_count], 256, "%s", line);
+          snprintf(temp_devices[device_count], LINE_BUFFER_SIZE, "%s", line);
           device_count++;
         }
       }
@@ -137,9 +140,9 @@ static void broadcast_to_terminals(const char *sequences, size_t len) {
       const char *dev = devices[i];
 
       // Skip /dev/pts/0 on KDE Plasma
-      if (strcmp(dev, "/dev/pts/0") == 0) {
+      if (strncmp(dev, "/dev/pts/0", 11) == 0) {
         char *desktop_session = getenv("DESKTOP_SESSION");
-        if (desktop_session && strcmp(desktop_session, "plasma") == 0) {
+        if (desktop_session && strncmp(desktop_session, "plasma", 7) == 0) {
           continue;
         }
       }
@@ -152,9 +155,9 @@ static void broadcast_to_terminals(const char *sequences, size_t len) {
     }
   }
 
-  if (strcmp(os, "Darwin") == 0 || strcmp(os, "Linux") == 0) {
+  if (strncmp(os, "Darwin", 7) == 0 || strncmp(os, "Linux", 6) == 0) {
     globfree(&glob_result);
-  } else if (strcmp(os, "OpenBSD") == 0 && devices) {
+  } else if (strncmp(os, "OpenBSD", 8) == 0 && devices) {
     free(devices);
   }
 }
@@ -207,7 +210,7 @@ void apply_colors_to_apps(const char *out_dir, bool no_reload) {
   // 2. tty
   char *tty_script_path = build_path(out_dir, "colors-tty.sh");
   char *term_env = getenv("TERM");
-  if (term_env && strcmp(term_env, "linux") == 0 &&
+  if (term_env && strncmp(term_env, "linux", 6) == 0 &&
       access(tty_script_path, F_OK) == 0) {
     char command[PATH_MAX + 10];
     snprintf(command, sizeof(command), "sh %s", tty_script_path);

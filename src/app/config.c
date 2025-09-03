@@ -7,7 +7,7 @@
 
 static void parse_key_value(Config *config, const char *key,
                             const char *value) {
-  if (strcmp(key, "out_dir") == 0) {
+  if (strncmp(key, "out_dir", 8) == 0) {
     // If value is empty, do not update, keep default
     if (strlen(value) > 0) {
       free(config->out_dir);
@@ -17,42 +17,42 @@ static void parse_key_value(Config *config, const char *key,
         return;
       }
     }
-  } else if (strcmp(key, "current_wallpaper") == 0) {
+  } else if (strncmp(key, "current_wallpaper", 18) == 0) {
     free(config->current_wallpaper);
     config->current_wallpaper = expand_home(value);
     if (!config->current_wallpaper) {
       logging(ERROR, "Failed to allocate current_wallpaper");
       return;
     }
-  } else if (strcmp(key, "backend") == 0) {
+  } else if (strncmp(key, "backend", 8) == 0) {
     free(config->backend);
     config->backend = strdup(value);
     if (!config->backend) {
       logging(ERROR, "Failed to allocate backend");
       return;
     }
-  } else if (strcmp(key, "alpha") == 0) {
+  } else if (strncmp(key, "alpha", 6) == 0) {
     if (strlen(value) > 0) {
       config->alpha = atof(value);
     }
-  } else if (strcmp(key, "mode") == 0) {
+  } else if (strncmp(key, "mode", 5) == 0) {
     if (strlen(value) > 0) {
-      if (strcmp(value, "dark") == 0) {
+      if (strncmp(value, "dark", 5) == 0) {
         config->mode = DARK;
-      } else if (strcmp(value, "light") == 0) {
+      } else if (strncmp(value, "light", 6) == 0) {
         config->mode = LIGHT;
       } else {
         logging(WARN, "Invalid mode value in config: %s. Using default.",
                 value);
       }
     }
-  } else if (strcmp(key, "cols16_mode") == 0) {
+  } else if (strncmp(key, "cols16_mode", 12) == 0) {
     if (strlen(value) > 0) {
-      if (strcmp(value, "darken") == 0) {
+      if (strncmp(value, "darken", 7) == 0) {
         config->cols16_mode = DARKEN;
-      } else if (strcmp(value, "lighten") == 0) {
+      } else if (strncmp(value, "lighten", 8) == 0) {
         config->cols16_mode = LIGHTEN;
-      } else if (strcmp(value, "none") == 0) {
+      } else if (strncmp(value, "none", 5) == 0) {
         config->cols16_mode = NONE;
       } else {
         logging(WARN, "Invalid cols16_mode value in config: %s. Using default.",
@@ -156,7 +156,7 @@ Config *load_config(void) {
         while (*value == ' ' || *value == '\t')
           value++;
 
-        if (strcmp(key, "out_dir") == 0) {
+        if (strncmp(key, "out_dir", 8) == 0) {
           if (strlen(value) > 0) {
             free(config->out_dir);
             config->out_dir = expand_home(value);
