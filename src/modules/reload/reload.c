@@ -19,7 +19,7 @@ static int command_exists(const char *cmd) {
 
   char *dir = strtok(path_copy, ":");
   while (dir != NULL) {
-    char *full_path = build_path(dir, cmd); // Remove the array declaration
+    char *full_path = build_path(dir, cmd);
     if (access(full_path, X_OK) == 0) {
       free(full_path);
       free(path_copy);

@@ -1,3 +1,4 @@
+#include "path.h"
 #include "utils.h"
 #include <dirent.h>
 #include <errno.h>
@@ -8,7 +9,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
-#include "path.h"
 
 char *expand_home(const char *path) {
   if (!path)
@@ -132,7 +132,6 @@ char *get_random_image_path(const char *directory_in) {
     return NULL;
   }
 
-
   unsigned int seed = time(NULL);
   int random_index = rand_r(&seed) % count;
   char *selected_file = image_files[random_index];
@@ -166,17 +165,17 @@ char *normalize_cli_path(const char *path) {
 }
 
 char *build_path(const char *path1, const char *path2) {
-    size_t len1 = strlen(path1);
-    size_t len2 = strlen(path2);
-    char *new_path = malloc(len1 + len2 + 2);
-    if (!new_path) {
-        logging(ERROR, "Memory allocation failed for build_path.\n");
-        return NULL;
-    }
-    strcpy(new_path, path1);
-    if (new_path[len1 - 1] != '/' && path2[0] != '/') {
-        strcat(new_path, "/");
-    }
-    strcat(new_path, path2);
-    return new_path;
+  size_t len1 = strlen(path1);
+  size_t len2 = strlen(path2);
+  char *new_path = malloc(len1 + len2 + 2);
+  if (!new_path) {
+    logging(ERROR, "Memory allocation failed for build_path.\n");
+    return NULL;
+  }
+  strcpy(new_path, path1);
+  if (new_path[len1 - 1] != '/' && path2[0] != '/') {
+    strcat(new_path, "/");
+  }
+  strcat(new_path, path2);
+  return new_path;
 }

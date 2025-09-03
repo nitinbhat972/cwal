@@ -73,7 +73,9 @@ Color get_average_color(const char *filename) {
   RawImage *img = image_load_from_file(filename);
 
   if (!img) {
-    fprintf(stderr, "Error: Failed to load image for average color calculation: %s\n", filename);
+    fprintf(stderr,
+            "Error: Failed to load image for average color calculation: %s\n",
+            filename);
     return (Color){0, 0, 0}; // Return black color on failure
   }
 
@@ -97,12 +99,12 @@ Color get_average_color(const char *filename) {
 }
 
 float calculate_contrast_ratio(Color color1, Color color2) {
-    float lum1 = w3_luminance(color1);
-    float lum2 = w3_luminance(color2);
+  float lum1 = w3_luminance(color1);
+  float lum2 = w3_luminance(color2);
 
-    if (lum1 > lum2) {
-        return (lum1 + 0.05f) / (lum2 + 0.05f);
-    } else {
-        return (lum2 + 0.05f) / (lum1 + 0.05f);
-    }
+  if (lum1 > lum2) {
+    return (lum1 + 0.05f) / (lum2 + 0.05f);
+  } else {
+    return (lum2 + 0.05f) / (lum1 + 0.05f);
+  }
 }

@@ -47,7 +47,7 @@ RawImage *image_load_from_file(const char *path) {
 
   raw_image->width = MagickGetImageWidth(wand);
   raw_image->height = MagickGetImageHeight(wand);
-  raw_image->channels = 4; // We'll standardize on RGBA for simplicity
+  raw_image->channels = 4;
 
   // Allocate memory for the pixel data
   size_t buffer_size =

@@ -31,33 +31,27 @@ static inline int resize_image(MagickWand *wand, float amount) {
 
 int generate_palette_cwal(RawImage *image, Palette *palette) {
   if (!image || !palette || !image->pixels) {
-
     return -1;
   }
 
   MagickWand *wand = NewMagickWand();
   if (!wand) {
-
     return -1;
   }
 
   // Create a new MagickWand from the raw pixel data
   if (MagickConstituteImage(wand, image->width, image->height, "RGBA",
                             CharPixel, image->pixels) == MagickFalse) {
-
     DestroyMagickWand(wand);
     return -1;
   }
 
-  // The rest of the function remains largely the same as before
   if (resize_image(wand, 0.20) != 0) {
-
     DestroyMagickWand(wand);
     return -1;
   }
 
   if (MagickSetImageColorspace(wand, LabColorspace) == MagickFalse) {
-
     DestroyMagickWand(wand);
     return -1;
   }
@@ -72,7 +66,6 @@ int generate_palette_cwal(RawImage *image, Palette *palette) {
       break;
     }
     if (tries == 19) {
-
       DestroyMagickWand(wand);
       return -1;
     }
@@ -80,7 +73,6 @@ int generate_palette_cwal(RawImage *image, Palette *palette) {
 
   PixelWand *pixel = NewPixelWand();
   if (!pixel) {
-
     DestroyMagickWand(wand);
     return -1;
   }
@@ -89,7 +81,6 @@ int generate_palette_cwal(RawImage *image, Palette *palette) {
 
   for (size_t i = 0; i < colors; i++) {
     if (MagickGetImageColormapColor(wand, i, pixel) == MagickFalse) {
-
       status = -1;
       break;
     }

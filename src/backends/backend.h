@@ -1,6 +1,6 @@
 #pragma once
-#include "core.h"
 #include "color/image.h"
+#include "core.h"
 
 typedef struct {
   const char *name;

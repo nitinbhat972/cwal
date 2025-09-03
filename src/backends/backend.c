@@ -30,32 +30,39 @@ void list_all_backends() {
   }
 }
 
-int process_backend(ImageBackend *initial_backend, RawImage *img, Palette *palette) {
+int process_backend(ImageBackend *initial_backend, RawImage *img,
+                    Palette *palette) {
   if (!initial_backend || !img || !palette) {
     logging(ERROR, "Null argument passed to process_backend.");
     return -1;
   }
 
   // Try the initial backend first
-  logging(INFO, "Attempting to process with initial backend: %s", initial_backend->name);
+  logging(INFO, "Attempting to process with initial backend: %s",
+          initial_backend->name);
   if (initial_backend->init_backend) {
     initial_backend->init_backend();
   }
   if (initial_backend->generate_palette(img, palette) == 0) {
-    logging(INFO, "Successfully processed with initial backend: %s", initial_backend->name);
+    logging(INFO, "Successfully processed with initial backend: %s",
+            initial_backend->name);
     if (initial_backend->terminate_backend) {
       initial_backend->terminate_backend();
     }
     return 0; // Success
   } else {
-    logging(WARN, "Initial backend %s failed to generate palette. Trying other available backends...", initial_backend->name);
+    logging(WARN,
+            "Initial backend %s failed to generate palette. Trying other "
+            "available backends...",
+            initial_backend->name);
     if (initial_backend->terminate_backend) {
       initial_backend->terminate_backend();
     }
   }
 
   // If initial backend failed, try all other available backends
-  for (ImageBackend **backend_ptr = available_backends; *backend_ptr; backend_ptr++) {
+  for (ImageBackend **backend_ptr = available_backends; *backend_ptr;
+       backend_ptr++) {
     ImageBackend *backend = *backend_ptr;
 
     // Skip the initial backend as it already failed
@@ -63,20 +70,25 @@ int process_backend(ImageBackend *initial_backend, RawImage *img, Palette *palet
       continue;
     }
 
-    logging(INFO, "Attempting to process with fallback backend: %s", backend->name);
+    logging(INFO, "Attempting to process with fallback backend: %s",
+            backend->name);
 
     if (backend->init_backend) {
       backend->init_backend();
     }
 
     if (backend->generate_palette(img, palette) == 0) {
-      logging(INFO, "Successfully processed with fallback backend: %s", backend->name);
+      logging(INFO, "Successfully processed with fallback backend: %s",
+              backend->name);
       if (backend->terminate_backend) {
         backend->terminate_backend();
       }
       return 0; // Success
     } else {
-      logging(WARN, "Fallback backend %s failed to generate palette. Trying next available backend...", backend->name);
+      logging(WARN,
+              "Fallback backend %s failed to generate palette. Trying next "
+              "available backend...",
+              backend->name);
       if (backend->terminate_backend) {
         backend->terminate_backend();
       }

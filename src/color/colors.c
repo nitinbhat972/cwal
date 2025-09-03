@@ -5,35 +5,35 @@
 
 // Pre-processes the palette to boost colors from dark images
 static void boost_dark_colors(Palette *palette) {
-    // Iterate through the 6 primary accent colors
-    for (int i = 1; i < 7; i++) {
-        HSV hsv = rgb_to_hsv(palette->colors[i]);
+  // Iterate through the 6 primary accent colors
+  for (int i = 1; i < 7; i++) {
+    HSV hsv = rgb_to_hsv(palette->colors[i]);
 
-        // Define thresholds and boost factors
-        const float MIN_VALUE = 0.25f;       // Minimum brightness
-        const float MIN_SATURATION = 0.20f;  // Minimum colorfulness
-        const float VALUE_BOOST = 0.3f;      // How much to brighten
-        const float SATURATION_BOOST = 0.4f; // How much to saturate
+    // Define thresholds and boost factors
+    const float MIN_VALUE = 0.25f;       // Minimum brightness
+    const float MIN_SATURATION = 0.20f;  // Minimum colorfulness
+    const float VALUE_BOOST = 0.3f;      // How much to brighten
+    const float SATURATION_BOOST = 0.4f; // How much to saturate
 
-        bool needs_boost = false;
+    bool needs_boost = false;
 
-        // If the color is too dark, boost its value (brightness)
-        if (hsv.v < MIN_VALUE) {
-            hsv.v += VALUE_BOOST * (1.0f - hsv.v);
-            needs_boost = true;
-        }
-
-        // If the color is too desaturated (grayish), boost its saturation
-        if (hsv.s < MIN_SATURATION) {
-            hsv.s += SATURATION_BOOST * (1.0f - hsv.s);
-            needs_boost = true;
-        }
-
-        // If changes were made, convert back to RGB and update the palette
-        if (needs_boost) {
-            palette->colors[i] = hsv_to_rgb(hsv);
-        }
+    // If the color is too dark, boost its value (brightness)
+    if (hsv.v < MIN_VALUE) {
+      hsv.v += VALUE_BOOST * (1.0f - hsv.v);
+      needs_boost = true;
     }
+
+    // If the color is too desaturated (grayish), boost its saturation
+    if (hsv.s < MIN_SATURATION) {
+      hsv.s += SATURATION_BOOST * (1.0f - hsv.s);
+      needs_boost = true;
+    }
+
+    // If changes were made, convert back to RGB and update the palette
+    if (needs_boost) {
+      palette->colors[i] = hsv_to_rgb(hsv);
+    }
+  }
 }
 
 static void saturate_all_colors(Palette *palette, float amount) {
@@ -124,9 +124,10 @@ static void generate_16_colors(Palette *palette) {
 
 void process_colors(Palette *palette, float saturation_amount,
                     float contrast_ratio) {
-  // First, check if we are in dark mode and boost colors if they are too dark/desaturated
+  // First, check if we are in dark mode and boost colors if they are too
+  // dark/desaturated
   if (palette->mode == DARK) {
-      boost_dark_colors(palette);
+    boost_dark_colors(palette);
   }
 
   Color background_color = get_average_color(palette->wallpaper);
@@ -141,7 +142,8 @@ void process_colors(Palette *palette, float saturation_amount,
     }
   } else {
     bool saturate_more =
-        (palette->colors[0].red < 16 || palette->colors[0].green < 16 || palette->colors[0].blue < 16);
+        (palette->colors[0].red < 16 || palette->colors[0].green < 16 ||
+         palette->colors[0].blue < 16);
 
     if (palette->colors[0].red >= 16) {
       palette->colors[0] = darken_color(palette->colors[0], 0.70f);
