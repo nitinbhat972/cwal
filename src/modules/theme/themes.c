@@ -72,9 +72,10 @@ int load_theme(Palette *palette, const char *theme_name) {
   }
 
   char line[MAX_LINE_LENGTH];
+  char *saveptr;
   while (fgets(line, sizeof(line), file)) {
-    char *key = strtok(line, "=");
-    char *value = strtok(NULL, "\n");
+    char *key = strtok_r(line, "=", &saveptr);
+    char *value = strtok_r(NULL, "\n", &saveptr);
 
     if (!key || !value)
       continue;

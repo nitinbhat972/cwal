@@ -17,7 +17,8 @@ static int command_exists(const char *cmd) {
   if (!path_copy)
     return 0;
 
-  char *dir = strtok(path_copy, ":");
+  char *saveptr;
+  char *dir = strtok_r(path_copy, ":", &saveptr);
   while (dir != NULL) {
     char *full_path = build_path(dir, cmd);
     if (access(full_path, X_OK) == 0) {
@@ -26,7 +27,7 @@ static int command_exists(const char *cmd) {
       return 1;
     }
     free(full_path);
-    dir = strtok(NULL, ":");
+    dir = strtok_r(NULL, ":", &saveptr);
   }
   free(path_copy);
   return 0;
