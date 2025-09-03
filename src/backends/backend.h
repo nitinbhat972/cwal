@@ -2,6 +2,8 @@
 #include "color/image.h"
 #include "core.h"
 
+#define CUSTOM_BACKEND_DIR "~/.config/cwal/backends"
+
 typedef struct {
   const char *name;
   void (*init_backend)(void);
@@ -12,3 +14,7 @@ typedef struct {
 ImageBackend *backend_get(const char *name);
 void list_all_backends(void);
 int process_backend(ImageBackend *backend, RawImage *img, Palette *palette);
+int process_with_fallback(ImageBackend *backend, const char *image_path,
+                          Palette *palette);
+void init_backends(void);
+int is_lua_backend(ImageBackend *backend);

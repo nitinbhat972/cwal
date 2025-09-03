@@ -96,6 +96,14 @@ static void create_config_subdirectories(const char *config_dir_path) {
     }
     free(themes_dir);
   }
+
+  char *backends_dir = build_path(config_dir_path, "backends");
+  if (backends_dir) {
+    if (validate_or_create_dir(backends_dir) != 0) {
+      logging(ERROR, "Failed to create backends directory: %s", backends_dir);
+    }
+    free(backends_dir);
+  }
 }
 
 Config *load_config(void) {

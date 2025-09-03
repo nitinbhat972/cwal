@@ -9,6 +9,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(MagickWand REQUIRED MagickWand)
 pkg_check_modules(imagequant REQUIRED imagequant)
+pkg_check_modules(Lua REQUIRED lua)
 
 # Collect source files
 set(SOURCES
@@ -18,6 +19,7 @@ set(SOURCES
     src/backends/backend.c
     src/backends/cwal.c
     src/backends/libimagequant.c
+    src/backends/lua_backend.c
     src/color/color_convertion.c
     src/color/color_operation.c
     src/color/colors.c
@@ -41,19 +43,22 @@ target_include_directories(cwal PRIVATE
     ${PROJECT_SOURCE_DIR}/src
     ${MagickWand_INCLUDE_DIRS}
     ${imagequant_INCLUDE_DIRS}
+    ${Lua_INCLUDE_DIRS}
 )
 
 # Link libraries
 target_link_libraries(cwal
     ${MagickWand_LIBRARIES}
     ${imagequant_LIBRARIES}
+    ${Lua_LIBRARIES}
     m
 )
 
 # Set compiler flags for dependencies
-target_compile_options(cwal PRIVATE 
+target_compile_options(cwal PRIVATE
     ${MagickWand_CFLAGS_OTHER}
     ${imagequant_CFLAGS_OTHER}
+    ${Lua_CFLAGS_OTHER}
 )
 
 # Installation

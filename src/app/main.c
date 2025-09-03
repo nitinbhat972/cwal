@@ -2,7 +2,6 @@
 #include "app/config.h"
 #include "backends/backend.h"
 #include "color/colors.h"
-#include "color/image.h"
 #include "core.h"
 #include "modules/cache/cache.h"
 #include "modules/hooks/hooks.h"
@@ -24,6 +23,9 @@ int main(int argv, char **argc) {
     logging(ERROR, "Failed to load configuration.");
     return 1;
   }
+
+  // Initialize backends
+  init_backends();
 
   // Parse command-line arguments
   CliArgs args;
@@ -112,25 +114,16 @@ int main(int argv, char **argc) {
     }
 
     // Apply settings from CLI
-    palette.wallpaper = path;
+    palette.wallpaper = strdup(path);
     // Loads colors from cache
     if (load_palette_from_cache(&palette, args.out_dir, args.backend) != 0) {
-      RawImage *raw_img = image_load_from_file(path);
-      if (!raw_img) {
-        logging(ERROR, "Error loading image from file: %s", path);
+      // Use unified backend processing with fallback mechanism
+      if (process_with_fallback(backend, path, &palette) != 0) {
+        logging(ERROR, "All backends failed to process the image!");
         free_config(app_config);
         free_cli_args(&args);
         return -1;
       }
-
-      if (process_backend(backend, raw_img, &palette) != 0) {
-        logging(ERROR, "Image processing failed!");
-        image_free(raw_img);
-        free_config(app_config);
-        free_cli_args(&args);
-        return -1;
-      }
-      image_free(raw_img);
       process_colors(&palette, args.saturation, args.contrast);
       save_palette_to_cache(&palette, args.out_dir, args.backend);
     }
@@ -149,6 +142,8 @@ int main(int argv, char **argc) {
   free(app_config->current_wallpaper);
   if (palette.wallpaper) {
     app_config->current_wallpaper = strdup(palette.wallpaper);
+    free((char *)palette.wallpaper);
+    palette.wallpaper = NULL;
   } else {
     app_config->current_wallpaper = strdup("");
   }
