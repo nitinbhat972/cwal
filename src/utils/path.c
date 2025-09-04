@@ -97,12 +97,25 @@ char *get_random_image_path(const char *directory_in) {
   }
 
   while ((dir = readdir(d)) != NULL) {
-    if (strstr(dir->d_name, ".jpg") || strstr(dir->d_name, ".jpeg") ||
-        strstr(dir->d_name, ".png")) {
+    char *name = strdup(dir->d_name);
+    if (!name) {
+      logging(ERROR, "Memory allocation failed for file name.\n");
+      closedir(d);
+      free(directory);
+      for (int i = 0; i < count; i++) {
+        free(image_files[i]);
+      }
+      free(image_files);
+      return NULL;
+    }
+    to_lowercase(name);
+    if (strstr(name, ".jpg") || strstr(name, ".jpeg") || strstr(name, ".png") ||
+        strstr(name, ".gif")) {
       count++;
       image_files = realloc(image_files, sizeof(char *) * count);
       if (!image_files) {
         logging(ERROR, "Memory allocation failed for image files.\n");
+        free(name);
         closedir(d);
         free(directory);
         for (int i = 0; i < count - 1; i++) {
@@ -111,17 +124,9 @@ char *get_random_image_path(const char *directory_in) {
         free(image_files);
         return NULL;
       }
-      image_files[count - 1] = strdup(dir->d_name);
-      if (!image_files[count - 1]) {
-        logging(ERROR, "Memory allocation failed for image file name.\n");
-        closedir(d);
-        free(directory);
-        for (int i = 0; i < count - 1; i++) {
-          free(image_files[i]);
-        }
-        free(image_files);
-        return NULL;
-      }
+      image_files[count - 1] = name;
+    } else {
+      free(name);
     }
   }
   closedir(d);
