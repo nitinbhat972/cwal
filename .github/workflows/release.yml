@@ -1,7 +1,9 @@
 name: Release
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - 'v*.*.*'
 
 jobs:
   release:
@@ -11,15 +13,35 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Generate Changelog
-        id: changelog
-        uses: mikepenz/release-changelog-builder-action@v4
         with:
-          configuration: |
-            template: |
-              ## 🚀 What's Changed
-              $CHANGES
+          fetch-depth: 0
 
-      - name: Print Changelog (test only)
-        run: echo "${{ steps.changelog.outputs.changelog }}"
+      # Generate full CHANGELOG.md
+      - name: Generate CHANGELOG.md
+        id: cliff_full
+        uses: orhun/git-cliff-action@v4
+        with:
+          args: -o CHANGELOG.md
+
+      # Commit updated changelog back to main branch
+      - name: Commit updated changelog
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add CHANGELOG.md
+          git commit -m "chore: update changelog" || echo "No changes"
+          git push origin HEAD:main
+
+      # Generate release notes for latest tag only
+      - name: Generate Release Notes
+        id: cliff_latest
+        uses: orhun/git-cliff-action@v4
+        with:
+          args: --latest --strip header
+
+      # Create GitHub Release
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          body: ${{ steps.cliff_latest.outputs.content }}
