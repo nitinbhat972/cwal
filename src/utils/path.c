@@ -3,12 +3,25 @@
 #include <dirent.h>
 #include <errno.h>
 #include <limits.h>
+#include <strings.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <time.h>
+
+static bool has_supported_image_extension(const char *filename) {
+  const char *extension = strrchr(filename, '.');
+  if (!extension) {
+    return false;
+  }
+
+  return strcasecmp(extension, ".jpg") == 0 ||
+         strcasecmp(extension, ".jpeg") == 0 ||
+         strcasecmp(extension, ".png") == 0 ||
+         strcasecmp(extension, ".gif") == 0;
+}
 
 char *expand_home(const char *path) {
   if (!path)
@@ -97,6 +110,10 @@ char *get_random_image_path(const char *directory_in) {
   }
 
   while ((dir = readdir(d)) != NULL) {
+    if (!has_supported_image_extension(dir->d_name)) {
+      continue;
+    }
+
     char *name = strdup(dir->d_name);
     if (!name) {
       logging(ERROR, "Memory allocation failed for file name.\n");
@@ -108,26 +125,23 @@ char *get_random_image_path(const char *directory_in) {
       free(image_files);
       return NULL;
     }
-    to_lowercase(name);
-    if (strstr(name, ".jpg") || strstr(name, ".jpeg") || strstr(name, ".png") ||
-        strstr(name, ".gif")) {
-      count++;
-      image_files = realloc(image_files, sizeof(char *) * count);
-      if (!image_files) {
-        logging(ERROR, "Memory allocation failed for image files.\n");
-        free(name);
-        closedir(d);
-        free(directory);
-        for (int i = 0; i < count - 1; i++) {
-          free(image_files[i]);
-        }
-        free(image_files);
-        return NULL;
-      }
-      image_files[count - 1] = name;
-    } else {
+
+    char **resized = realloc(image_files, sizeof(char *) * (count + 1));
+    if (!resized) {
+      logging(ERROR, "Memory allocation failed for image files.\n");
       free(name);
+      closedir(d);
+      free(directory);
+      for (int i = 0; i < count; i++) {
+        free(image_files[i]);
+      }
+      free(image_files);
+      return NULL;
     }
+
+    image_files = resized;
+    image_files[count] = name;
+    count++;
   }
   closedir(d);
 
