@@ -52,8 +52,9 @@ alt="cwal showcase" width="700"/>
 
 ## 🚀 Installation
 
-`cwal` requires `imagemagick` and `libimagequant` as dependencies.
 
+
+`cwal` requires `imagemagick`, `libimagequant`, and `lua` as dependencies.
 
 ### Prerequisites
 
@@ -61,28 +62,29 @@ Ensure the following libraries are installed on your system:
 
 - `imagemagick`
 - `libimagequant`
+- `lua` (or `liblua-dev`)
 
 **Ubuntu/Debian:**
 
 ```bash
-sudo apt install imagemagick libimagequant-dev
+sudo apt install imagemagick libimagequant-dev liblua5.4-dev
 ```
 
 **Arch Linux:**
 
 ```bash
-sudo pacman -S imagemagick libimagequant
+sudo pacman -S imagemagick libimagequant lua
 ```
 
 **Fedora/RHEL:**
 
 ```bash
-sudo dnf install ImageMagick-devel libimagequant-devel
+sudo dnf install ImageMagick-devel libimagequant-devel lua-devel
 ```
 
 **macOS**
 ```bash
-brew install imagemagick libimagequant
+brew install imagemagick libimagequant lua
 ```
 
 
