@@ -1,0 +1,25 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate Changelog
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@v4
+        with:
+          configuration: |
+            template: |
+              ## 🚀 What's Changed
+              $CHANGES
+
+      - name: Print Changelog (test only)
+        run: echo "${{ steps.changelog.outputs.changelog }}"
