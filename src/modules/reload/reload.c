@@ -36,14 +36,30 @@ static int command_exists(const char *cmd) {
   return 0;
 }
 
-static int get_pid(const char *process) {
+typedef struct {
+  bool i3;
+  bool bspwm;
+  bool polybar;
+  bool sway;
+  bool waybar;
+  bool mako;
+  bool nvim;
+} RunningProcessState;
+
+static RunningProcessState detect_running_processes(void) {
+  RunningProcessState state = {0};
+
   DIR *dir = opendir("/proc");
-  if (!dir)
-    return 0;
+  if (!dir) {
+    return state;
+  }
+
   struct dirent *entry;
-  while ((entry = readdir(dir)) != NULL) {
+  int unresolved = 7;
+
+  while ((entry = readdir(dir)) != NULL && unresolved > 0) {
     char *endptr;
-    long pid = strtol(entry->d_name, &endptr, 10);
+    strtol(entry->d_name, &endptr, 10);
     if (*endptr != '\0') // Not a pid directory
       continue;
 
@@ -53,12 +69,33 @@ static int get_pid(const char *process) {
     if (file) {
       char cmdline[LINE_BUFFER_SIZE];
       if (fgets(cmdline, sizeof(cmdline), file)) {
-        if (strstr(cmdline, process)) {
-          fclose(file);
-          closedir(dir);
-          free(path);
-          free(cmdline_path);
-          return (int)pid; // return actual pid
+        if (!state.i3 && strstr(cmdline, "i3")) {
+          state.i3 = true;
+          unresolved--;
+        }
+        if (!state.bspwm && strstr(cmdline, "bspwm")) {
+          state.bspwm = true;
+          unresolved--;
+        }
+        if (!state.polybar && strstr(cmdline, "polybar")) {
+          state.polybar = true;
+          unresolved--;
+        }
+        if (!state.sway && strstr(cmdline, "sway")) {
+          state.sway = true;
+          unresolved--;
+        }
+        if (!state.waybar && strstr(cmdline, "waybar")) {
+          state.waybar = true;
+          unresolved--;
+        }
+        if (!state.mako && strstr(cmdline, "mako")) {
+          state.mako = true;
+          unresolved--;
+        }
+        if (!state.nvim && strstr(cmdline, "nvim")) {
+          state.nvim = true;
+          unresolved--;
         }
       }
       fclose(file);
@@ -66,8 +103,9 @@ static int get_pid(const char *process) {
     free(path);
     free(cmdline_path);
   }
+
   closedir(dir);
-  return 0; // Process not found
+  return state;
 }
 
 static const char *get_os() {
@@ -170,6 +208,8 @@ void apply_colors_to_apps(const char *out_dir, bool no_reload) {
 
   logging(INFO, "Applying colors to applications...");
 
+  RunningProcessState running_processes = detect_running_processes();
+
   char *sequences_path = build_path(out_dir, "sequences");
 
   // 1. Apply terminal sequences to ALL open terminals
@@ -233,43 +273,43 @@ void apply_colors_to_apps(const char *out_dir, bool no_reload) {
   free(xrdb_path);
 
   // 4. i3
-  if (command_exists("i3-msg") && get_pid("i3") != 0) {
+  if (command_exists("i3-msg") && running_processes.i3) {
     system("i3-msg reload");
     logging(INFO, "Reloaded i3.");
   }
 
   // 5. bspwm
-  if (command_exists("bspc") && get_pid("bspwm") != 0) {
+  if (command_exists("bspc") && running_processes.bspwm) {
     system("bspc wm -r");
     logging(INFO, "Reloaded bspwm.");
   }
 
   // 6. polybar
-  if (command_exists("polybar") && get_pid("polybar") != 0) {
+  if (command_exists("polybar") && running_processes.polybar) {
     system("pkill -USR1 polybar");
     logging(INFO, "Reloaded Polybar.");
   }
 
   // 7. sway
-  if (command_exists("swaymsg") && get_pid("sway") != 0) {
+  if (command_exists("swaymsg") && running_processes.sway) {
     system("swaymsg reload");
     logging(INFO, "Reloaded Sway.");
   }
 
   // 8. waybar
-  if (command_exists("waybar") && get_pid("waybar") != 0) {
+  if (command_exists("waybar") && running_processes.waybar) {
     system("pkill -USR2 waybar");
     logging(INFO, "Reloaded Waybar.");
   }
 
   // 9. mako (Wayland notification daemon)
-  if (command_exists("makoctl") && get_pid("mako") != 0) {
+  if (command_exists("makoctl") && running_processes.mako) {
     system("makoctl reload");
     logging(INFO, "Reloaded Mako.");
   }
 
   // 10. nvim (nvim-colo-reload)
-  if (command_exists("nvim-colo-reload") && get_pid("nvim") != 0) {
+  if (command_exists("nvim-colo-reload") && running_processes.nvim) {
     system("nvim-colo-reload");
     logging(INFO, "Reloaded Neovim colors.");
   }

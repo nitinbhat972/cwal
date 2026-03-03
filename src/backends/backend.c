@@ -101,73 +101,95 @@ static void create_lua_backends() {
   available_backends[num_backends] = NULL;
 }
 
+static int run_lua_backend(ImageBackend *backend, const char *script_path,
+                           const char *image_path, Palette *palette) {
+  if (!backend || !script_path || !image_path || !palette) {
+    return -1;
+  }
+
+  if (backend->init_backend) {
+    backend->init_backend();
+  }
+
+  int status = lua_generate_palette(script_path, image_path, palette);
+
+  if (backend->terminate_backend) {
+    backend->terminate_backend();
+  }
+
+  return status;
+}
+
+static int run_raw_backend(ImageBackend *backend, RawImage *raw_img,
+                           Palette *palette) {
+  if (!backend || !raw_img || !palette || !backend->generate_palette) {
+    return -1;
+  }
+
+  if (backend->init_backend) {
+    backend->init_backend();
+  }
+
+  int status = backend->generate_palette(raw_img, palette);
+
+  if (backend->terminate_backend) {
+    backend->terminate_backend();
+  }
+
+  return status;
+}
+
 int process_with_fallback(ImageBackend *backend, const char *image_path,
                           Palette *palette) {
-  if (!backend || !image_path || !palette)
+  if (!backend || !image_path || !palette) {
     return -1;
+  }
+
+  RawImage *raw_img = NULL;
+  bool processed = false;
+
   int lua_index = is_lua_backend(backend);
   if (lua_index >= 0) {
-    if (backend->init_backend)
-      backend->init_backend();
-    if (lua_generate_palette(lua_script_paths[lua_index], image_path,
-                             palette) == 0) {
-      if (backend->terminate_backend)
-        backend->terminate_backend();
-      return 0;
-    }
-    if (backend->terminate_backend)
-      backend->terminate_backend();
+    processed =
+        run_lua_backend(backend, lua_script_paths[lua_index], image_path,
+                        palette) == 0;
   } else {
-    RawImage *raw_img = image_load_from_file(image_path);
+    raw_img = image_load_from_file(image_path);
     if (raw_img) {
-      if (backend->init_backend)
-        backend->init_backend();
-      if (backend->generate_palette(raw_img, palette) == 0) {
-        if (backend->terminate_backend)
-          backend->terminate_backend();
-        image_free(raw_img);
-        return 0;
-      }
-      if (backend->terminate_backend)
-        backend->terminate_backend();
-      image_free(raw_img);
+      processed = run_raw_backend(backend, raw_img, palette) == 0;
     }
   }
+
   for (ImageBackend **backend_ptr = available_backends; *backend_ptr;
        backend_ptr++) {
+    if (processed) {
+      break;
+    }
+
     ImageBackend *fallback = *backend_ptr;
-    if (fallback == backend)
+    if (fallback == backend) {
       continue;
+    }
+
     int lua_idx = is_lua_backend(fallback);
     if (lua_idx >= 0) {
-      if (fallback->init_backend)
-        fallback->init_backend();
-      if (lua_generate_palette(lua_script_paths[lua_idx], image_path,
-                               palette) == 0) {
-        if (fallback->terminate_backend)
-          fallback->terminate_backend();
-        return 0;
-      }
-      if (fallback->terminate_backend)
-        fallback->terminate_backend();
+      processed = run_lua_backend(fallback, lua_script_paths[lua_idx],
+                                  image_path, palette) == 0;
     } else {
-      RawImage *raw_img = image_load_from_file(image_path);
+      if (!raw_img) {
+        raw_img = image_load_from_file(image_path);
+      }
+
       if (raw_img) {
-        if (fallback->init_backend)
-          fallback->init_backend();
-        if (fallback->generate_palette(raw_img, palette) == 0) {
-          if (fallback->terminate_backend)
-            fallback->terminate_backend();
-          image_free(raw_img);
-          return 0;
-        }
-        if (fallback->terminate_backend)
-          fallback->terminate_backend();
-        image_free(raw_img);
+        processed = run_raw_backend(fallback, raw_img, palette) == 0;
       }
     }
   }
-  return -1;
+
+  if (raw_img) {
+    image_free(raw_img);
+  }
+  return processed ? 0 : -1;
 }
 
 

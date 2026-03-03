@@ -1,10 +1,8 @@
 #include "color_operation.h"
 #include "color_convertion.h"
 #include "core.h"
-#include "image.h"
 #include "utils/utils.h"
 #include <math.h>
-#include <stdio.h>
 
 Color darken_color(Color clr, float amount) {
   amount = clamp_value(amount);
@@ -67,35 +65,6 @@ Color binary_luminance_adjust(float luminance_desired, float hue, float s_min,
   result.s = (s_min + s_max) / 2.0f;
   result.v = (v_min + v_max) / 2.0f;
   return hsv_to_rgb(result);
-}
-
-Color get_average_color(const char *filename) {
-  RawImage *img = image_load_from_file(filename);
-
-  if (!img) {
-    fprintf(stderr,
-            "Error: Failed to load image for average color calculation: %s\n",
-            filename);
-    return (Color){0, 0, 0}; // Return black color on failure
-  }
-
-  uint64_t r_sum = 0, g_sum = 0, b_sum = 0, a_sum = 0;
-  int pixel_count = img->width * img->height;
-
-  for (int i = 0; i < pixel_count; ++i) {
-    r_sum += img->pixels[i * 4 + 0];
-    g_sum += img->pixels[i * 4 + 1];
-    b_sum += img->pixels[i * 4 + 2];
-    a_sum += (img->channels == 4) ? img->pixels[i * 4 + 3] : 255;
-  }
-
-  image_free(img);
-
-  return (Color){
-      .red = (uint8_t)(r_sum / pixel_count),
-      .green = (uint8_t)(g_sum / pixel_count),
-      .blue = (uint8_t)(b_sum / pixel_count),
-  };
 }
 
 float calculate_contrast_ratio(Color color1, Color color2) {

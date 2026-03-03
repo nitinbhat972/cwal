@@ -138,8 +138,6 @@ void process_colors(Palette *palette, float saturation_amount,
     boost_dark_colors(palette);
   }
 
-  Color background_color = get_average_color(palette->wallpaper);
-
   // Initial background adjustment based on light/dark mode
   if (palette->mode == LIGHT) {
     float current_lum = w3_luminance(palette->colors[0]);
@@ -170,5 +168,5 @@ void process_colors(Palette *palette, float saturation_amount,
   // Apply overall saturation and contrast adjustments
   saturate_all_colors(palette, saturation_amount);
   ensure_contrast(palette, contrast_ratio, palette->mode == LIGHT,
-                  background_color);
+                  palette->colors[0]);
 }
