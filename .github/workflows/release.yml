@@ -16,32 +16,53 @@ jobs:
         with:
           fetch-depth: 0
 
+      # ----------------------------
       # Generate full CHANGELOG.md
+      # ----------------------------
       - name: Generate CHANGELOG.md
         id: cliff_full
         uses: orhun/git-cliff-action@v4
         with:
           args: -o CHANGELOG.md
 
-      # Commit updated changelog back to main branch
+      # ----------------------------
+      # Commit updated changelog
+      # ----------------------------
       - name: Commit updated changelog
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add CHANGELOG.md
-          git commit -m "chore: update changelog" || echo "No changes"
+          git commit -m "chore: update changelog for ${{ github.ref_name }}" || echo "No changes"
           git push origin HEAD:main
 
-      # Generate release notes for latest tag only
+      # ----------------------------
+      # Generate release notes for latest tag
+      # ----------------------------
       - name: Generate Release Notes
         id: cliff_latest
         uses: orhun/git-cliff-action@v4
         with:
           args: --latest --strip header
 
+      # ----------------------------
+      # Get previous tag for compare link
+      # ----------------------------
+      - name: Get previous tag
+        id: prev
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          echo "tag=$PREV_TAG" >> $GITHUB_OUTPUT
+
+      # ----------------------------
       # Create GitHub Release
+      # ----------------------------
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Release ${{ github.ref_name }}
-          body: ${{ steps.cliff_latest.outputs.content }}
+          name: ${{ github.ref_name }}
+          body: |
+            ${{ steps.cliff_latest.outputs.content }}
+
+            ---
+            ${{ steps.prev.outputs.tag != '' && format('**Full Changelog:** https://github.com/{0}/compare/{1}...{2}', github.repository, steps.prev.outputs.tag, github.ref_name) || '**Full Changelog:** Initial release' }}
