@@ -11,14 +11,15 @@ alt="cwal showcase" width="700"/>
 ## ✨ Features
 
 - **Dynamic Color Generation**: Extracts a vibrant 16-color palette from any image
+- **Persistent Configuration**: Remembers your preferred settings (alpha, mode, saturation, etc.) across sessions using a structured INI file
 - **Advanced Backend Support**: Utilizes `imagemagick` or `libimagequant` for efficient color quantization
 - **Lua Scripting Support**: Create custom backends using Lua scripts for advanced color quantization
 - **Extensive Customization**: Fine-tune saturation, contrast, alpha transparency, and theme mode (dark/light)
-- **Template-Based Output**: Generates color schemes for various applications using customizable templates
+- **Smart Template Engine**: Generates color schemes for various applications with intelligent shade generation
 - **Automatic Application Reloading**: Seamlessly integrates with your system to apply changes instantly
 - **Palette Preview**: View the generated color palette directly in your terminal
-- **Random Image Selection**: Automatically pick a random image from any specified directory
-- **Theme Management**: Load predefined themes or select random themes based on mode (dark/light/all)
+- **Random Image Selection**: Automatically pick a random image from a directory (remembers your last directory)
+- **Theme Management**: Load predefined themes or select random themes with automatic generation bypass
 
 
 ## 🖼️ Showcase
@@ -147,7 +148,7 @@ Usage: cwal [OPTIONS] --img <image_path>
 - `--list-backends`                     List available backends
 - `--list-themes`                       List all available themes
 - `--quiet`                             Suppress all output
-- `--random <directory>`                Select random image from directory
+- `--random [directory]`                Select random image (uses config default if directory omitted)
 - `--theme <theme_name|random_dark|random_light|random_all>` Select a theme or a random one
 - `--preview`                           Preview palette
 - `--help`                              Help
@@ -156,14 +157,33 @@ Usage: cwal [OPTIONS] --img <image_path>
 
 ```bash
 cwal --img /path/to/image.jpg
-cwal --img /path/to/image.png --mode dark --saturation 0.2
-cwal --img /path/to/image.jpg --preview
-cwal --random ~/Pictures/wallpapers
-cwal --theme random_dark
-cwal --theme random_light
-cwal --theme random_all
-cwal --list-themes
-cwal --img /path/to/image.jpg --out-dir ~/.config/colors --script ~/.local/bin/reload-apps.sh
+cwal --random ~/Pictures/wallpapers    # Use specific path and save it
+cwal --random                          # Use the directory saved in config
+cwal --theme random_all                # Pick a random predefined theme
+cwal --img /path/to/image.jpg --alpha 0.8 --saturation 0.1
+```
+
+## ⚙️ Configuration
+
+`cwal` uses a structured INI file located at `~/.config/cwal/cwal.ini` to store your preferences. Most CLI flags are automatically saved to this file, so you don't have to provide them every time.
+
+```ini
+[general]
+out_dir = /home/user/.cache/cwal/
+current_wallpaper = /home/user/Pictures/wall.png
+backend = cwal
+script_path = /home/user/.local/bin/post-cwal.sh
+
+[options]
+alpha = 1.00
+saturation = 0.00
+contrast = 1.00
+mode = dark
+cols16_mode = darken
+
+[random]
+random_dir = /home/user/Pictures/Wallpapers
+
 ```
 
 
@@ -175,7 +195,7 @@ Templates are stored in:
 - `~/.config/cwal/templates` (user)
 
 **Supported apps:**
-Terminal emulators (Alacritty, Kitty, Wezterm), window managers (i3, bspwm, Hyprland), text editors (Vim, Neovim, VS Code), system themes (GTK, Qt).
+Terminal emulators (Alacritty, Kitty, Wezterm, Ghostty, Foot), window managers (i3, bspwm, Hyprland, Sway), system monitors (Btop), text editors (Vim, Neovim, VS Code), and more.
 
 ### Color Formatting in Templates
 
