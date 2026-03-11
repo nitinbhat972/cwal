@@ -308,13 +308,7 @@ void apply_colors_to_apps(const char *out_dir, bool no_reload) {
     logging(INFO, "Reloaded Mako.");
   }
 
-  // 10. nvim (nvim-colo-reload)
-  if (command_exists("nvim-colo-reload") && running_processes.nvim) {
-    system("nvim-colo-reload");
-    logging(INFO, "Reloaded Neovim colors.");
-  }
-
-  // 11. termux
+  // 10. termux
   if (command_exists("termux-reload-settings")) {
     system("termux-reload-settings");
     logging(INFO, "Reloaded Termux settings.");
