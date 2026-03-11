@@ -45,6 +45,24 @@ static void parse_key_value(Config *config, const char *key,
     if (strlen(value) > 0) {
       config->alpha = atof(value);
     }
+  } else if (strncmp(key, "saturation", 11) == 0) {
+    if (strlen(value) > 0) {
+      config->saturation = atof(value);
+    }
+  } else if (strncmp(key, "contrast", 9) == 0) {
+    if (strlen(value) > 0) {
+      config->contrast = atof(value);
+    }
+  } else if (strncmp(key, "script_path", 12) == 0) {
+    if (strlen(value) > 0) {
+      free(config->script_path);
+      config->script_path = expand_home(value);
+    }
+  } else if (strncmp(key, "random_dir", 11) == 0) {
+    if (strlen(value) > 0) {
+      free(config->random_dir);
+      config->random_dir = expand_home(value);
+    }
   } else if (strncmp(key, "mode", 5) == 0) {
     if (strlen(value) > 0) {
       if (strncmp(value, "dark", 5) == 0) {
@@ -125,11 +143,15 @@ Config *load_config(void) {
 
   // Set default values (these can be overridden by CLI arguments)
   config->out_dir = expand_home("~/.cache/cwal/"); // Default out_dir
-  config->current_wallpaper = NULL; // Not loaded from config, set by CLI
-  config->backend = NULL;           // Not loaded from config, set by CLI
-  config->mode = DARK;              // Default mode
-  config->cols16_mode = DARKEN;     // Default 16-color generation mode
-  config->alpha = 1.0;              // Default alpha
+  config->current_wallpaper = NULL;
+  config->backend = NULL;
+  config->mode = DARK;
+  config->cols16_mode = DARKEN;
+  config->alpha = 1.0;
+  config->saturation = 0.0;
+  config->contrast = 1.0;
+  config->script_path = NULL;
+  config->random_dir = NULL;
 
   char *expanded_path = expand_home(CONFIG_PATH);
   FILE *file = fopen(expanded_path, "r");
@@ -174,16 +196,7 @@ Config *load_config(void) {
         while (*value == ' ' || *value == '\t')
           value++;
 
-        if (strncmp(key, "out_dir", 8) == 0) {
-          if (strlen(value) > 0) {
-            free(config->out_dir);
-            config->out_dir = expand_home(value);
-            if (!config->out_dir) {
-              logging(ERROR, "Failed to allocate out_dir");
-              return NULL;
-            }
-          }
-        }
+        parse_key_value(config, key, value);
       }
     }
   }
@@ -214,15 +227,22 @@ void save_config(const Config *config) {
 
   fprintf(file, "[general]\n");
   fprintf(file, "out_dir = %s\n", config->out_dir);
-  fprintf(file, "current_wallpaper = %s\n", config->current_wallpaper);
-  fprintf(file, "backend = %s\n", config->backend);
-  fprintf(file, "\n[theme]\n");
+  fprintf(file, "current_wallpaper = %s\n", config->current_wallpaper ? config->current_wallpaper : "");
+  fprintf(file, "backend = %s\n", config->backend ? config->backend : "cwal");
+  fprintf(file, "script_path = %s\n", config->script_path ? config->script_path : "");
+
+  fprintf(file, "\n[options]\n");
   fprintf(file, "alpha = %.2f\n", config->alpha);
+  fprintf(file, "saturation = %.2f\n", config->saturation);
+  fprintf(file, "contrast = %.2f\n", config->contrast);
   fprintf(file, "mode = %s\n", config->mode == DARK ? "dark" : "light");
   fprintf(file, "cols16_mode = %s\n",
           config->cols16_mode == DARKEN
               ? "darken"
               : (config->cols16_mode == LIGHTEN ? "lighten" : "none"));
+
+  fprintf(file, "\n[random]\n");
+  fprintf(file, "random_dir = %s\n", config->random_dir ? config->random_dir : "");
 
   fclose(file);
   free(expanded_path);
@@ -234,6 +254,8 @@ void free_config(Config *config) {
     free(config->out_dir);
     free(config->current_wallpaper);
     free(config->backend);
+    free(config->script_path);
+    free(config->random_dir);
     free(config);
   }
 }

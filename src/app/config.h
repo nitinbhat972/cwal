@@ -11,6 +11,7 @@
 #pragma once
 
 #include "core.h"
+#include "modules/theme/themes.h"
 
 #define CONFIG_PATH "~/.config/cwal/cwal.ini"
 #define CONFIG_DIR "~/.config/cwal/"
@@ -22,6 +23,10 @@ typedef struct {
   COLOR_MODE mode;         // Theme mode (dark or light).
   SHADE_MODE cols16_mode;  // 16-color generation mode (darken or lighten).
   float alpha;             // Alpha value for the palette.
+  float saturation;        // Saturation adjustment.
+  float contrast;          // Contrast adjustment.
+  char *script_path;       // Path to a script to run after processing.
+  char *random_dir;        // Path to a directory for random image selection.
   char *out_dir;           // Output directory for generated files.
 } Config;
 
