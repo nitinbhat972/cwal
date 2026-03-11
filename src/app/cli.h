@@ -29,6 +29,8 @@ typedef struct {
     bool list_themes;       // Flag to list available themes.
     bool quiet;             // Flag to suppress all output.
     char *random_dir;       // Path to a directory for random image selection.
+    bool use_random_dir;    // Flag to use random image selection.
+    bool use_random_theme;  // Flag to use a random theme.
     RandomMode random_mode; // Mode for random theme selection.
     char *theme;            // Name of the theme to load.
     bool preview;           // show palette preview.

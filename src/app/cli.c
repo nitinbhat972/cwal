@@ -51,21 +51,23 @@ void print_usage(const char *prog_name) {
 }
 
 int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
-  args->image_path = NULL;        // Will be set by --img
-  args->mode = DARK;              // Default to DARK mode
-  args->cols16_mode = DARKEN;     // Default to DARKEN for 16-color generation
-  args->saturation = 0.0f;        // Default saturation
-  args->contrast = 1.0f;          // Default contrast
-  args->alpha = 1.0f;             // Default alpha
-  args->backend = strdup("cwal"); // Default backend
-  args->script_path = NULL;       // Will be set by --script
-  args->out_dir = strdup(config->out_dir); // Only out_dir is loaded from config
+  args->image_path = NULL;
+  args->mode = config->mode;
+  args->cols16_mode = config->cols16_mode;
+  args->saturation = config->saturation;
+  args->contrast = config->contrast;
+  args->alpha = config->alpha;
+  args->backend = strdup(config->backend ? config->backend : "cwal");
+  args->script_path = config->script_path ? strdup(config->script_path) : NULL;
+  args->out_dir = strdup(config->out_dir);
   args->no_reload = false;
   args->list_backends = false;
   args->list_themes = false;
   args->quiet = false;
-  args->random_dir = NULL;
-  args->random_mode = RANDOM_NONE;
+  args->random_dir = config->random_dir ? strdup(config->random_dir) : NULL;
+  args->use_random_dir = false;
+  args->use_random_theme = false;
+  args->random_mode = RANDOM_ALL;
   args->theme = NULL;
   args->preview = false;
 
@@ -83,7 +85,7 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       {"list-backends", no_argument, 0, 'l'},
       {"list-themes", no_argument, 0, 'd'},
       {"quiet", no_argument, 0, 'q'},
-      {"random", required_argument, 0, 'r'},
+      {"random", optional_argument, 0, 'r'},
       {"theme", required_argument, 0, 'e'},
       {"preview", no_argument, 0, 'v'},
       {"help", no_argument, 0, 'h'},
@@ -95,27 +97,27 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
 
   while ((opt = getopt_long(argc, argv, "", long_options, &long_index)) != -1) {
     switch (opt) {
-     case 'm':
-       if (strncmp(optarg, "dark", 5) == 0) {
-         args->mode = DARK;
-       } else if (strncmp(optarg, "light", 6) == 0) {
-         args->mode = LIGHT;
-       } else {
-         logging(ERROR, "Invalid mode: %s. Use 'dark' or 'light'.", optarg);
-         return 1;
-       }
-       break;
-     case 'c':
-       if (strncmp(optarg, "darken", 7) == 0) {
-         args->cols16_mode = DARKEN;
-       } else if (strncmp(optarg, "lighten", 8) == 0) {
-         args->cols16_mode = LIGHTEN;
-       } else {
-         logging(ERROR, "Invalid cols16-mode: %s. Use 'darken' or 'lighten'.",
-                 optarg);
+    case 'm':
+      if (strncmp(optarg, "dark", 5) == 0) {
+        args->mode = DARK;
+      } else if (strncmp(optarg, "light", 6) == 0) {
+        args->mode = LIGHT;
+      } else {
+        logging(ERROR, "Invalid mode: %s. Use 'dark' or 'light'.", optarg);
         return 1;
       }
       break;
+    case 'c':
+      if (strncmp(optarg, "darken", 7) == 0) {
+        args->cols16_mode = DARKEN;
+      } else if (strncmp(optarg, "lighten", 8) == 0) {
+        args->cols16_mode = LIGHTEN;
+      } else {
+        logging(ERROR, "Invalid cols16-mode: %s. Use 'darken' or 'lighten'.",
+                optarg);
+       return 1;
+     }
+     break;
     case 's':
       args->saturation = atof(optarg);
       break;
@@ -159,19 +161,30 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       args->quiet = true;
       break;
     case 'r':
-      free(args->random_dir);
-      args->random_dir = normalize_cli_path(optarg);
+      if (!optarg && optind < argc && argv[optind][0] != '-') {
+        optarg = argv[optind++];
+      }
+
+      if (optarg) {
+        free(args->random_dir);
+        args->random_dir = normalize_cli_path(optarg);
+      }
+      args->use_random_dir = true;
       break;
-     case 'e':
-       if (strncmp(optarg, "random_dark", 12) == 0) {
-         args->random_mode = RANDOM_DARK;
-       } else if (strncmp(optarg, "random_light", 13) == 0) {
-         args->random_mode = RANDOM_LIGHT;
-       } else if (strncmp(optarg, "random_all", 11) == 0) {
-         args->random_mode = RANDOM_ALL;
-       } else {
+    case 'e':
+      if (strncmp(optarg, "random_dark", 12) == 0) {
+        args->random_mode = RANDOM_DARK;
+        args->use_random_theme = true;
+      } else if (strncmp(optarg, "random_light", 13) == 0) {
+        args->random_mode = RANDOM_LIGHT;
+        args->use_random_theme = true;
+      } else if (strncmp(optarg, "random_all", 11) == 0) {
+        args->random_mode = RANDOM_ALL;
+        args->use_random_theme = true;
+      } else {
         free(args->theme);
         args->theme = strdup(optarg);
+        args->use_random_theme = false;
       }
       break;
     case 'v':
@@ -187,15 +200,23 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
   }
 
   if (!args->image_path && !args->list_backends && !args->list_themes &&
-      !args->random_dir && !args->preview && !args->theme &&
-      args->random_mode == RANDOM_NONE) {
+      !args->use_random_dir && !args->preview && !args->theme &&
+      !args->use_random_theme) {
     logging(ERROR, "Missing --img <image_path>, --random <directory>, or "
                    "--theme <theme_name> argument.");
     print_usage(argv[0]);
     return 1;
   }
 
-  if (args->image_path && args->random_dir) {
+  if (args->use_random_dir &&
+      (!args->random_dir || strlen(args->random_dir) == 0)) {
+    logging(ERROR, "No random directory specified. Please provide one via "
+                   "--random <dir> or set random_dir in your config.");
+    print_usage(argv[0]);
+    return 1;
+  }
+
+  if (args->image_path && args->random_dir && args->use_random_dir) {
     logging(ERROR,
             "Cannot use both --img and --random arguments simultaneously.");
     return 1;
