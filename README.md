@@ -11,7 +11,7 @@ alt="cwal showcase" width="700"/>
 ## ✨ Features
 
 - **Dynamic Color Generation**: Extracts a vibrant 16-color palette from any image
-- **Persistent Configuration**: Remembers your preferred settings (alpha, mode, saturation, etc.) across sessions using a structured INI file
+- **Persistent Configuration**: Remembers your preferred settings (alpha, mode, saturation, etc.) across sessions using a structured, XDG-compliant INI file
 - **Advanced Backend Support**: Utilizes `imagemagick` or `libimagequant` for efficient color quantization
 - **Lua Scripting Support**: Create custom backends using Lua scripts for advanced color quantization
 - **Extensive Customization**: Fine-tune saturation, contrast, alpha transparency, and theme mode (dark/light)
@@ -165,7 +165,9 @@ cwal --img /path/to/image.jpg --alpha 0.8 --saturation 0.1
 
 ## ⚙️ Configuration
 
-`cwal` uses a structured INI file located at `~/.config/cwal/cwal.ini` to store your preferences. Most CLI flags are automatically saved to this file, so you don't have to provide them every time.
+`cwal` follows the **XDG Base Directory Specification**.
+
+The structured INI file is located at `${XDG_CONFIG_HOME:-~/.config}/cwal/cwal.ini`. Most CLI flags are automatically saved to this file, so you don't have to provide them every time.
 
 ```ini
 [general]
@@ -183,16 +185,16 @@ cols16_mode = darken
 
 [random]
 random_dir = /home/user/Pictures/Wallpapers
-
 ```
 
 
 ## 🎨 Templates
 
-Templates are stored in:
+`cwal` searches for templates in the following order:
 
-- `/usr/local/share/cwal/templates` (system-wide)
-- `~/.config/cwal/templates` (user)
+1. `/usr/local/share/cwal/templates` (system-wide)
+2. `~/.local/share/cwal/templates` (user local)
+3. `${XDG_CONFIG_HOME:-~/.config}/cwal/templates` (user config)
 
 **Supported apps:**
 Terminal emulators (Alacritty, Kitty, Wezterm, Ghostty, Foot), window managers (i3, bspwm, Hyprland, Sway), system monitors (Btop), text editors (Vim, Neovim, VS Code), and more.
@@ -248,7 +250,7 @@ To create a custom backend:
 
 1. Create a Lua script with a `Main(image_path)` function that returns a table of 16 colors, each as `{r, g, b}` where `r`, `g`, `b` are integers 0-255.
 
-2. Place the script in `~/.config/cwal/backends/` (the directory will be created if it doesn't exist).
+2. Place the script in `${XDG_CONFIG_HOME:-~/.config}/cwal/backends/` (the directory will be created if it doesn't exist).
 
 3. Use the backend by its name (script filename without `.lua`) with `--backend <name>`.
 
