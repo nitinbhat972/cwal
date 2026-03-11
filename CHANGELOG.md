@@ -1,3 +1,27 @@
+## [0.5.0] - 2026-03-11
+
+### 🚀 Features
+
+- *(config)* Restructure INI file and add persistence for more options
+- *(cli)* Make --random argument optional and improve flag handling
+- *(core)* Implement theme-aware cols16 logic and config sync
+
+### 🚜 Refactor
+
+- Remove reload logic for nvim-colo-reload
+
+### 📚 Documentation
+
+- Add copyright headers and project atrribution
+
+### 🎨 Styling
+
+- Removed unnecessary header and blank line
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog
+- Remove 'Release' prefix from release title
 ## [0.4.1] - 2026-03-03
 
 ### 🚀 Features
