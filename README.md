@@ -479,6 +479,15 @@ end
 </details>
 
 
+## Name and Attribution
+
+The name "cwal" is the official project name for the upstream repository:
+https://github.com/nitinbhat972/cwal
+
+If you distribute modified versions of this project, please use a different
+name to avoid confusion with the original project.
+
+
 ## 🤝 Contributing
 
 Report issues, request features, or contribute via PRs. See the GitHub repository for more info.
