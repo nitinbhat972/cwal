@@ -198,7 +198,9 @@ int process_template(const char *output_dir, const Palette *palette) {
   // Define template search paths
   const char *system_template_dir = "/usr/local/share/cwal/templates/";
   char *user_local_template_dir = expand_home("~/.local/share/cwal/templates/");
-  char *user_config_template_dir = expand_home("~/.config/cwal/templates/");
+  char *config_home = get_config_home();
+  char *user_config_template_dir = build_path(config_home, "cwal", "templates");
+  free(config_home);
 
   const char *template_dirs[] = {system_template_dir, user_local_template_dir,
                                  user_config_template_dir};

@@ -13,8 +13,8 @@
 #include <dirent.h>
 #include <errno.h>
 #include <limits.h>
-#include <strings.h>
 #include <stdarg.h>
+#include <strings.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -51,6 +51,22 @@ char *expand_home(const char *path) {
   }
 
   return strdup(path);
+}
+
+char *get_config_home(void) {
+  char *xdg_config = getenv("XDG_CONFIG_HOME");
+  if (xdg_config && strlen(xdg_config) > 0) {
+    return strdup(xdg_config);
+  }
+  return expand_home("~/.config");
+}
+
+char *get_cache_home(void) {
+  char *xdg_cache = getenv("XDG_CACHE_HOME");
+  if (xdg_cache && strlen(xdg_cache) > 0) {
+    return strdup(xdg_cache);
+  }
+  return expand_home("~/.cache");
 }
 
 static int mkdir_p(const char *path, mode_t mode) {
@@ -193,20 +209,58 @@ char *normalize_cli_path(const char *path) {
   return expanded_path;
 }
 
-char *build_path(const char *path1, const char *path2) {
-  size_t len1 = strlen(path1);
-  size_t len2 = strlen(path2);
-  char *new_path = malloc(len1 + len2 + 2);
-  if (!new_path) {
+char *build_path_internal(const char *first, ...) {
+  if (!first)
+    return NULL;
+
+  const char *separator = "/";
+  size_t total_len = strlen(first);
+
+  va_list args;
+  va_start(args, first);
+  const char *next = va_arg(args, const char *);
+  while (next) {
+    total_len += strlen(separator) + strlen(next);
+    next = va_arg(args, const char *);
+  }
+  va_end(args);
+
+  char *result = malloc(total_len + 1);
+  if (!result) {
     logging(ERROR, "Memory allocation failed for build_path.\n");
     return NULL;
   }
-  snprintf(new_path, len1 + len2 + 2, "%s", path1);
-  if (new_path[len1 - 1] != '/' && path2[0] != '/') {
-    snprintf(new_path + strlen(new_path), len1 + len2 + 2 - strlen(new_path),
-             "%s", "/");
+
+  strcpy(result, first);
+  size_t res_len = strlen(result);
+  if (res_len > 0 && result[res_len - 1] == '/') {
+    result[--res_len] = '\0';
   }
-  snprintf(new_path + strlen(new_path), len1 + len2 + 2 - strlen(new_path),
-           "%s", path2);
-  return new_path;
+
+  va_start(args, first);
+  next = va_arg(args, const char *);
+  while (next) {
+    if (strlen(next) == 0) {
+      next = va_arg(args, const char *);
+      continue;
+    }
+
+    strcat(result, separator);
+    
+    const char *to_add = next;
+    if (to_add[0] == '/') {
+      to_add++;
+    }
+    strcat(result, to_add);
+
+    res_len = strlen(result);
+    if (res_len > 0 && result[res_len - 1] == '/') {
+      result[--res_len] = '\0';
+    }
+
+    next = va_arg(args, const char *);
+  }
+  va_end(args);
+
+  return result;
 }

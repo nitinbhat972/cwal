@@ -11,7 +11,10 @@
 #pragma once
 
 char *expand_home(const char *path);
+char *get_config_home(void);
+char *get_cache_home(void);
 int validate_or_create_dir(const char *dir_in);
 char *get_random_image_path(const char *directory);
 char *normalize_cli_path(const char *path);
-char *build_path(const char *path1, const char *path2);
+char *build_path_internal(const char *first, ...);
+#define build_path(...) build_path_internal(__VA_ARGS__, NULL)

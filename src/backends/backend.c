@@ -56,10 +56,14 @@ static char *get_script_name(const char *filepath) {
 }
 
 static void scan_lua_backends(void) {
-  char *backends_dir = expand_home(CUSTOM_BACKEND_DIR);
+  char *config_home = get_config_home();
+  char *backends_dir = build_path(config_home, "cwal", "backends");
+  free(config_home);
+
   if (!backends_dir)
     return;
-  if (validate_or_create_dir(CUSTOM_BACKEND_DIR) != 0) {
+
+  if (validate_or_create_dir(backends_dir) != 0) {
     free(backends_dir);
     return;
   }

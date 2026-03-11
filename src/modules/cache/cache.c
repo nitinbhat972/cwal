@@ -47,7 +47,9 @@ void save_palette_to_cache(const Palette *palette, const char *cache_dir,
   generate_cache_filename(cache_filepath, sizeof(cache_filepath), palette,
                           cache_dir, backend_name);
 
-  char *cache_dir_path = build_path(expand_home(cache_dir), "schemes");
+  char *home_cache = expand_home(cache_dir);
+  char *cache_dir_path = build_path(home_cache, "schemes");
+  free(home_cache);
 
   if (validate_or_create_dir(cache_dir_path) != 0) {
     logging(ERROR, "Failed to create cache directory: %s", cache_dir_path);

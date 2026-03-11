@@ -20,7 +20,9 @@
 #include <time.h>
 
 static char **get_theme_dirs() {
-  char *user_config_themes = expand_home("~/.config/cwal/themes");
+  char *config_home = get_config_home();
+  char *user_config_themes = build_path(config_home, "cwal", "themes");
+  free(config_home);
   char *user_local_themes = expand_home("~/.local/share/cwal/themes");
 
   const char *theme_dirs[] = {user_config_themes, user_local_themes,

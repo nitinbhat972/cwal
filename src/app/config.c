@@ -18,7 +18,6 @@
 static void parse_key_value(Config *config, const char *key,
                             const char *value) {
   if (strncmp(key, "out_dir", 8) == 0) {
-    // If value is empty, do not update, keep default
     if (strlen(value) > 0) {
       free(config->out_dir);
       config->out_dir = expand_home(value);
@@ -142,7 +141,10 @@ Config *load_config(void) {
   }
 
   // Set default values (these can be overridden by CLI arguments)
-  config->out_dir = expand_home("~/.cache/cwal/"); // Default out_dir
+  char *cache_home = get_cache_home();
+  config->out_dir = build_path(cache_home, "cwal");
+  free(cache_home);
+
   config->current_wallpaper = NULL;
   config->backend = NULL;
   config->mode = DARK;
@@ -153,13 +155,16 @@ Config *load_config(void) {
   config->script_path = NULL;
   config->random_dir = NULL;
 
-  char *expanded_path = expand_home(CONFIG_PATH);
+  char *config_home = get_config_home();
+  char *expanded_path = build_path(config_home, "cwal", "cwal.ini");
   FILE *file = fopen(expanded_path, "r");
   if (!file) {
-    logging(WARN, "Config file not found, using default values.");
+    logging(WARN, "Config file not found (%s), using default values.", expanded_path);
+    free(config_home);
     free(expanded_path);
     return config;
   }
+  free(config_home);
 
   char line[MAX_LINE_LENGTH];
   char section[64] = "";
@@ -207,20 +212,24 @@ Config *load_config(void) {
 }
 
 void save_config(const Config *config) {
-  char *expanded_path = expand_home(CONFIG_PATH);
-  char *config_dir_path = expand_home(CONFIG_DIR);
+  char *config_home = get_config_home();
+  char *config_dir_path = build_path(config_home, "cwal");
+  char *expanded_path = build_path(config_dir_path, "cwal.ini");
+
   if (validate_or_create_dir(config_dir_path) != 0) {
     logging(ERROR, "Failed to create config directory: %s", config_dir_path);
     free(config_dir_path);
+    free(config_home);
     free(expanded_path);
     return;
   }
   create_config_subdirectories(config_dir_path);
-  free(config_dir_path);
 
   FILE *file = fopen(expanded_path, "w");
   if (!file) {
     logging(ERROR, "Failed to open config file for writing: %s", expanded_path);
+    free(config_dir_path);
+    free(config_home);
     free(expanded_path);
     return;
   }
@@ -245,8 +254,10 @@ void save_config(const Config *config) {
   fprintf(file, "random_dir = %s\n", config->random_dir ? config->random_dir : "");
 
   fclose(file);
+  logging(INFO, "Config saved to %s", expanded_path);
+  free(config_dir_path);
+  free(config_home);
   free(expanded_path);
-  logging(INFO, "Config saved to %s", CONFIG_PATH);
 }
 
 void free_config(Config *config) {

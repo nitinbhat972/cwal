@@ -12,8 +12,6 @@
 #include "color/image.h"
 #include "core.h"
 
-#define CUSTOM_BACKEND_DIR "~/.config/cwal/backends"
-
 typedef struct {
   const char *name;
   void (*init_backend)(void);
