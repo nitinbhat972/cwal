@@ -5,20 +5,20 @@ colors:
     foreground: "{foreground}"
 
   cursor:
-    text: CellBackground
-    cursor: CellForeground
+    text: "{background}"
+    cursor: "{foreground}"
 
   vi_mode_cursor:
-    text: CellBackground
-    cursor: CellForeground
+    text: "{background}"
+    cursor: "{foreground}"
 
   search:
     matches:
       foreground: '{color0}'
       background: '{color15}'
     focused_match:
-      foreground: CellBackground
-      background: CellForeground
+      foreground: "{background}"
+      background: "{color1}"
 
   line_indicator:
     foreground: None
@@ -29,8 +29,8 @@ colors:
     background: '{color7}'
 
   selection:
-    text: CellBackground
-    background: CellForeground
+    text: "{background}"
+    background: "{color1}"
 
   normal:
     black: "{color0}"
