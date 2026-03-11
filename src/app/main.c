@@ -76,7 +76,7 @@ int main(int argv, char **argc) {
   palette.contrast = args.contrast;
   palette.alpha = args.alpha;
 
-  if (args.random_mode != RANDOM_NONE) {
+  if (args.use_random_theme) {
     if (load_random_theme(&palette, args.random_mode) != 0) {
       free_config(app_config);
       free_cli_args(&args);
@@ -91,8 +91,12 @@ int main(int argv, char **argc) {
     }
     palette.cols16_mode = NONE;
   } else {
+    if (palette.cols16_mode == NONE) {
+      palette.cols16_mode = DARKEN;
+    }
+
     char *image_to_process_path = NULL;
-    if (args.random_dir) {
+    if (args.use_random_dir) {
       image_to_process_path = get_random_image_path(args.random_dir);
       if (!image_to_process_path) {
         free_config(app_config);
@@ -164,8 +168,19 @@ int main(int argv, char **argc) {
   app_config->mode = palette.mode;
   app_config->cols16_mode = palette.cols16_mode;
   app_config->alpha = palette.alpha;
+  app_config->saturation = palette.saturation;
+  app_config->contrast = palette.contrast;
+
   free(app_config->backend);
   app_config->backend = strdup(args.backend);
+
+  free(app_config->script_path);
+  app_config->script_path = args.script_path ? strdup(args.script_path) : NULL;
+
+  if (args.random_dir) {
+    free(app_config->random_dir);
+    app_config->random_dir = strdup(args.random_dir);
+  }
 
   // Saves the config
   save_config(app_config);
