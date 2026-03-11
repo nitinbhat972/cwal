@@ -16,7 +16,7 @@
     in {
       packages.default = pkgs.stdenv.mkDerivation {
         pname = "cwal";
-        version = "0.1.0";
+        version = "0.5.0";
 
         src = ./.;
 
@@ -28,39 +28,34 @@
         buildInputs = with pkgs; [
           imagemagick
           libimagequant
+          lua
         ];
 
         cmakeFlags = [
           "-DCMAKE_BUILD_TYPE=Release"
         ];
 
-        installPhase = ''
-          runHook preInstall
-
-          mkdir -p $out/bin
-          cp cwal $out/bin/
-
-          if [ -d ../templates ]; then
-            mkdir -p $out/share/cwal
-            cp -r ../templates $out/share/cwal/
-          fi
-
-          runHook postInstall
-        '';
-
+        # Use standard install phase from CMake
+        # No need for manual cp if CMakeLists.txt has install() rules
+        
         meta = with pkgs.lib; {
-          description = "CWAL - Blazing-fast pywal-like color palette generator written in C";
-          license = licenses.gpl3;
-          platforms = platforms.linux;
+          description = "Blazing-fast pywal-like color palette generator written in C";
+          homepage = "https://github.com/nitinbhat972/cwal";
+          license = licenses.gpl3Only;
+          platforms = platforms.linux ++ platforms.darwin;
+          mainProgram = "cwal";
         };
       };
 
       devShells.default = pkgs.mkShell {
-        buildInputs = with pkgs; [
+        nativeBuildInputs = with pkgs; [
           cmake
           pkg-config
+        ];
+        buildInputs = with pkgs; [
           imagemagick
           libimagequant
+          lua
           gdb
           valgrind
         ];
