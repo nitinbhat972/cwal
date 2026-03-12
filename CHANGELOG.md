@@ -1,3 +1,21 @@
+## [0.6.0] - 2026-03-12
+
+### 🚀 Features
+
+- *(core)* Implement XDG compliance and variadic path builder
+- *(core)* Implement full XDG compliance and variadic path builder
+
+### 📚 Documentation
+
+- Update readme
+- Update paths and configuration details for XDG compliance
+- Update README for XDG information
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog for v0.5.0
+- Fix previous tag detection in release workflow
+- Update flake.nix for v0.5.0
 ## [0.5.0] - 2026-03-11
 
 ### 🚀 Features
