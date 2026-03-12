@@ -1,0 +1,52 @@
+.theme-dark {
+
+--background-primary: {background};
+--background-primary-alt: {background};
+--background-secondary: {color0};
+--background-secondary-alt: {color0};
+
+--background-primary-rgb: {background-rgb};
+--background-secondary-rgb: {background-rgb};
+
+--text-normal: {foreground};
+--text-muted: {color7};
+--text-faint: {color8};
+
+--interactive-accent: {color4};
+--interactive-accent-hover: {color5};
+--interactive-accent-rgb: {color4-rgb};
+
+--text-accent: {color4};
+--text-accent-rgb: {color4-rgb};
+
+--divider-color: {color8};
+
+--background-modifier-border: {color8}33;
+--background-modifier-border-hover: {color4}44;
+--background-modifier-active-hover: {color4}22;
+
+--background-modifier-form-field: {color0};
+
+--text-selection: {color4}44;
+
+--code-normal: {color3};
+--code-background: {color0};
+
+--link-color: {color4};
+--link-color-hover: {color6};
+
+--tag-color: {color5};
+--tag-background: {color5}22;
+
+--h1-color: {color4};
+--h2-color: {color5};
+--h3-color: {color6};
+--h4-color: {color7};
+
+--scrollbar-bg: {background};
+--scrollbar-thumb-bg: {color8};
+--scrollbar-active-thumb-bg: {color4};
+
+--caret-color: {color4};
+
+}
