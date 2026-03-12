@@ -69,6 +69,52 @@ char *get_cache_home(void) {
   return expand_home("~/.cache");
 }
 
+char *get_data_home(void) {
+  char *xdg_data = getenv("XDG_DATA_HOME");
+  if (xdg_data && strlen(xdg_data) > 0) {
+    return strdup(xdg_data);
+  }
+  return expand_home("~/.local/share");
+}
+
+char **get_data_dirs(void) {
+  const char *env = getenv("XDG_DATA_DIRS");
+  if (!env || strlen(env) == 0) {
+    env = "/usr/local/share:/usr/share";
+  }
+
+  char *env_copy = strdup(env);
+  if (!env_copy)
+    return NULL;
+
+  int count = 0;
+  char *temp = env_copy;
+  while (*temp) {
+    if (*temp == ':')
+      count++;
+    temp++;
+  }
+  count++; // Add one for the last element
+
+  char **dirs = malloc(sizeof(char *) * (count + 1));
+  if (!dirs) {
+    free(env_copy);
+    return NULL;
+  }
+
+  int i = 0;
+  char *saveptr;
+  char *token = strtok_r(env_copy, ":", &saveptr);
+  while (token != NULL) {
+    dirs[i++] = strdup(token);
+    token = strtok_r(NULL, ":", &saveptr);
+  }
+  dirs[i] = NULL;
+
+  free(env_copy);
+  return dirs;
+}
+
 static int mkdir_p(const char *path, mode_t mode) {
   char tmp[PATH_MAX];
   char *p = NULL;

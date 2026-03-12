@@ -20,22 +20,35 @@
 #include <time.h>
 
 static char **get_theme_dirs() {
+  char **dirs = NULL;
+  int count = 0;
+
   char *config_home = get_config_home();
-  char *user_config_themes = build_path(config_home, "cwal", "themes");
-  free(config_home);
-  char *user_local_themes = expand_home("~/.local/share/cwal/themes");
-
-  const char *theme_dirs[] = {user_config_themes, user_local_themes,
-                              "/usr/local/share/cwal/themes", NULL};
-
-  char **dirs = malloc(sizeof(char *) * 4);
-  for (int i = 0; theme_dirs[i] != NULL; i++) {
-    dirs[i] = strdup(theme_dirs[i]);
+  if (config_home) {
+    dirs = realloc(dirs, sizeof(char *) * (count + 1));
+    dirs[count++] = build_path(config_home, "cwal", "themes");
+    free(config_home);
   }
-  dirs[3] = NULL;
 
-  free(user_config_themes);
-  free(user_local_themes);
+  char *data_home = get_data_home();
+  if (data_home) {
+    dirs = realloc(dirs, sizeof(char *) * (count + 1));
+    dirs[count++] = build_path(data_home, "cwal", "themes");
+    free(data_home);
+  }
+
+  char **system_dirs = get_data_dirs();
+  if (system_dirs) {
+    for (int i = 0; system_dirs[i] != NULL; i++) {
+      dirs = realloc(dirs, sizeof(char *) * (count + 1));
+      dirs[count++] = build_path(system_dirs[i], "cwal", "themes");
+      free(system_dirs[i]);
+    }
+    free(system_dirs);
+  }
+
+  dirs = realloc(dirs, sizeof(char *) * (count + 1));
+  dirs[count] = NULL;
 
   return dirs;
 }
@@ -46,9 +59,6 @@ int load_theme(Palette *palette, const char *theme_name) {
   FILE *file = NULL;
 
   for (int i = 0; theme_dirs[i] != NULL; i++) {
-    if (!theme_dirs[i])
-      continue;
-
     struct stat st;
     if (stat(theme_dirs[i], &st) != 0 || !S_ISDIR(st.st_mode)) {
       continue;
@@ -121,9 +131,6 @@ int load_random_theme(Palette *palette, RandomMode mode) {
   int count = 0;
 
   for (int i = 0; theme_dirs[i] != NULL; i++) {
-    if (!theme_dirs[i])
-      continue;
-
     struct stat st;
     if (stat(theme_dirs[i], &st) != 0 || !S_ISDIR(st.st_mode)) {
       continue;
@@ -195,9 +202,6 @@ void list_themes() {
   char **theme_dirs = get_theme_dirs();
 
   for (int i = 0; theme_dirs[i] != NULL; i++) {
-    if (!theme_dirs[i])
-      continue;
-
     struct stat st;
     if (stat(theme_dirs[i], &st) != 0 || !S_ISDIR(st.st_mode)) {
       continue;

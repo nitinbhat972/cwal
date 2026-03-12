@@ -192,19 +192,52 @@ static void replacement(FILE *in, FILE *out, const Palette *palette) {
   free(result);
 }
 
+static void process_dir(const char *current_dir, const char *out_base, const Palette *palette) {
+  struct stat st = {0};
+  if (stat(current_dir, &st) == -1 || !S_ISDIR(st.st_mode)) {
+    return;
+  }
+
+  logging(INFO, "Processing templates from %s", current_dir);
+  DIR *dir;
+  struct dirent *entry;
+
+  if ((dir = opendir(current_dir)) != NULL) {
+    while ((entry = readdir(dir)) != NULL) {
+      if (entry->d_name[0] == '.')
+        continue;
+
+      char *in_path = build_path(current_dir, entry->d_name);
+      char *out_path = build_path(out_base, entry->d_name);
+
+      FILE *in = fopen(in_path, "r");
+      if (!in) {
+        logging(WARN, "Could not open template file %s", in_path);
+        free(in_path);
+        free(out_path);
+        continue;
+      }
+      FILE *out_file = fopen(out_path, "w");
+      if (!out_file) {
+        logging(WARN, "Could not open output file %s for template %s",
+                out_path, entry->d_name);
+        fclose(in);
+        free(in_path);
+        free(out_path);
+        continue;
+      }
+      replacement(in, out_file, palette);
+      fclose(in);
+      fclose(out_file);
+      free(in_path);
+      free(out_path);
+    }
+    closedir(dir);
+  }
+}
+
 int process_template(const char *output_dir, const Palette *palette) {
   char *out_base = build_path(output_dir, "");
-
-  // Define template search paths
-  const char *system_template_dir = "/usr/local/share/cwal/templates/";
-  char *user_local_template_dir = expand_home("~/.local/share/cwal/templates/");
-  char *config_home = get_config_home();
-  char *user_config_template_dir = build_path(config_home, "cwal", "templates");
-  free(config_home);
-
-  const char *template_dirs[] = {system_template_dir, user_local_template_dir,
-                                 user_config_template_dir};
-  int num_template_dirs = sizeof(template_dirs) / sizeof(template_dirs[0]);
 
   if (validate_or_create_dir(out_base) == -1) {
     logging(ERROR, "Failed to validate or create output directory: %s",
@@ -213,59 +246,30 @@ int process_template(const char *output_dir, const Palette *palette) {
     return 1;
   }
 
-  for (int i = 0; i < num_template_dirs; ++i) {
-    const char *current_template_dir = template_dirs[i];
-    if (current_template_dir == NULL) {
-      continue;
+  // 1. Process System Data Directories (XDG_DATA_DIRS)
+  char **system_dirs = get_data_dirs();
+  if (system_dirs) {
+    for (int i = 0; system_dirs[i] != NULL; i++) {
+      char *full_path = build_path(system_dirs[i], "cwal", "templates");
+      process_dir(full_path, out_base, palette);
+      free(full_path);
+      free(system_dirs[i]);
     }
-
-    struct stat st = {0};
-    if (stat(current_template_dir, &st) == -1 || !S_ISDIR(st.st_mode)) {
-      logging(INFO, "Skipping non-existent template directory: %s",
-              current_template_dir);
-      continue;
-    }
-
-    logging(INFO, "Processing templates from %s", current_template_dir);
-    DIR *dir;
-    struct dirent *entry;
-
-    if ((dir = opendir(current_template_dir)) != NULL) {
-      while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_name[0] == '.')
-          continue;
-
-        char *in_path = build_path(current_template_dir, entry->d_name);
-        char *out_path = build_path(out_base, entry->d_name);
-
-        FILE *in = fopen(in_path, "r");
-        if (!in) {
-          logging(WARN, "Could not open template file %s", in_path);
-          free(in_path);
-          free(out_path);
-          continue;
-        }
-        FILE *out_file = fopen(out_path, "w");
-        if (!out_file) {
-          logging(WARN, "Could not open output file %s for template %s",
-                  out_path, entry->d_name);
-          fclose(in);
-          free(in_path);
-          free(out_path);
-          continue;
-        }
-        replacement(in, out_file, palette);
-        fclose(in);
-        fclose(out_file);
-        free(in_path);
-        free(out_path);
-      }
-      closedir(dir);
-    }
+    free(system_dirs);
   }
 
-  // Free memory allocated by expand_home
+  // 2. Process User Local Data (XDG_DATA_HOME)
+  char *data_home = get_data_home();
+  char *user_local_template_dir = build_path(data_home, "cwal", "templates");
+  process_dir(user_local_template_dir, out_base, palette);
+  free(data_home);
   free(user_local_template_dir);
+
+  // 3. Process User Config (XDG_CONFIG_HOME)
+  char *config_home = get_config_home();
+  char *user_config_template_dir = build_path(config_home, "cwal", "templates");
+  process_dir(user_config_template_dir, out_base, palette);
+  free(config_home);
   free(user_config_template_dir);
 
   char *out_path = build_path(out_base, "sequences");
