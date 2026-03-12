@@ -192,8 +192,8 @@ random_dir = /home/user/Pictures/Wallpapers
 
 `cwal` searches for templates in the following order:
 
-1. `/usr/local/share/cwal/templates` (system-wide)
-2. `~/.local/share/cwal/templates` (user local)
+1. `${XDG_DATA_DIRS:-/usr/local/share:/usr/share}/cwal/templates` (system-wide)
+2. `${XDG_DATA_HOME:-~/.local/share}/cwal/templates` (user local)
 3. `${XDG_CONFIG_HOME:-~/.config}/cwal/templates` (user config)
 
 **Supported apps:**
