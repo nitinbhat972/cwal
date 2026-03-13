@@ -54,7 +54,6 @@ alt="cwal showcase" width="700"/>
 ## 🚀 Installation
 
 
-
 `cwal` requires `imagemagick`, `libimagequant`, and `lua` as dependencies.
 
 ### Prerequisites
@@ -242,7 +241,7 @@ done
 ```
 
 
-## Lua Scripting Support
+## 🧩 Lua Scripting Support
 
 cwal now supports custom backends using Lua scripts. This allows you to implement your own color quantization algorithms or image processing techniques.
 
@@ -501,7 +500,17 @@ end
 </details>
 
 
-## Name and Attribution
+## 🐚 Shell Completions
+
+`cwal` includes comprehensive, XDG-compliant completion scripts for **Bash**, **Zsh**, and **Fish**. These scripts provide smart suggestions for flags, theme names, and image files.
+
+- **Zsh**: Ensure `/usr/local/share/zsh/site-functions` is in your `$fpath`.
+- **Fish**: Completions are installed to `/usr/local/share/fish/vendor_completions.d/` and work automatically.
+- **Bash**: Ensure the `bash-completion` package is installed.
+
+For manual installation, you can source the scripts located in the `shell/` directory.
+
+## 🖊 Name and Attribution
 
 The name "cwal" is the official project name for the upstream repository:
 https://github.com/nitinbhat972/cwal
@@ -526,3 +535,4 @@ Licensed under GNU GPL v3.0 — always free and open-source.
 - [pywal](https://github.com/dylanaraps/pywal) by [dylanaraps](https://github.com/dylanaraps)
 
 - [pywal16](https://github.com/eylles/pywal16) by [eylles](https://github.com/eylles)
+
