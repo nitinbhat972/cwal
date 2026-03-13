@@ -1,0 +1,79 @@
+#
+#  cwal: Blazing-fast pywal-like color palette generator written in C.
+#  Copyright (c) 2026 Nitin Bhat <nitinbhat972@gmail.com>
+#  Repository: https://github.com/nitinbhat972/cwal
+#
+#  Licensed under the GNU General Public License v3.0.
+#  If you find this code useful, please consider giving it a star on GitHub!
+#  Any contributions or forks must retain this original header.
+#
+
+_cwal_completions() {
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    opts="--mode --cols16-mode --saturation --contrast --alpha --out-dir --backend --img --script --no-reload --list-backends --list-themes --quiet --random --theme --preview --help"
+
+    case "$prev" in
+        --mode)
+            COMPREPLY=( $(compgen -W "dark light" -- "$cur") )
+            return 0
+            ;;
+        --cols16-mode)
+            COMPREPLY=( $(compgen -W "darken lighten" -- "$cur") )
+            return 0
+            ;;
+        --theme)
+            local themes="random_dark random_light random_all "
+            local config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+            local data_home="${XDG_DATA_HOME:-$HOME/.local/share}"
+            local xdg_dirs="${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+            
+            local search_dirs=("$config_home/cwal/themes" "$data_home/cwal/themes")
+            IFS=':' read -ra ADDR <<< "$xdg_dirs"
+            for dir in "${ADDR[@]}"; do
+                search_dirs+=("$dir/cwal/themes")
+            done
+
+            for base in "${search_dirs[@]}"; do
+                for mode in "dark" "light"; do
+                    local dir="$base/$mode"
+                    if [[ -d "$dir" ]]; then
+                        themes+="$(ls "$dir" | sed 's/\.cwal$//') "
+                    fi
+                done
+            done
+            COMPREPLY=( $(compgen -W "$themes" -- "$cur") )
+            return 0
+            ;;
+        --backend)
+            local backends="cwal libimagequant "
+            local config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
+            if [[ -d "$config_home/cwal/backends" ]]; then
+                backends+="$(ls "$config_home/cwal/backends" | sed 's/\.lua$//') "
+            fi
+            COMPREPLY=( $(compgen -W "$backends" -- "$cur") )
+            return 0
+            ;;
+        --img)
+            COMPREPLY=( $(compgen -f -X '!*@(.jpg|.jpeg|.png|.gif|.webp)' -- "$cur") )
+            return 0
+            ;;
+        --out-dir|--random)
+            COMPREPLY=( $(compgen -d -- "$cur") )
+            return 0
+            ;;
+        --script)
+            COMPREPLY=( $(compgen -f -- "$cur") )
+            return 0
+            ;;
+    esac
+
+    if [[ "$cur" == -* ]]; then
+        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+        return 0
+    fi
+}
+
+complete -F _cwal_completions cwal

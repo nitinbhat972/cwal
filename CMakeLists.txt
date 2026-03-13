@@ -70,3 +70,8 @@ target_compile_options(cwal PRIVATE
 install(TARGETS cwal DESTINATION bin)
 install(DIRECTORY templates DESTINATION share/cwal)
 install(DIRECTORY themes DESTINATION share/cwal)
+
+# Install shell completions
+install(FILES shell/bash/cwal DESTINATION share/bash-completion/completions)
+install(FILES shell/zsh/_cwal DESTINATION share/zsh/site-functions)
+install(FILES shell/fish/cwal.fish DESTINATION share/fish/vendor_completions.d)

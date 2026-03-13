@@ -1,0 +1,67 @@
+#compdef cwal
+#
+#  cwal: Blazing-fast pywal-like color palette generator written in C.
+#  Copyright (c) 2026 Nitin Bhat <nitinbhat972@gmail.com>
+#  Repository: https://github.com/nitinbhat972/cwal
+#
+#  Licensed under the GNU General Public License v3.0.
+#  If you find this code useful, please consider giving it a star on GitHub!
+#  Any contributions or forks must retain this original header.
+#
+
+_cwal_get_themes() {
+    local -a themes
+    local -a search_dirs
+    
+    search_dirs=(
+        "${XDG_CONFIG_HOME:-$HOME/.config}/cwal/themes"
+        "${XDG_DATA_HOME:-$HOME/.local/share}/cwal/themes"
+    )
+    
+    local xdg_dirs="${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+    for dir in ${(s.:.)xdg_dirs}; do
+        search_dirs+=("$dir/cwal/themes")
+    done
+
+    for base_dir in $search_dirs; do
+        for mode_dir in "dark" "light"; do
+            local dir="$base_dir/$mode_dir"
+            if [[ -d $dir ]]; then
+                themes+=($(ls $dir | sed 's/\.cwal$//'))
+            fi
+        done
+    done
+    
+    themes+=(random_dark random_light random_all)
+    _describe 'theme' themes
+}
+
+_cwal_get_backends() {
+    local -a backends
+    backends=(cwal libimagequant)
+    
+    local backend_dir="${XDG_CONFIG_HOME:-$HOME/.config}/cwal/backends"
+    if [[ -d $backend_dir ]]; then
+        backends+=($(ls $backend_dir | sed 's/\.lua$//'))
+    fi
+    _describe 'backend' backends
+}
+
+_arguments \
+    '--mode[Set theme mode (required)]:mode:(dark light)' \
+    '--cols16-mode[Set 16-color mode (required)]:cols16:(darken lighten)' \
+    '--saturation[Overall saturation (required)]:float:' \
+    '--contrast[Contrast ratio (required)]:float:' \
+    '--alpha[Alpha transparency (required)]:float:' \
+    '--out-dir[Output directory (required)]:path:_directories' \
+    '--backend[Processing backend (required)]:backend:_cwal_get_backends' \
+    '--img[Specify image path (required)]:image:_files -g "*.(jpg|jpeg|png|gif|webp)"' \
+    '--script[Run custom script (required)]:script:_files' \
+    '--no-reload[Disable reloading]' \
+    '--list-backends[List available backends]' \
+    '--list-themes[List available themes]' \
+    '--quiet[Suppress all output]' \
+    '--random[Select random image (optional)]::directory:_directories' \
+    '--theme[Select a theme (required)]:theme:_cwal_get_themes' \
+    '--preview[Show palette preview]' \
+    '--help[Display help message]'
