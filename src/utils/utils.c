@@ -11,6 +11,7 @@
 #include "utils.h"
 #include "color/color_operation.h"
 #include "core.h"
+#include <pthread.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -21,6 +22,7 @@
 #include <unistd.h>
 
 static bool quiet_mode = false;
+static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 float clamp_value(float amount) {
   if (amount < 0.0f)
@@ -112,6 +114,8 @@ void logging(int log_level, const char *format, ...) {
     return;
   }
 
+  pthread_mutex_lock(&log_mutex);
+
   static const char *color[] = {BLUE, YELLOW, RED};
   static const char type[] = {'I', 'W', 'E'};
   static const int max_level = sizeof(type) / sizeof(type[0]);
@@ -125,4 +129,6 @@ void logging(int log_level, const char *format, ...) {
   vprintf(format, args);
   printf("\n");
   va_end(args);
+
+  pthread_mutex_unlock(&log_mutex);
 }
