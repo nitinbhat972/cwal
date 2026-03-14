@@ -1,3 +1,23 @@
+## [0.7.0] - 2026-03-14
+
+### 🚀 Features
+
+- *(templates)* Add obsidian theme tempalte
+- *(cli)* Add bash, zsh and fish completions
+- *(core)* Implement threaded reloader, surgical injection, and XDG compliance
+- *(utils)* Implement thread-safe logging using mutexes
+- *(hooks)* Implement dynamic placeholder substitution ($current_wallpaper) and execution refactor
+
+### 📚 Documentation
+
+- Add shell completions information
+- Document surgical config injection and script placeholder substitution
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog for v0.6.0
+- Update flake.nix to 0.7.0
+- Bump version to v0.7.0
 ## [0.6.0] - 2026-03-12
 
 ### 🚀 Features
