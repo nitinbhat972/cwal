@@ -11,7 +11,10 @@ alt="cwal showcase" width="700"/>
 ## ✨ Features
 
 - **Dynamic Color Generation**: Extracts a vibrant 16-color palette from any image
+- **Parallel Processing**: Uses a multi-threaded engine for blazing-fast template generation and application reloading
+- **Surgical Config Injection**: Update specific sections of your existing configuration files without losing manual edits
 - **Persistent Configuration**: Remembers your preferred settings (alpha, mode, saturation, etc.) across sessions using a structured, XDG-compliant INI file
+- **XDG Compliant**: Follows the XDG Base Directory Specification for config, cache, and data
 - **Advanced Backend Support**: Utilizes `imagemagick` or `libimagequant` for efficient color quantization
 - **Lua Scripting Support**: Create custom backends using Lua scripts for advanced color quantization
 - **Extensive Customization**: Fine-tune saturation, contrast, alpha transparency, and theme mode (dark/light)
@@ -20,6 +23,7 @@ alt="cwal showcase" width="700"/>
 - **Palette Preview**: View the generated color palette directly in your terminal
 - **Random Image Selection**: Automatically pick a random image from a directory (remembers your last directory)
 - **Theme Management**: Load predefined themes or select random themes with automatic generation bypass
+- **Shell Completions**: Smart completion scripts for Bash, Zsh, and Fish
 
 
 ## 🖼️ Showcase
@@ -60,7 +64,18 @@ alt="cwal showcase" width="700"/>
 
 Ensure the following libraries are installed on your system:
 
-- `imagemagick`
+- `imagemagick`[I]: Selected random image: /home/jokerop/Pictures/Wallpaper/wallhaven-exmxpw_1920x1080.png
+[I]: Found cache: /home/jokerop/.cache/cwal//schemes/wallhaven-exmxpw_1920x1080.png_dark_darken_s0.00_c1.00_a1.00_cwal.cwal
+[I]: Processing templates from /usr/local/share/cwal/templates
+[I]: Processing templates from /home/jokerop/.config/cwal/templates
+[I]: [I]: Replacing file: /home/jokerop/.config/dunst/dunstrc.d/colors.confReplacing file: /home/jokerop/.config/cava/themes/cwal
+
+[I]: [I]: Running reload command: pkill dunst[I]: 
+Replacing file: /home/jokerop/.config/btop/themes/cwal.theme
+Running reload command: pkill -USR1 cava
+[I]: Running reload command: pkill -USR2 btop
+[I]: Finished applying colors to applications.
+[I]: Config saved to /home/jokerop/.config/cwal/cwal.ini
 - `libimagequant`
 - `lua` (or `liblua-dev`)
 
@@ -148,8 +163,9 @@ Usage: cwal [OPTIONS] --img <image_path>
 - `--list-themes`                       List all available themes
 - `--quiet`                             Suppress all output
 - `--random [directory]`                Select random image (uses config default if directory omitted)
-- `--theme <theme_name|random_dark|random_light|random_all>` Select a theme or a random one
+- `--theme <theme_name|random_all>`     Select a theme or a random one
 - `--preview`                           Preview palette
+- `--version`                           Show version number
 - `--help`                              Help
 
 **Examples:**
@@ -184,6 +200,28 @@ cols16_mode = darken
 
 [random]
 random_dir = /home/user/Pictures/Wallpapers
+
+[link]
+# format: template_name = destination_path | reload_command
+colors-waybar.css = ~/.config/waybar/colors.css | pkill -USR2 waybar
+colors-sway = ~/.config/sway/config | swaymsg reload
+```
+
+### Surgical Injection (Placeholders)
+
+Instead of overwriting an entire configuration file, you can add markers to your existing files. `cwal` will only replace the text between these markers:
+
+```toml
+# ~/.config/alacritty/alacritty.toml
+[window]
+padding = { x = 5, y = 5 }
+
+# --- $CWAL_START ---
+# (cwal will inject colors here)
+# --- $CWAL_END ---
+
+[font]
+size = 12
 ```
 
 
@@ -231,7 +269,8 @@ foreground_red = {color1.red}
 
 - Check available backends: `cwal --list-backends`
 - Choose backend: `cwal --img image.jpg --backend libimagequant`
-- Post-process: `cwal --img image.jpg --script ~/.local/bin/update-theme.sh`
+- Post-process script: `cwal --img image.jpg --script "~/.local/bin/update-theme.sh $current_wallpaper"`
+  *(Note: You can use the `$current_wallpaper` placeholder in your script path or arguments, and `cwal` will automatically replace it with the path of the currently processed image).*
 - Batch processing:
 
 ```bash
@@ -261,239 +300,239 @@ The script receives the image path and should process it to generate the palette
 local ffi = require("ffi")
 
 local function raw_to_pixels(data, size)
-	local expected = size * size * 3
-	if #data < expected then
-		return nil, string.format("expected >= %d bytes, got %d", expected, #data)
-	end
+        local expected = size * size * 3
+        if #data < expected then
+                return nil, string.format("expected >= %d bytes, got %d", expected, #data)
+        end
 
-	local buf = ffi.cast("const unsigned char*", data)
-	local pixels = {}
-	pixels[#pixels + size * size] = false -- preallocate
+        local buf = ffi.cast("const unsigned char*", data)
+        local pixels = {}
+        pixels[#pixels + size * size] = false -- preallocate
 
-	local idx = 1
-	for i = 0, size * size - 1 do
-		local base = i * 3
-		pixels[idx] = { buf[base], buf[base + 1], buf[base + 2] }
-		idx = idx + 1
-	end
-	return pixels
+        local idx = 1
+        for i = 0, size * size - 1 do
+                local base = i * 3
+                pixels[idx] = { buf[base], buf[base + 1], buf[base + 2] }
+                idx = idx + 1
+        end
+        return pixels
 end
 
 local function try_read_pixels_with(path, size)
-	local quoted = string.format('"%s"', path)
-	local conv = string.format("magick %s -resize %dx%d! -colorspace sRGB -depth 8 rgb:-", quoted, size, size)
-	local f = io.popen(conv, "r")
-	if not f then
-		return nil, "popen failed"
-	end
-	local data = f:read("*all")
-	f:close()
-	if not data or #data == 0 then
-		return nil, "no data"
-	end
-	return raw_to_pixels(data, size)
+        local quoted = string.format('"%s"', path)
+        local conv = string.format("magick %s -resize %dx%d! -colorspace sRGB -depth 8 rgb:-", quoted, size, size)
+        local f = io.popen(conv, "r")
+        if not f then
+                return nil, "popen failed"
+        end
+        local data = f:read("*all")
+        f:close()
+        if not data or #data == 0 then
+                return nil, "no data"
+        end
+        return raw_to_pixels(data, size)
 end
 
 local function read_pixels(path, size)
-	local px, err = try_read_pixels_with(path, size)
-	if px then
-		return px
-	end
-	error("Could not read pixels via ImageMagick: " .. tostring(err))
+        local px, err = try_read_pixels_with(path, size)
+        if px then
+                return px
+        end
+        error("Could not read pixels via ImageMagick: " .. tostring(err))
 end
 
 local function dist2(a, b)
-	local dr = a[1] - b[1]
-	local dg = a[2] - b[2]
-	local db = a[3] - b[3]
-	return dr * dr + dg * dg + db * db
+        local dr = a[1] - b[1]
+        local dg = a[2] - b[2]
+        local db = a[3] - b[3]
+        return dr * dr + dg * dg + db * db
 end
 
 local function init_centroids_kpp(pixels, k)
-	local n = #pixels
-	if k > n then
-		k = n
-	end
-	local centroids = {}
-	local i1 = math.random(n)
-	centroids[1] = { pixels[i1][1], pixels[i1][2], pixels[i1][3] }
+        local n = #pixels
+        if k > n then
+                k = n
+        end
+        local centroids = {}
+        local i1 = math.random(n)
+        centroids[1] = { pixels[i1][1], pixels[i1][2], pixels[i1][3] }
 
-	local function nearest_d2(p)
-		local best = math.huge
-		for i = 1, #centroids do
-			local d = dist2(p, centroids[i])
-			if d < best then
-				best = d
-			end
-		end
-		return best
-	end
+        local function nearest_d2(p)
+                local best = math.huge
+                for i = 1, #centroids do
+                        local d = dist2(p, centroids[i])
+                        if d < best then
+                                best = d
+                        end
+                end
+                return best
+        end
 
-	while #centroids < k do
-		local dsum, d2s = 0.0, {}
-		for i = 1, n do
-			local d = nearest_d2(pixels[i])
-			d2s[i] = d
-			dsum = dsum + d
-		end
-		local r, acc = math.random() * dsum, 0.0
-		for i = 1, n do
-			acc = acc + d2s[i]
-			if acc >= r then
-				local p = pixels[i]
-				centroids[#centroids + 1] = { p[1], p[2], p[3] }
-				break
-			end
-		end
-		if #centroids < 2 then
-			break
-		end
-	end
-	return centroids
+        while #centroids < k do
+                local dsum, d2s = 0.0, {}
+                for i = 1, n do
+                        local d = nearest_d2(pixels[i])
+                        d2s[i] = d
+                        dsum = dsum + d
+                end
+                local r, acc = math.random() * dsum, 0.0
+                for i = 1, n do
+                        acc = acc + d2s[i]
+                        if acc >= r then
+                                local p = pixels[i]
+                                centroids[#centroids + 1] = { p[1], p[2], p[3] }
+                                break
+                        end
+                end
+                if #centroids < 2 then
+                        break
+                end
+        end
+        return centroids
 end
 
 local function kmeans(pixels, k, max_iter)
-	max_iter = max_iter or 25
-	local n = #pixels
-	if n == 0 then
-		return {}
-	end
-	if k < 1 then
-		k = 1
-	elseif k > n then
-		k = n
-	end
+        max_iter = max_iter or 25
+        local n = #pixels
+        if n == 0 then
+                return {}
+        end
+        if k < 1 then
+                k = 1
+        elseif k > n then
+                k = n
+        end
 
-	math.randomseed(tonumber(tostring(os.clock()):gsub("%D", "")))
+        math.randomseed(tonumber(tostring(os.clock()):gsub("%D", "")))
 
-	local centroids = init_centroids_kpp(pixels, k)
-	local assign = ffi.new("int[?]", n)
+        local centroids = init_centroids_kpp(pixels, k)
+        local assign = ffi.new("int[?]", n)
 
-	local changed, iter = true, 0
-	while changed and iter < max_iter do
-		iter, changed = iter + 1, false
+        local changed, iter = true, 0
+        while changed and iter < max_iter do
+                iter, changed = iter + 1, false
 
-		-- assign step
-		for i = 1, n do
-			local p = pixels[i]
-			local best_k, best_d = 1, dist2(p, centroids[1])
-			for c = 2, k do
-				local d = dist2(p, centroids[c])
-				if d < best_d then
-					best_d, best_k = d, c
-				end
-			end
-			if assign[i - 1] ~= best_k then
-				assign[i - 1] = best_k
-				changed = true
-			end
-		end
+                -- assign step
+                for i = 1, n do
+                        local p = pixels[i]
+                        local best_k, best_d = 1, dist2(p, centroids[1])
+                        for c = 2, k do
+                                local d = dist2(p, centroids[c])
+                                if d < best_d then
+                                        best_d, best_k = d, c
+                                end
+                        end
+                        if assign[i - 1] ~= best_k then
+                                assign[i - 1] = best_k
+                                changed = true
+                        end
+                end
 
-		if not changed then
-			break
-		end
+                if not changed then
+                        break
+                end
 
-		-- update step
-		local sumR, sumG, sumB, count = {}, {}, {}, {}
-		for c = 1, k do
-			sumR[c], sumG[c], sumB[c], count[c] = 0, 0, 0, 0
-		end
+                -- update step
+                local sumR, sumG, sumB, count = {}, {}, {}, {}
+                for c = 1, k do
+                        sumR[c], sumG[c], sumB[c], count[c] = 0, 0, 0, 0
+                end
 
-		for i = 1, n do
-			local c = assign[i - 1]
-			local p = pixels[i]
-			sumR[c] = sumR[c] + p[1]
-			sumG[c] = sumG[c] + p[2]
-			sumB[c] = sumB[c] + p[3]
-			count[c] = count[c] + 1
-		end
+                for i = 1, n do
+                        local c = assign[i - 1]
+                        local p = pixels[i]
+                        sumR[c] = sumR[c] + p[1]
+                        sumG[c] = sumG[c] + p[2]
+                        sumB[c] = sumB[c] + p[3]
+                        count[c] = count[c] + 1
+                end
 
-		for c = 1, k do
-			if count[c] > 0 then
-				centroids[c][1] = sumR[c] / count[c]
-				centroids[c][2] = sumG[c] / count[c]
-				centroids[c][3] = sumB[c] / count[c]
-			else
-				local rp = pixels[math.random(n)]
-				centroids[c][1], centroids[c][2], centroids[c][3] = rp[1], rp[2], rp[3]
-				changed = true
-			end
-		end
-	end
+                for c = 1, k do
+                        if count[c] > 0 then
+                                centroids[c][1] = sumR[c] / count[c]
+                                centroids[c][2] = sumG[c] / count[c]
+                                centroids[c][3] = sumB[c] / count[c]
+                        else
+                                local rp = pixels[math.random(n)]
+                                centroids[c][1], centroids[c][2], centroids[c][3] = rp[1], rp[2], rp[3]
+                                changed = true
+                        end
+                end
+        end
 
-	-- build palette
-	local palette = {}
-	for c = 1, k do
-		local r = centroids[c][1] + 0.5
-		if r < 0 then
-			r = 0
-		elseif r > 255 then
-			r = 255
-		end
-		local g = centroids[c][2] + 0.5
-		if g < 0 then
-			g = 0
-		elseif g > 255 then
-			g = 255
-		end
-		local b = centroids[c][3] + 0.5
-		if b < 0 then
-			b = 0
-		elseif b > 255 then
-			b = 255
-		end
-		palette[#palette + 1] = {
-			math.floor(r),
-			math.floor(g),
-			math.floor(b),
-		}
-	end
-	return palette
+        -- build palette
+        local palette = {}
+        for c = 1, k do
+                local r = centroids[c][1] + 0.5
+                if r < 0 then
+                        r = 0
+                elseif r > 255 then
+                        r = 255
+                end
+                local g = centroids[c][2] + 0.5
+                if g < 0 then
+                        g = 0
+                elseif g > 255 then
+                        g = 255
+                end
+                local b = centroids[c][3] + 0.5
+                if b < 0 then
+                        b = 0
+                elseif b > 255 then
+                        b = 255
+                end
+                palette[#palette + 1] = {
+                        math.floor(r),
+                        math.floor(g),
+                        math.floor(b),
+                }
+        end
+        return palette
 end
 
 local function sort_by_population(pixels, palette)
-	local k, counts = #palette, {}
-	for c = 1, k do
-		counts[c] = 0
-	end
-	for i = 1, #pixels do
-		local p, best_c, best_d = pixels[i], 1, dist2(p, palette[1])
-		for c = 2, k do
-			local d = dist2(p, palette[c])
-			if d < best_d then
-				best_d, best_c = d, c
-			end
-		end
-		counts[best_c] = counts[best_c] + 1
-	end
-	local idx = {}
-	for c = 1, k do
-		idx[c] = c
-	end
-	table.sort(idx, function(a, b)
-		return counts[a] > counts[b]
-	end)
-	local sorted = {}
-	for i = 1, k do
-		sorted[i] = palette[idx[i]]
-	end
-	return sorted
+        local k, counts = #palette, {}
+        for c = 1, k do
+                counts[c] = 0
+        end
+        for i = 1, #pixels do
+                local p, best_c, best_d = pixels[i], 1, dist2(p, palette[1])
+                for c = 2, k do
+                        local d = dist2(p, palette[c])
+                        if d < best_d then
+                                best_d, best_c = d, c
+                        end
+                end
+                counts[best_c] = counts[best_c] + 1
+        end
+        local idx = {}
+        for c = 1, k do
+                idx[c] = c
+        end
+        table.sort(idx, function(a, b)
+                return counts[a] > counts[b]
+        end)
+        local sorted = {}
+        for i = 1, k do
+                sorted[i] = palette[idx[i]]
+        end
+        return sorted
 end
 
 function Main(image_path)
-	local k, sample_size, max_iter = 16, 128, 25
-	local pixels = read_pixels(image_path, sample_size)
-	local palette = kmeans(pixels, k, max_iter)
-	palette = sort_by_population(pixels, palette)
+        local k, sample_size, max_iter = 16, 128, 25
+        local pixels = read_pixels(image_path, sample_size)
+        local palette = kmeans(pixels, k, max_iter)
+        palette = sort_by_population(pixels, palette)
 
-	while #palette > k do
-		table.remove(palette)
-	end
-	while #palette < k do
-		local last = palette[#palette]
-		palette[#palette + 1] = { last[1], last[2], last[3] }
-	end
-	return palette
+        while #palette > k do
+                table.remove(palette)
+        end
+        while #palette < k do
+                local last = palette[#palette]
+                palette[#palette + 1] = { last[1], last[2], last[3] }
+        end
+        return palette
 end
 ```
 
@@ -535,4 +574,3 @@ Licensed under GNU GPL v3.0 — always free and open-source.
 - [pywal](https://github.com/dylanaraps/pywal) by [dylanaraps](https://github.com/dylanaraps)
 
 - [pywal16](https://github.com/eylles/pywal16) by [eylles](https://github.com/eylles)
-
