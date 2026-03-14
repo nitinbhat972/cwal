@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <glob.h>
 #include <limits.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,156 +47,30 @@ static int command_exists(const char *cmd) {
   return 0;
 }
 
-typedef struct {
-  bool i3;
-  bool bspwm;
-  bool polybar;
-  bool sway;
-  bool waybar;
-  bool mako;
-  bool nvim;
-} RunningProcessState;
-
-static RunningProcessState detect_running_processes(void) {
-  RunningProcessState state = {0};
-
-  DIR *dir = opendir("/proc");
-  if (!dir) {
-    return state;
-  }
-
-  struct dirent *entry;
-  int unresolved = 7;
-
-  while ((entry = readdir(dir)) != NULL && unresolved > 0) {
-    char *endptr;
-    strtol(entry->d_name, &endptr, 10);
-    if (*endptr != '\0') // Not a pid directory
-      continue;
-
-    char *path = build_path("/proc", entry->d_name);
-    char *cmdline_path = build_path(path, "cmdline");
-    FILE *file = fopen(cmdline_path, "r");
-    if (file) {
-      char cmdline[LINE_BUFFER_SIZE];
-      if (fgets(cmdline, sizeof(cmdline), file)) {
-        if (!state.i3 && strstr(cmdline, "i3")) {
-          state.i3 = true;
-          unresolved--;
-        }
-        if (!state.bspwm && strstr(cmdline, "bspwm")) {
-          state.bspwm = true;
-          unresolved--;
-        }
-        if (!state.polybar && strstr(cmdline, "polybar")) {
-          state.polybar = true;
-          unresolved--;
-        }
-        if (!state.sway && strstr(cmdline, "sway")) {
-          state.sway = true;
-          unresolved--;
-        }
-        if (!state.waybar && strstr(cmdline, "waybar")) {
-          state.waybar = true;
-          unresolved--;
-        }
-        if (!state.mako && strstr(cmdline, "mako")) {
-          state.mako = true;
-          unresolved--;
-        }
-        if (!state.nvim && strstr(cmdline, "nvim")) {
-          state.nvim = true;
-          unresolved--;
-        }
-      }
-      fclose(file);
-    }
-    free(path);
-    free(cmdline_path);
-  }
-
-  closedir(dir);
-  return state;
-}
-
-static const char *get_os() {
-  static struct utsname sys_info;
-  static int initialized = 0;
-
-  if (!initialized) {
-    if (uname(&sys_info) == 0) {
-      initialized = 1;
-    } else {
-      // If uname fails, set a default value
-      snprintf(sys_info.sysname, sizeof(sys_info.sysname), "%s", "Unknown");
-      initialized = 1;
-    }
-  }
-
-  return sys_info.sysname;
-}
-
 static void broadcast_to_terminals(const char *sequences, size_t len) {
-  const char *os = get_os();
+  static struct utsname sys_info;
+  uname(&sys_info);
+  const char *os = sys_info.sysname;
+
   glob_t glob_result;
   char **devices = NULL;
   int device_count = 0;
 
   if (strncmp(os, "Darwin", 7) == 0) {
-    // macOS: Use /dev/ttys00[0-9]*
     if (glob("/dev/ttys00[0-9]*", 0, NULL, &glob_result) == 0) {
       devices = glob_result.gl_pathv;
       device_count = glob_result.gl_pathc;
     }
-  } else if (strncmp(os, "OpenBSD", 8) == 0) {
-    // OpenBSD: Use ps command output
-    FILE *ps_output =
-        popen("ps -o tty | sed -e 1d -e s#^#/dev/# | sort | uniq", "r");
-    if (ps_output) {
-      char line[LINE_BUFFER_SIZE];
-      char temp_devices[MAX_DEVICES][LINE_BUFFER_SIZE];
-      device_count = 0;
-
-      while (fgets(line, sizeof(line), ps_output) && device_count < MAX_DEVICES) {
-        // Remove newline
-        line[strcspn(line, "\n")] = '\0';
-        if (strlen(line) > 0) {
-          snprintf(temp_devices[device_count], LINE_BUFFER_SIZE, "%s", line);
-          device_count++;
-        }
-      }
-      pclose(ps_output);
-
-      // Convert to array of pointers
-      if (device_count > 0) {
-        devices = malloc(device_count * sizeof(char *));
-        for (int i = 0; i < device_count; i++) {
-          devices[i] = temp_devices[i];
-        }
-      }
-    }
   } else {
-    // Linux and other Unix-like systems: Use /dev/pts/[0-9]*
     if (glob("/dev/pts/[0-9]*", 0, NULL, &glob_result) == 0) {
       devices = glob_result.gl_pathv;
       device_count = glob_result.gl_pathc;
     }
   }
 
-  // Send sequences to discovered devices
   if (devices && device_count > 0) {
     for (int i = 0; i < device_count; i++) {
-      const char *dev = devices[i];
-
-      // Skip /dev/pts/0 on KDE Plasma
-      if (strncmp(dev, "/dev/pts/0", 11) == 0) {
-        char *desktop_session = getenv("DESKTOP_SESSION");
-        if (desktop_session && strncmp(desktop_session, "plasma", 7) == 0) {
-          continue;
-        }
-      }
-
-      int fd = open(dev, O_WRONLY | O_NOCTTY);
+      int fd = open(devices[i], O_WRONLY | O_NOCTTY);
       if (fd != -1) {
         write(fd, sequences, len);
         close(fd);
@@ -203,125 +78,160 @@ static void broadcast_to_terminals(const char *sequences, size_t len) {
     }
   }
 
-  if (strncmp(os, "Darwin", 7) == 0 || strncmp(os, "Linux", 6) == 0) {
+  if (strncmp(os, "OpenBSD", 8) != 0) {
     globfree(&glob_result);
-  } else if (strncmp(os, "OpenBSD", 8) == 0 && devices) {
-    free(devices);
   }
 }
 
-void apply_colors_to_apps(const char *out_dir, bool no_reload) {
+static char *read_file_to_buffer(const char *path, size_t *size) {
+  FILE *f = fopen(path, "rb");
+  if (!f) return NULL;
+
+  fseek(f, 0, SEEK_END);
+  *size = ftell(f);
+  fseek(f, 0, SEEK_SET);
+
+  char *buffer = malloc(*size + 1);
+  if (buffer) {
+    fread(buffer, 1, *size, f);
+    buffer[*size] = '\0';
+  }
+  fclose(f);
+  return buffer;
+}
+
+static void sync_file(const char *src_path, const char *dest_path) {
+  size_t src_size;
+  char *src_content = read_file_to_buffer(src_path, &src_size);
+  if (!src_content) return;
+
+  size_t dest_size;
+  char *dest_content = read_file_to_buffer(dest_path, &dest_size);
+
+  if (dest_content) {
+    char *start_marker = strstr(dest_content, "$CWAL_START");
+    char *end_marker = strstr(dest_content, "$CWAL_END");
+
+    if (start_marker && end_marker && end_marker > start_marker) {
+      // Surgical Injection
+      logging(INFO, "Injecting colors into %s", dest_path);
+      
+      FILE *f = fopen(dest_path, "wb");
+      if (f) {
+        char *start_write_pos = strchr(start_marker, '\n');
+        if (!start_write_pos) start_write_pos = start_marker + strlen("$CWAL_START");
+        else start_write_pos++;
+
+        char *end_write_pos = end_marker;
+        while (end_write_pos > dest_content && *(end_write_pos - 1) != '\n') {
+          end_write_pos--;
+        }
+
+        fwrite(dest_content, 1, start_write_pos - dest_content, f);
+        
+        fwrite(src_content, 1, src_size, f);
+        if (src_content[src_size-1] != '\n') fputc('\n', f);
+
+        fwrite(end_write_pos, 1, strlen(end_write_pos), f);
+        fclose(f);
+      }
+      free(src_content);
+      free(dest_content);
+      return;
+    }
+    free(dest_content);
+  }
+
+  // Full Overwrite
+  char backup_path[PATH_MAX];
+  snprintf(backup_path, sizeof(backup_path), "%s.bak", dest_path);
+  if (access(dest_path, F_OK) == 0 && access(backup_path, F_OK) != 0) {
+    rename(dest_path, backup_path);
+  }
+
+  logging(INFO, "Replacing file: %s", dest_path);
+  FILE *f = fopen(dest_path, "wb");
+  if (f) {
+    fwrite(src_content, 1, src_size, f);
+    fclose(f);
+  }
+  free(src_content);
+}
+
+typedef struct {
+  char *src;
+  char *dest;
+  char *reload_cmd;
+} SyncTask;
+
+static void *sync_worker(void *arg) {
+  SyncTask *task = (SyncTask *)arg;
+  sync_file(task->src, task->dest);
+  if (task->reload_cmd) {
+    logging(INFO, "Running reload command: %s", task->reload_cmd);
+    execute_command(task->reload_cmd);
+  }
+  free(task->src);
+  free(task->dest);
+  if (task->reload_cmd) free(task->reload_cmd);
+  free(task);
+  return NULL;
+}
+
+void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload) {
   if (no_reload) {
     logging(INFO, "Skipping application reload as --no-reload was specified.");
     return;
   }
 
-  logging(INFO, "Applying colors to applications...");
-
-  RunningProcessState running_processes = detect_running_processes();
-
+  // 1. Terminal Sequences
   char *sequences_path = build_path(out_dir, "sequences");
-
-  // 1. Apply terminal sequences to ALL open terminals
-  if (access(sequences_path, F_OK) == 0) {
-    FILE *seq_file = fopen(sequences_path, "r");
-    if (seq_file) {
-      fseek(seq_file, 0, SEEK_END);
-      long file_size = ftell(seq_file);
-      fseek(seq_file, 0, SEEK_SET);
-
-      char *sequences = malloc(file_size + 1);
-      if (sequences) {
-        size_t bytes_read = fread(sequences, 1, file_size, seq_file);
-        sequences[bytes_read] = '\0';
-
-        // Broadcast to all user PTYs
-        broadcast_to_terminals(sequences, bytes_read);
-
-        // Apply to current terminal too
-        fprintf(stdout, "%s", sequences);
-        fflush(stdout);
-
-        free(sequences);
-        logging(INFO, "Applied terminal sequences to all open terminals.");
-      } else {
-        logging(WARN, "Failed to allocate memory for sequences.");
-      }
-      fclose(seq_file);
-    } else {
-      logging(WARN, "Could not open terminal sequences file: %s",
-              sequences_path);
-    }
-  } else {
-    logging(WARN, "Terminal sequences file not found: %s", sequences_path);
+  size_t seq_len;
+  char *sequences = read_file_to_buffer(sequences_path, &seq_len);
+  if (sequences) {
+    broadcast_to_terminals(sequences, seq_len);
+    fprintf(stdout, "%s", sequences);
+    fflush(stdout);
+    free(sequences);
   }
   free(sequences_path);
 
-  // 2. tty
+  // 2. Legacy TTY
   char *tty_script_path = build_path(out_dir, "colors-tty.sh");
   char *term_env = getenv("TERM");
-  if (term_env && strncmp(term_env, "linux", 6) == 0 &&
-      access(tty_script_path, F_OK) == 0) {
+  if (term_env && strncmp(term_env, "linux", 6) == 0 && access(tty_script_path, F_OK) == 0) {
     char command[PATH_MAX + 10];
     snprintf(command, sizeof(command), "sh %s", tty_script_path);
-    system(command);
-    logging(INFO, "Applied TTY colors.");
-  } else {
-    logging(INFO,
-            "Skipping TTY colors (TERM not 'linux' or script not found).");
+    execute_command(command);
   }
   free(tty_script_path);
 
-  // 3. xrdb
+  // 3. Xresources
   char *xrdb_path = build_path(out_dir, "colors.Xresources");
   if (command_exists("xrdb") && access(xrdb_path, F_OK) == 0) {
-    char command[PATH_MAX + 20];
+    char command[PATH_MAX + 30];
     snprintf(command, sizeof(command), "xrdb -merge -quiet %s", xrdb_path);
-    system(command);
-    logging(INFO, "Applied Xresources.");
+    execute_command(command);
   }
   free(xrdb_path);
 
-  // 4. i3
-  if (command_exists("i3-msg") && running_processes.i3) {
-    system("i3-msg reload");
-    logging(INFO, "Reloaded i3.");
-  }
+  // 4. Dynamic Links & Reloads
+  if (config->num_links > 0) {
+    pthread_t *threads = malloc(sizeof(pthread_t) * config->num_links);
+    for (int i = 0; i < config->num_links; i++) {
+      SyncTask *task = malloc(sizeof(SyncTask));
+      task->src = build_path(out_dir, config->links[i].template_name);
+      task->dest = strdup(config->links[i].target_path);
+      task->reload_cmd = config->links[i].reload_cmd ? strdup(config->links[i].reload_cmd) : NULL;
+      
+      pthread_create(&threads[i], NULL, sync_worker, task);
+    }
 
-  // 5. bspwm
-  if (command_exists("bspc") && running_processes.bspwm) {
-    system("bspc wm -r");
-    logging(INFO, "Reloaded bspwm.");
-  }
-
-  // 6. polybar
-  if (command_exists("polybar") && running_processes.polybar) {
-    system("pkill -USR1 polybar");
-    logging(INFO, "Reloaded Polybar.");
-  }
-
-  // 7. sway
-  if (command_exists("swaymsg") && running_processes.sway) {
-    system("swaymsg reload");
-    logging(INFO, "Reloaded Sway.");
-  }
-
-  // 8. waybar
-  if (command_exists("waybar") && running_processes.waybar) {
-    system("pkill -USR2 waybar");
-    logging(INFO, "Reloaded Waybar.");
-  }
-
-  // 9. mako (Wayland notification daemon)
-  if (command_exists("makoctl") && running_processes.mako) {
-    system("makoctl reload");
-    logging(INFO, "Reloaded Mako.");
-  }
-
-  // 10. termux
-  if (command_exists("termux-reload-settings")) {
-    system("termux-reload-settings");
-    logging(INFO, "Reloaded Termux settings.");
+    // Wait for all reloads to finish
+    for (int i = 0; i < config->num_links; i++) {
+      pthread_join(threads[i], NULL);
+    }
+    free(threads);
   }
 
   logging(INFO, "Finished applying colors to applications.");

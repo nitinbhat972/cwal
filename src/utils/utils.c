@@ -9,15 +9,16 @@
  */
 
 #include "utils.h"
-#include "color/color_convertion.h"
 #include "color/color_operation.h"
 #include "core.h"
-#include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 static bool quiet_mode = false;
 
@@ -38,25 +39,21 @@ uint8_t clamp_byte(float value) {
 }
 
 static inline int compare_by_luminance(const void *a, const void *b) {
-  const Color *colorA = (const Color *)a;
-  const Color *colorB = (const Color *)b;
-  float lumA = w3_luminance(*colorA);
-  float lumB = w3_luminance(*colorB);
-  return (lumB < lumA) - (lumB > lumA); // Sort dark to light
+  const Color *c1 = (const Color *)a;
+  const Color *c2 = (const Color *)b;
+
+  float l1 = w3_luminance(*c1);
+  float l2 = w3_luminance(*c2);
+
+  if (l1 < l2)
+    return -1;
+  if (l1 > l2)
+    return 1;
+  return 0;
 }
 
 void sort_color(Palette *palette) {
-  if (!palette)
-    return;
   qsort(palette->colors, PALETTE_MAX_SIZE, sizeof(Color), compare_by_luminance);
-}
-
-bool is_color_too_bright_for_dark_mode(float hue, float saturation,
-                                       float luminance_threshold) {
-  HSV hsv = {hue, saturation, 1.0f}; // hue is already 0-360 from rgb_to_hsv
-  Color rgb = hsv_to_rgb(hsv);
-
-  return w3_luminance(rgb) >= luminance_threshold;
 }
 
 void preview_palette() {
@@ -70,6 +67,45 @@ void preview_palette() {
 }
 
 void set_quiet_mode(bool quiet) { quiet_mode = quiet; }
+
+int execute_command(const char *command) {
+  if (!command || strlen(command) == 0)
+    return 0;
+
+  pid_t pid = fork();
+  if (pid == 0) {
+    // Child process
+    char *cmd_copy = strdup(command);
+    char *args[64];
+    int i = 0;
+    char *saveptr;
+    char *token = strtok_r(cmd_copy, " ", &saveptr);
+
+    while (token != NULL && i < 63) {
+      args[i++] = token;
+      token = strtok_r(NULL, " ", &saveptr);
+    }
+    args[i] = NULL;
+
+    if (args[0] == NULL) {
+      free(cmd_copy);
+      exit(0);
+    }
+
+    execvp(args[0], args);
+    perror("execvp");
+    free(cmd_copy);
+    exit(1);
+  } else if (pid > 0) {
+    // Parent process
+    int status;
+    waitpid(pid, &status, 0);
+    return WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+  } else {
+    perror("fork");
+    return -1;
+  }
+}
 
 void logging(int log_level, const char *format, ...) {
   if (quiet_mode) {
@@ -89,10 +125,4 @@ void logging(int log_level, const char *format, ...) {
   vprintf(format, args);
   printf("\n");
   va_end(args);
-}
-
-void to_lowercase(char *str) {
-  for (int i = 0; str[i]; i++) {
-    str[i] = tolower((unsigned char)str[i]);
-  }
 }

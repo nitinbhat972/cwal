@@ -9,6 +9,7 @@
  */
 
 #include "cli.h"
+#include "version.h"
 #include "utils/path.h"
 #include "utils/utils.h"
 #include <getopt.h>
@@ -17,6 +18,7 @@
 #include <string.h>
 
 void print_usage(const char *prog_name) {
+  fprintf(stderr, "cwal version %s\n", CWAL_VERSION);
   fprintf(stderr, "Usage: %s [OPTIONS] --img <image_path>\n", prog_name);
   fprintf(stderr, "Options:\n");
   fprintf(stderr,
@@ -47,6 +49,7 @@ void print_usage(const char *prog_name) {
   fprintf(stderr, "  --theme <theme_name|random_dark|random_light|random_all> "
                   "Select a theme or a random one\n");
   fprintf(stderr, "  --preview              show palette preview\n");
+  fprintf(stderr, "  --version              Show the version number\n");
   fprintf(stderr, "  --help                 Display this help message\n");
 }
 
@@ -88,6 +91,7 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       {"random", optional_argument, 0, 'r'},
       {"theme", required_argument, 0, 'e'},
       {"preview", no_argument, 0, 'v'},
+      {"version", no_argument, 0, 'V'},
       {"help", no_argument, 0, 'h'},
       {0, 0, 0, 0}};
 
@@ -190,6 +194,9 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
     case 'v':
       args->preview = true;
       break;
+    case 'V':
+      printf("version %s\n", CWAL_VERSION);
+      return 1;
     case 'h':
       print_usage(argv[0]);
       return 1;

@@ -89,6 +89,51 @@ static void parse_key_value(Config *config, const char *key,
   }
 }
 
+static void parse_link(Config *config, const char *key, const char *value) {
+  // key = template_name
+  // value = target_path | reload_cmd
+  
+  char *val_copy = strdup(value);
+  if (!val_copy) return;
+
+  char *pipe = strchr(val_copy, '|');
+  char *target_raw = val_copy;
+  char *cmd_raw = NULL;
+
+  if (pipe) {
+    *pipe = '\0';
+    cmd_raw = pipe + 1;
+  }
+
+  // Trim target_path
+  while (*target_raw == ' ' || *target_raw == '\t') target_raw++;
+  size_t t_len = strlen(target_raw);
+  while (t_len > 0 && (target_raw[t_len-1] == ' ' || target_raw[t_len-1] == '\t')) {
+    target_raw[--t_len] = '\0';
+  }
+
+  // Trim reload_cmd
+  if (cmd_raw) {
+    while (*cmd_raw == ' ' || *cmd_raw == '\t') cmd_raw++;
+    size_t c_len = strlen(cmd_raw);
+    while (c_len > 0 && (cmd_raw[c_len-1] == ' ' || cmd_raw[c_len-1] == '\t')) {
+      cmd_raw[--c_len] = '\0';
+    }
+    if (strlen(cmd_raw) == 0 || strncmp(cmd_raw, "none", 5) == 0) {
+      cmd_raw = NULL;
+    }
+  }
+
+  // Store the link
+  config->links = realloc(config->links, sizeof(Link) * (config->num_links + 1));
+  config->links[config->num_links].template_name = strdup(key);
+  config->links[config->num_links].target_path = expand_home(target_raw);
+  config->links[config->num_links].reload_cmd = cmd_raw ? strdup(cmd_raw) : NULL;
+  config->num_links++;
+
+  free(val_copy);
+}
+
 static void create_config_subdirectories(const char *config_dir_path) {
   char *templates_dir = build_path(config_dir_path, "templates");
   if (templates_dir) {
@@ -154,6 +199,8 @@ Config *load_config(void) {
   config->contrast = 1.0;
   config->script_path = NULL;
   config->random_dir = NULL;
+  config->links = NULL;
+  config->num_links = 0;
 
   char *config_home = get_config_home();
   char *expanded_path = build_path(config_home, "cwal", "cwal.ini");
@@ -201,7 +248,11 @@ Config *load_config(void) {
         while (*value == ' ' || *value == '\t')
           value++;
 
-        parse_key_value(config, key, value);
+        if (strncmp(section, "link", 5) == 0) {
+          parse_link(config, key, value);
+        } else {
+          parse_key_value(config, key, value);
+        }
       }
     }
   }
@@ -253,6 +304,16 @@ void save_config(const Config *config) {
   fprintf(file, "\n[random]\n");
   fprintf(file, "random_dir = %s\n", config->random_dir ? config->random_dir : "");
 
+  if (config->num_links > 0) {
+    fprintf(file, "\n[link]\n");
+    for (int i = 0; i < config->num_links; i++) {
+      fprintf(file, "%s = %s | %s\n", 
+              config->links[i].template_name,
+              config->links[i].target_path,
+              config->links[i].reload_cmd ? config->links[i].reload_cmd : "none");
+    }
+  }
+
   fclose(file);
   logging(INFO, "Config saved to %s", expanded_path);
   free(config_dir_path);
@@ -267,6 +328,12 @@ void free_config(Config *config) {
     free(config->backend);
     free(config->script_path);
     free(config->random_dir);
+    for (int i = 0; i < config->num_links; i++) {
+      free(config->links[i].template_name);
+      free(config->links[i].target_path);
+      free(config->links[i].reload_cmd);
+    }
+    free(config->links);
     free(config);
   }
 }

@@ -11,5 +11,6 @@
 #pragma once
 
 #include <stdbool.h>
+#include "app/config.h"
 
-void apply_colors_to_apps(const char *out_dir, bool no_reload);
+void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload);

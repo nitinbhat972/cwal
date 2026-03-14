@@ -1,20 +1,28 @@
 cmake_minimum_required(VERSION 3.12)
-project(cwal LANGUAGES C)
+project(cwal VERSION 0.6.0 LANGUAGES C)
 
+# Set C standards
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo MinSizeRel)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
 endif()
+
+# Generate version.h
+configure_file(
+    ${PROJECT_SOURCE_DIR}/include/version.h.in
+    ${PROJECT_BINARY_DIR}/include/version.h
+)
 
 # Find dependencies
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(MagickWand REQUIRED MagickWand)
-pkg_check_modules(imagequant REQUIRED imagequant)
-pkg_check_modules(Lua REQUIRED lua)
+find_package(Threads REQUIRED)
+
+pkg_check_modules(MagickWand REQUIRED IMPORTED_TARGET MagickWand)
+pkg_check_modules(imagequant REQUIRED IMPORTED_TARGET imagequant)
+pkg_check_modules(Lua REQUIRED IMPORTED_TARGET lua)
 
 # Collect source files
 set(SOURCES
@@ -42,28 +50,21 @@ set(SOURCES
 # Create executable
 add_executable(cwal ${SOURCES})
 
-# Include directories
-target_include_directories(cwal PRIVATE
-    ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/src
-    ${MagickWand_INCLUDE_DIRS}
-    ${imagequant_INCLUDE_DIRS}
-    ${Lua_INCLUDE_DIRS}
-)
-
-# Link libraries
+# Link libraries and include directories via imported targets
 target_link_libraries(cwal
-    ${MagickWand_LIBRARIES}
-    ${imagequant_LIBRARIES}
-    ${Lua_LIBRARIES}
+    PRIVATE
+    PkgConfig::MagickWand
+    PkgConfig::imagequant
+    PkgConfig::Lua
+    Threads::Threads
     m
 )
 
-# Set compiler flags for dependencies
-target_compile_options(cwal PRIVATE
-    ${MagickWand_CFLAGS_OTHER}
-    ${imagequant_CFLAGS_OTHER}
-    ${Lua_CFLAGS_OTHER}
+# Include internal project directories
+target_include_directories(cwal PRIVATE
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_BINARY_DIR}/include
 )
 
 # Installation

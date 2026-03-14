@@ -11,9 +11,14 @@
 #pragma once
 
 #include "core.h"
-#include "modules/theme/themes.h"
 
 #define MAX_LINE_LENGTH 256
+
+typedef struct {
+  char *template_name;
+  char *target_path;
+  char *reload_cmd;
+} Link;
 
 typedef struct {
   char *current_wallpaper; // Path to the currently set wallpaper.
@@ -26,6 +31,8 @@ typedef struct {
   char *script_path;       // Path to a script to run after processing.
   char *random_dir;        // Path to a directory for random image selection.
   char *out_dir;           // Output directory for generated files.
+  Link *links;             // Array of file links.
+  int num_links;           // Current number of links.
 } Config;
 
 Config *load_config(void);

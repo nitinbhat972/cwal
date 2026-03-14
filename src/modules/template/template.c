@@ -15,6 +15,7 @@
 #include "utils/utils.h"
 #include <ctype.h>
 #include <dirent.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -192,6 +193,31 @@ static void replacement(FILE *in, FILE *out, const Palette *palette) {
   free(result);
 }
 
+typedef struct {
+  char *in_path;
+  char *out_path;
+  const Palette *palette;
+} TemplateTask;
+
+static void *template_worker(void *arg) {
+  TemplateTask *task = (TemplateTask *)arg;
+  
+  FILE *in = fopen(task->in_path, "r");
+  if (in) {
+    FILE *out = fopen(task->out_path, "w");
+    if (out) {
+      replacement(in, out, task->palette);
+      fclose(out);
+    }
+    fclose(in);
+  }
+
+  free(task->in_path);
+  free(task->out_path);
+  free(task);
+  return NULL;
+}
+
 static void process_dir(const char *current_dir, const char *out_base, const Palette *palette) {
   struct stat st = {0};
   if (stat(current_dir, &st) == -1 || !S_ISDIR(st.st_mode)) {
@@ -199,40 +225,34 @@ static void process_dir(const char *current_dir, const char *out_base, const Pal
   }
 
   logging(INFO, "Processing templates from %s", current_dir);
-  DIR *dir;
+  DIR *dir = opendir(current_dir);
+  if (!dir) return;
+
   struct dirent *entry;
+  pthread_t threads[256]; // Sufficient for most template setups
+  int thread_count = 0;
 
-  if ((dir = opendir(current_dir)) != NULL) {
-    while ((entry = readdir(dir)) != NULL) {
-      if (entry->d_name[0] == '.')
-        continue;
+  while ((entry = readdir(dir)) != NULL && thread_count < 256) {
+    if (entry->d_name[0] == '.') continue;
 
-      char *in_path = build_path(current_dir, entry->d_name);
-      char *out_path = build_path(out_base, entry->d_name);
+    // Filter for files only
+    char *full_in = build_path(current_dir, entry->d_name);
+    struct stat fst;
+    if (stat(full_in, &fst) == 0 && S_ISREG(fst.st_mode)) {
+      TemplateTask *task = malloc(sizeof(TemplateTask));
+      task->in_path = full_in;
+      task->out_path = build_path(out_base, entry->d_name);
+      task->palette = palette;
 
-      FILE *in = fopen(in_path, "r");
-      if (!in) {
-        logging(WARN, "Could not open template file %s", in_path);
-        free(in_path);
-        free(out_path);
-        continue;
-      }
-      FILE *out_file = fopen(out_path, "w");
-      if (!out_file) {
-        logging(WARN, "Could not open output file %s for template %s",
-                out_path, entry->d_name);
-        fclose(in);
-        free(in_path);
-        free(out_path);
-        continue;
-      }
-      replacement(in, out_file, palette);
-      fclose(in);
-      fclose(out_file);
-      free(in_path);
-      free(out_path);
+      pthread_create(&threads[thread_count++], NULL, template_worker, task);
+    } else {
+      free(full_in);
     }
-    closedir(dir);
+  }
+  closedir(dir);
+
+  for (int i = 0; i < thread_count; i++) {
+    pthread_join(threads[i], NULL);
   }
 }
 
@@ -246,7 +266,7 @@ int process_template(const char *output_dir, const Palette *palette) {
     return 1;
   }
 
-  // 1. Process System Data Directories (XDG_DATA_DIRS)
+  // 1. Process System Data Directories
   char **system_dirs = get_data_dirs();
   if (system_dirs) {
     for (int i = 0; system_dirs[i] != NULL; i++) {
@@ -258,14 +278,14 @@ int process_template(const char *output_dir, const Palette *palette) {
     free(system_dirs);
   }
 
-  // 2. Process User Local Data (XDG_DATA_HOME)
+  // 2. Process User Local Data
   char *data_home = get_data_home();
   char *user_local_template_dir = build_path(data_home, "cwal", "templates");
   process_dir(user_local_template_dir, out_base, palette);
   free(data_home);
   free(user_local_template_dir);
 
-  // 3. Process User Config (XDG_CONFIG_HOME)
+  // 3. Process User Config
   char *config_home = get_config_home();
   char *user_config_template_dir = build_path(config_home, "cwal", "templates");
   process_dir(user_config_template_dir, out_base, palette);

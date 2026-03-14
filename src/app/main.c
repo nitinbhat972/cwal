@@ -147,7 +147,7 @@ int main(int argv, char **argc) {
   process_template(args.out_dir, &palette);
 
   // Reloads the app colors
-  apply_colors_to_apps(args.out_dir, args.no_reload);
+  apply_colors_to_apps(args.out_dir, app_config, args.no_reload);
 
   // Runs post hooks
   run_hook_script(args.script_path);
