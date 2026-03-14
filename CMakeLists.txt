@@ -38,7 +38,6 @@ set(SOURCES
     src/color/colors.c
     src/color/image.c
     src/modules/cache/cache.c
-    src/modules/hooks/hooks.c
     src/modules/reload/reload.c
     src/modules/template/template.c
     src/modules/theme/themes.c

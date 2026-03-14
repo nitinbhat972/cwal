@@ -14,7 +14,6 @@
 #include "color/colors.h"
 #include "core.h"
 #include "modules/cache/cache.h"
-#include "modules/hooks/hooks.h"
 #include "modules/reload/reload.h"
 #include "modules/template/template.h"
 #include "modules/theme/themes.h"
@@ -150,7 +149,14 @@ int main(int argv, char **argc) {
   apply_colors_to_apps(args.out_dir, app_config, args.no_reload);
 
   // Runs post hooks
-  run_hook_script(args.script_path);
+  if (args.script_path) {
+    char *final_cmd =
+        replace_placeholder(args.script_path, "$current_wallpaper",
+                            palette.wallpaper ? palette.wallpaper : "");
+    logging(INFO, "Running post-hook script: %s", final_cmd);
+    execute_command(final_cmd);
+    free(final_cmd);
+  }
 
   // Updates the config wallpaper path
   free(app_config->current_wallpaper);

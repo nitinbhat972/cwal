@@ -26,4 +26,5 @@ void preview_palette();
 enum Logging { INFO, WARN, ERROR };
 void logging(int log_level, const char *format, ...);
 void set_quiet_mode(bool quiet);
+char *replace_placeholder(const char *str, const char *old, const char *new_str);
 int execute_command(const char *command);

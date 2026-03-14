@@ -20,6 +20,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 static bool quiet_mode = false;
 static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -70,6 +71,38 @@ void preview_palette() {
 
 void set_quiet_mode(bool quiet) { quiet_mode = quiet; }
 
+char *replace_placeholder(const char *str, const char *old, const char *new_str) {
+  if (!str || !old || !new_str) return str ? strdup(str) : NULL;
+
+  char *result;
+  int i, count = 0;
+  size_t oldlen = strlen(old);
+  size_t newlen = strlen(new_str);
+
+  for (i = 0; str[i] != '\0'; i++) {
+    if (strstr(&str[i], old) == &str[i]) {
+      count++;
+      i += oldlen - 1;
+    }
+  }
+
+  result = (char *)malloc(i + count * (newlen - oldlen) + 1);
+  if (!result) return NULL;
+
+  i = 0;
+  while (*str) {
+    if (strstr(str, old) == str) {
+      strcpy(&result[i], new_str);
+      i += newlen;
+      str += oldlen;
+    } else {
+      result[i++] = *str++;
+    }
+  }
+  result[i] = '\0';
+  return result;
+}
+
 int execute_command(const char *command) {
   if (!command || strlen(command) == 0)
     return 0;
@@ -77,6 +110,13 @@ int execute_command(const char *command) {
   pid_t pid = fork();
   if (pid == 0) {
     // Child process
+    int fd = open("/dev/null", O_WRONLY);
+    if (fd != -1) {
+        dup2(fd, STDOUT_FILENO);
+        dup2(fd, STDERR_FILENO);
+        close(fd);
+    }
+
     char *cmd_copy = strdup(command);
     char *args[64];
     int i = 0;
@@ -95,7 +135,6 @@ int execute_command(const char *command) {
     }
 
     execvp(args[0], args);
-    perror("execvp");
     free(cmd_copy);
     exit(1);
   } else if (pid > 0) {
