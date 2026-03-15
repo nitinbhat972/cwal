@@ -248,7 +248,7 @@ Config *load_config(void) {
         while (*value == ' ' || *value == '\t')
           value++;
 
-        if (strncmp(section, "link", 5) == 0) {
+        if (strncmp(section, "links", 5) == 0) {
           parse_link(config, key, value);
         } else {
           parse_key_value(config, key, value);
@@ -305,7 +305,7 @@ void save_config(const Config *config) {
   fprintf(file, "random_dir = %s\n", config->random_dir ? config->random_dir : "");
 
   if (config->num_links > 0) {
-    fprintf(file, "\n[link]\n");
+    fprintf(file, "\n[links]\n");
     for (int i = 0; i < config->num_links; i++) {
       fprintf(file, "%s = %s | %s\n", 
               config->links[i].template_name,
