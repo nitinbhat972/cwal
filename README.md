@@ -201,7 +201,7 @@ cols16_mode = darken
 [random]
 random_dir = /home/user/Pictures/Wallpapers
 
-[link]
+[links]
 # format: template_name = destination_path | reload_command
 colors-waybar.css = ~/.config/waybar/colors.css | pkill -USR2 waybar
 colors-sway = ~/.config/sway/config | swaymsg reload
