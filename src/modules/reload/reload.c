@@ -23,11 +23,13 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
-#define MAX_DEVICES 100
+#define MAX_DEVICES 256
 #define LINE_BUFFER_SIZE 256
 
 static int command_exists(const char *cmd) {
-  char *path_copy = strdup(getenv("PATH"));
+  char *path_env = getenv("PATH");
+  if (!path_env) return 0;
+  char *path_copy = strdup(path_env);
   if (!path_copy)
     return 0;
 
@@ -45,6 +47,24 @@ static int command_exists(const char *cmd) {
   }
   free(path_copy);
   return 0;
+}
+
+typedef struct {
+    char *device;
+    const char *sequences;
+    size_t len;
+} TerminalTask;
+
+static void *terminal_worker(void *arg) {
+    TerminalTask *task = (TerminalTask *)arg;
+    int fd = open(task->device, O_WRONLY | O_NOCTTY | O_NONBLOCK);
+    if (fd != -1) {
+        write(fd, task->sequences, task->len);
+        close(fd);
+    }
+    free(task->device);
+    free(task);
+    return NULL;
 }
 
 static void broadcast_to_terminals(const char *sequences, size_t len) {
@@ -69,12 +89,26 @@ static void broadcast_to_terminals(const char *sequences, size_t len) {
   }
 
   if (devices && device_count > 0) {
-    for (int i = 0; i < device_count; i++) {
-      int fd = open(devices[i], O_WRONLY | O_NOCTTY);
-      if (fd != -1) {
-        write(fd, sequences, len);
-        close(fd);
+    pthread_t threads[MAX_DEVICES];
+    int thread_count = 0;
+
+    for (int i = 0; i < device_count && thread_count < MAX_DEVICES; i++) {
+      TerminalTask *task = malloc(sizeof(TerminalTask));
+      if (!task) continue;
+      task->device = strdup(devices[i]);
+      task->sequences = sequences;
+      task->len = len;
+
+      if (pthread_create(&threads[thread_count], NULL, terminal_worker, task) != 0) {
+          free(task->device);
+          free(task);
+      } else {
+          thread_count++;
       }
+    }
+
+    for (int i = 0; i < thread_count; i++) {
+        pthread_join(threads[i], NULL);
     }
   }
 
@@ -91,10 +125,15 @@ static char *read_file_to_buffer(const char *path, size_t *size) {
   *size = ftell(f);
   fseek(f, 0, SEEK_SET);
 
+  if (*size == 0) {
+      fclose(f);
+      return NULL;
+  }
+
   char *buffer = malloc(*size + 1);
   if (buffer) {
-    fread(buffer, 1, *size, f);
-    buffer[*size] = '\0';
+    size_t read_bytes = fread(buffer, 1, *size, f);
+    buffer[read_bytes] = '\0';
   }
   fclose(f);
   return buffer;
@@ -227,7 +266,6 @@ void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload) {
       pthread_create(&threads[i], NULL, sync_worker, task);
     }
 
-    // Wait for all reloads to finish
     for (int i = 0; i < config->num_links; i++) {
       pthread_join(threads[i], NULL);
     }
