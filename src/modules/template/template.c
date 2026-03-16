@@ -64,8 +64,10 @@ static char *resolve_placeholder(const char *placeholder,
   const char *dot = strrchr(placeholder, '.');
 
   if (dot && dot != placeholder) {
-    strncpy(key, placeholder, dot - placeholder);
-    key[dot - placeholder] = '\0';
+    size_t key_len = dot - placeholder;
+    if (key_len >= sizeof(key)) key_len = sizeof(key) - 1;
+    strncpy(key, placeholder, key_len);
+    key[key_len] = '\0';
     strncpy(format, dot + 1, sizeof(format) - 1);
     format[sizeof(format) - 1] = '\0';
   } else {
@@ -114,49 +116,72 @@ static void replacement(FILE *in, FILE *out, const Palette *palette) {
   fseek(in, 0, SEEK_END);
   long size = ftell(in);
   fseek(in, 0, SEEK_SET);
+  if (size <= 0) return;
+
   char *buffer = malloc(size + 1);
   if (!buffer)
     return;
-  fread(buffer, 1, size, in);
-  buffer[size] = '\0';
+  size_t read_size = fread(buffer, 1, size, in);
+  buffer[read_size] = '\0';
 
-  size_t result_cap = size * 2;
+  size_t result_cap = size * 2 + 1024;
   char *result = malloc(result_cap);
   if (!result) {
     free(buffer);
     return;
   }
-  result[0] = '\0';
   size_t result_len = 0;
 
   char *cursor = buffer;
   while (*cursor) {
     char *start = strchr(cursor, '{');
     if (!start) {
-      size_t remaining = result_cap - strlen(result);
-      snprintf(result + strlen(result), remaining, "%s", cursor);
+      size_t remaining = strlen(cursor);
+      if (result_len + remaining >= result_cap) {
+        result_cap = result_len + remaining + 1;
+        result = realloc(result, result_cap);
+      }
+      strcpy(result + result_len, cursor);
+      result_len += remaining;
       break;
     }
 
-    strncat(result, cursor, start - cursor);
-    result_len += (start - cursor);
+    // Copy text before '{'
+    size_t before_len = start - cursor;
+    if (result_len + before_len >= result_cap) {
+        result_cap = (result_len + before_len) * 2;
+        result = realloc(result, result_cap);
+    }
+    memcpy(result + result_len, cursor, before_len);
+    result_len += before_len;
+    result[result_len] = '\0';
 
     char *end = strchr(start + 1, '}');
     if (!end) {
-      size_t remaining = result_cap - strlen(result);
-      snprintf(result + strlen(result), remaining, "%s", start);
+      // No matching '}', copy the rest and finish
+      size_t remaining = strlen(start);
+      if (result_len + remaining >= result_cap) {
+        result_cap = result_len + remaining + 1;
+        result = realloc(result, result_cap);
+      }
+      strcpy(result + result_len, start);
+      result_len += remaining;
       break;
     }
 
     size_t p_len = end - (start + 1);
     char p_name[128];
     if (p_len >= sizeof(p_name)) {
-      strncat(result, start, 1);
-      result_len++;
+      if (result_len + 1 >= result_cap) {
+          result_cap *= 2;
+          result = realloc(result, result_cap);
+      }
+      result[result_len++] = '{';
+      result[result_len] = '\0';
       cursor = start + 1;
       continue;
     }
-    strncpy(p_name, start + 1, p_len);
+    memcpy(p_name, start + 1, p_len);
     p_name[p_len] = '\0';
 
     int is_valid = 1;
@@ -175,15 +200,19 @@ static void replacement(FILE *in, FILE *out, const Palette *palette) {
           result_cap = (result_len + resolved_len) * 2;
           result = realloc(result, result_cap);
         }
-        size_t remaining = result_cap - result_len;
-        snprintf(result + result_len, remaining, "%s", resolved);
+        memcpy(result + result_len, resolved, resolved_len);
         result_len += resolved_len;
+        result[result_len] = '\0';
         free(resolved);
       }
       cursor = end + 1;
     } else {
-      strncat(result, start, 1);
-      result_len++;
+      if (result_len + 1 >= result_cap) {
+          result_cap *= 2;
+          result = realloc(result, result_cap);
+      }
+      result[result_len++] = '{';
+      result[result_len] = '\0';
       cursor = start + 1;
     }
   }
@@ -229,22 +258,31 @@ static void process_dir(const char *current_dir, const char *out_base, const Pal
   if (!dir) return;
 
   struct dirent *entry;
-  pthread_t threads[256]; // Sufficient for most template setups
+  pthread_t threads[256]; 
   int thread_count = 0;
 
   while ((entry = readdir(dir)) != NULL && thread_count < 256) {
     if (entry->d_name[0] == '.') continue;
 
-    // Filter for files only
     char *full_in = build_path(current_dir, entry->d_name);
     struct stat fst;
     if (stat(full_in, &fst) == 0 && S_ISREG(fst.st_mode)) {
       TemplateTask *task = malloc(sizeof(TemplateTask));
+      if (!task) {
+          free(full_in);
+          continue;
+      }
       task->in_path = full_in;
       task->out_path = build_path(out_base, entry->d_name);
       task->palette = palette;
 
-      pthread_create(&threads[thread_count++], NULL, template_worker, task);
+      if (pthread_create(&threads[thread_count], NULL, template_worker, task) != 0) {
+          free(task->in_path);
+          free(task->out_path);
+          free(task);
+      } else {
+          thread_count++;
+      }
     } else {
       free(full_in);
     }
