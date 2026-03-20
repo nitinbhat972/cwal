@@ -18,39 +18,39 @@
 #include <string.h>
 
 void print_usage(const char *prog_name) {
-  fprintf(stderr, "cwal version %s\n", CWAL_VERSION);
   fprintf(stderr, "Usage: %s [OPTIONS] --img <image_path>\n", prog_name);
   fprintf(stderr, "Options:\n");
   fprintf(stderr,
-          "  --mode <dark|light>    Set theme mode (overrides config)\n");
-  fprintf(stderr, "  --cols16-mode <darken|lighten> Set 16-color generation "
+          "  -m, --mode <dark|light>    Set theme mode (overrides config)\n");
+  fprintf(stderr, "  -c, --cols16-mode <darken|lighten> Set 16-color generation "
                   "mode (overrides config)\n");
   fprintf(
       stderr,
-      "  --saturation <float>   Set overall saturation (overrides config)\n");
+      "  -s, --saturation <float>   Set overall saturation (overrides config)\n");
   fprintf(stderr,
-          "  --contrast <float>     Set contrast ratio (overrides config)\n");
-  fprintf(stderr, "  --alpha <float>        Set alpha transparency (0.0-1.0, "
+          "  -C, --contrast <float>     Set contrast ratio (overrides config)\n");
+  fprintf(stderr, "  -a, --alpha <float>        Set alpha transparency (0.0-1.0, "
                   "overrides config)\n");
-  fprintf(stderr, "  --out-dir <path>       Set output directory for all "
+  fprintf(stderr, "  -o, --out-dir <path>       Set output directory for all "
                   "generated files (overrides config)\n");
-  fprintf(stderr, "  --backend <name>       Set image processing backend "
+  fprintf(stderr, "  -b, --backend <name>       Set image processing backend "
                   "(overrides config)\n");
   fprintf(stderr,
-          "  --img <image_path>     Specify the image path (required)\n");
-  fprintf(stderr, "  --script <script_path> Run a script after processing\n");
+          "  -i, --img <image_path>     Specify the image path (required)\n");
+  fprintf(stderr, "  -S, --script <script_path> Run a script after processing\n");
   fprintf(
       stderr,
-      "  --no-reload            Do not reload applications after processing\n");
-  fprintf(stderr, "  --list-backends        List all available image "
+      "  -n, --no-reload            Do not reload applications after processing\n");
+  fprintf(stderr, "  -B, --list-backends        List all available image "
                   "processing backends\n");
-  fprintf(stderr, "  --list-themes          List all available themes\n");
-  fprintf(stderr, "  --quiet                Suppress all output\n");
-  fprintf(stderr, "  --theme <theme_name|random_dark|random_light|random_all> "
+  fprintf(stderr, "  -T, --list-themes          List all available themes\n");
+  fprintf(stderr, "  -q, --quiet                Suppress all output\n");
+  fprintf(stderr, "  -r, --random [directory]   Select random image (uses config default if directory omitted)\n");
+  fprintf(stderr, "  -t, --theme <theme_name|random_dark|random_light|random_all> "
                   "Select a theme or a random one\n");
-  fprintf(stderr, "  --preview              show palette preview\n");
-  fprintf(stderr, "  --version              Show the version number\n");
-  fprintf(stderr, "  --help                 Display this help message\n");
+  fprintf(stderr, "  -p, --preview              show palette preview\n");
+  fprintf(stderr, "  -v, --version              Show the version number\n");
+  fprintf(stderr, "  -h, --help                 Display this help message\n");
 }
 
 int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
@@ -78,20 +78,20 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       {"mode", required_argument, 0, 'm'},
       {"cols16-mode", required_argument, 0, 'c'},
       {"saturation", required_argument, 0, 's'},
-      {"contrast", required_argument, 0, 't'},
+      {"contrast", required_argument, 0, 'C'},
       {"alpha", required_argument, 0, 'a'},
       {"backend", required_argument, 0, 'b'},
       {"img", required_argument, 0, 'i'},
-      {"script", required_argument, 0, 'p'},
+      {"script", required_argument, 0, 'S'},
       {"out-dir", required_argument, 0, 'o'},
       {"no-reload", no_argument, 0, 'n'},
-      {"list-backends", no_argument, 0, 'l'},
-      {"list-themes", no_argument, 0, 'd'},
+      {"list-backends", no_argument, 0, 'B'},
+      {"list-themes", no_argument, 0, 'T'},
       {"quiet", no_argument, 0, 'q'},
       {"random", optional_argument, 0, 'r'},
-      {"theme", required_argument, 0, 'e'},
-      {"preview", no_argument, 0, 'v'},
-      {"version", no_argument, 0, 'V'},
+      {"theme", required_argument, 0, 't'},
+      {"preview", no_argument, 0, 'p'},
+      {"version", no_argument, 0, 'v'},
       {"help", no_argument, 0, 'h'},
       {0, 0, 0, 0}};
 
@@ -99,7 +99,22 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
   int long_index = 0;
   optind = 1;
 
-  while ((opt = getopt_long(argc, argv, "", long_options, &long_index)) != -1) {
+  while ((opt = getopt_long(argc, argv, "m:c:s:C:a:b:i:S:o:nBTqr::t:pvh",
+                            long_options, &long_index)) != -1) {
+    const char *actual_opt = (optarg && argv[optind - 1] == optarg)
+                                 ? argv[optind - 2]
+                                 : argv[optind - 1];
+
+    if (opt != '?' && actual_opt && strncmp(actual_opt, "--", 2) == 0) {
+      const char *name = long_options[long_index].name;
+      size_t name_len = strlen(name);
+      if (strncmp(actual_opt + 2, name, name_len) != 0 ||
+          (actual_opt[2 + name_len] != '\0' && actual_opt[2 + name_len] != '=')) {
+        logging(ERROR, "Unknown option: %s", actual_opt);
+        return 1;
+      }
+    }
+
     switch (opt) {
     case 'm':
       if (strncmp(optarg, "dark", 5) == 0) {
@@ -125,7 +140,7 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
     case 's':
       args->saturation = atof(optarg);
       break;
-    case 't':
+    case 'C':
       args->contrast = atof(optarg);
       break;
     case 'a':
@@ -144,7 +159,7 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       free(args->image_path);
       args->image_path = normalize_cli_path(optarg);
       break;
-    case 'p':
+    case 'S':
       free(args->script_path);
       args->script_path = normalize_cli_path(optarg);
       break;
@@ -155,10 +170,10 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
     case 'n':
       args->no_reload = true;
       break;
-    case 'l':
+    case 'B':
       args->list_backends = true;
       break;
-    case 'd':
+    case 'T':
       args->list_themes = true;
       break;
     case 'q':
@@ -175,7 +190,7 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       }
       args->use_random_dir = true;
       break;
-    case 'e':
+    case 't':
       if (strncmp(optarg, "random_dark", 12) == 0) {
         args->random_mode = RANDOM_DARK;
         args->use_random_theme = true;
@@ -191,10 +206,10 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
         args->use_random_theme = false;
       }
       break;
-    case 'v':
+    case 'p':
       args->preview = true;
       break;
-    case 'V':
+    case 'v':
       printf("version %s\n", CWAL_VERSION);
       return 1;
     case 'h':
