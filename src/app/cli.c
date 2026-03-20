@@ -111,6 +111,7 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       if (strncmp(actual_opt + 2, name, name_len) != 0 ||
           (actual_opt[2 + name_len] != '\0' && actual_opt[2 + name_len] != '=')) {
         logging(ERROR, "Unknown option: %s", actual_opt);
+        print_usage(argv[0]);
         return 1;
       }
     }
