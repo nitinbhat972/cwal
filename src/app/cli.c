@@ -110,7 +110,7 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       size_t name_len = strlen(name);
       if (strncmp(actual_opt + 2, name, name_len) != 0 ||
           (actual_opt[2 + name_len] != '\0' && actual_opt[2 + name_len] != '=')) {
-        logging(ERROR, "Unknown option: %s", actual_opt);
+        fprintf(stderr, "%s: unrecognized option '%s'\n", argv[0], actual_opt);
         print_usage(argv[0]);
         return 1;
       }
