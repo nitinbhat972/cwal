@@ -11,10 +11,11 @@
 #include "colors.h"
 #include "color_convertion.h"
 #include "color_operation.h"
+#include "utils/utils.h"
 #include <math.h>
 
-#define MIN_BRIGHTNESS_THRESHOLD 0.85f
-#define TARGET_LIGHTEN_AMOUNT 0.95f
+#define MIN_BRIGHTNESS_THRESHOLD 0.88f
+#define TARGET_LIGHTEN_AMOUNT 0.93f
 #define DARKEN_AMOUNT 0.70f
 #define LIGHTEN_AMOUNT 0.03f
 #define SATURATE_AMOUNT 0.40f
@@ -25,6 +26,7 @@
 #define MIN_CONTRAST_RATIO_DARK 5.5f
 #define VALUE_BOOST 0.3f
 #define SATURATION_BOOST 0.4f
+#define MAX_BRIGHTNESS_THRESHOLD 0.97f
 
 // Pre-processes the palette to boost colors from dark images
 static void boost_dark_colors(Palette *palette) {
@@ -49,6 +51,28 @@ static void boost_dark_colors(Palette *palette) {
     // If changes were made, convert back to RGB and update the palette
     if (needs_boost) {
       palette->colors[i] = hsv_to_rgb(hsv);
+    }
+  }
+}
+
+// Pre-processes the palette to boost colors from light images
+static void boost_light_colors(Palette *palette) {
+  for (int i = 1; i < 7; i++) {
+    float lum = w3_luminance(palette->colors[i]);
+    bool needs_boost = false;
+
+    // If the color is too light (high luminance), darken it for better contrast against light background
+    if (lum > 0.6f) {
+      palette->colors[i] = darken_color(palette->colors[i], 0.3f);
+      needs_boost = true;
+    }
+
+    // Apply similar saturation boost if desaturated
+    HSV hsv = rgb_to_hsv(palette->colors[i]);
+    if (hsv.s < MIN_SATURATION) {
+      hsv.s += SATURATION_BOOST * (1.0f - hsv.s);
+      palette->colors[i] = hsv_to_rgb(hsv);
+      needs_boost = true;
     }
   }
 }
@@ -111,7 +135,9 @@ static void ensure_contrast(Palette *palette, float contrast, bool light,
 static void generate_16_colors(Palette *palette) {
   if (palette->mode == LIGHT) {
     palette->colors[7] = darken_color(palette->colors[0], 0.60);
+    palette->colors[7] = saturate_color(palette->colors[7], 0.05);
     palette->colors[8] = darken_color(palette->colors[0], 0.30);
+    palette->colors[8] = saturate_color(palette->colors[8], 0.10);
     palette->colors[15] = darken_color(palette->colors[0], 0.90);
   } else {
     palette->colors[7] = lighten_color(palette->colors[0], 0.60);
@@ -131,10 +157,12 @@ static void generate_16_colors(Palette *palette) {
     if (palette->cols16_mode == LIGHTEN) {
       for (int i = 1; i < 7; i++) {
         palette->colors[i + 8] = lighten_color(palette->colors[i], 0.15);
+        palette->colors[i + 8] = saturate_color(palette->colors[i + 8], 0.30);
       }
     } else {
       for (int i = 1; i < 7; i++) {
         palette->colors[i + 8] = darken_color(palette->colors[i], 0.15);
+        palette->colors[i + 8] = saturate_color(palette->colors[i + 8], 0.30);
       }
     }
   }
@@ -146,6 +174,9 @@ void process_colors(Palette *palette, float saturation_amount,
   // dark/desaturated
   if (palette->mode == DARK) {
     boost_dark_colors(palette);
+  } else if (palette->mode == LIGHT) {
+    reverse_colors(palette);
+    boost_light_colors(palette);
   }
 
   // Initial background adjustment based on light/dark mode
@@ -156,6 +187,9 @@ void process_colors(Palette *palette, float saturation_amount,
       palette->colors[0] = lighten_color(
           palette->colors[0],
           TARGET_LIGHTEN_AMOUNT - current_lum); // Lighten to target luminance
+    } else if (current_lum > MAX_BRIGHTNESS_THRESHOLD) {
+      palette->colors[0] =
+          darken_color(palette->colors[0], current_lum - TARGET_LIGHTEN_AMOUNT);
     }
   } else {
     bool saturate_more = (palette->colors[0].red < COLOR_THRESHOLD ||
