@@ -9,7 +9,6 @@
  */
 
 #include "utils.h"
-#include "color/color_operation.h"
 #include "core.h"
 #include <pthread.h>
 #include <stdarg.h>
@@ -41,22 +40,13 @@ uint8_t clamp_byte(float value) {
   return (uint8_t)(value + 0.5f);
 }
 
-static inline int compare_by_luminance(const void *a, const void *b) {
-  const Color *c1 = (const Color *)a;
-  const Color *c2 = (const Color *)b;
-
-  float l1 = w3_luminance(*c1);
-  float l2 = w3_luminance(*c2);
-
-  if (l1 < l2)
-    return -1;
-  if (l1 > l2)
-    return 1;
-  return 0;
-}
-
-void sort_color(Palette *palette) {
-  qsort(palette->colors, PALETTE_MAX_SIZE, sizeof(Color), compare_by_luminance);
+void reverse_colors(Palette *palette) {
+  if (!palette) return;
+  for (int i = 0; i < 4; i++) {
+    Color temp = palette->colors[i];
+    palette->colors[i] = palette->colors[7 - i];
+    palette->colors[7 - i] = temp;
+  }
 }
 
 void preview_palette() {

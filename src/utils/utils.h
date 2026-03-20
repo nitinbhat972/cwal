@@ -14,7 +14,7 @@
 
 float clamp_value(float amount);
 uint8_t clamp_byte(float value);
-void sort_color(Palette *palette);
+void reverse_colors(Palette *palette);
 void preview_palette();
 
 #define RED "\x1b[38;2;220;50;47m"
