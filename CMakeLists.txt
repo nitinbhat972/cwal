@@ -18,7 +18,7 @@ configure_file(
 
 # Find dependencies
 find_package(PkgConfig REQUIRED)
-find_package(Threads REQUIRED)
+
 
 pkg_check_modules(MagickWand REQUIRED IMPORTED_TARGET MagickWand)
 pkg_check_modules(imagequant REQUIRED IMPORTED_TARGET imagequant)
@@ -55,7 +55,7 @@ target_link_libraries(cwal
     PkgConfig::MagickWand
     PkgConfig::imagequant
     PkgConfig::Lua
-    Threads::Threads
+
     m
 )
 

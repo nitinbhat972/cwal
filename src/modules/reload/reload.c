@@ -15,7 +15,6 @@
 #include <fcntl.h>
 #include <glob.h>
 #include <limits.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,24 +48,6 @@ static int command_exists(const char *cmd) {
   return 0;
 }
 
-typedef struct {
-    char *device;
-    const char *sequences;
-    size_t len;
-} TerminalTask;
-
-static void *terminal_worker(void *arg) {
-    TerminalTask *task = (TerminalTask *)arg;
-    int fd = open(task->device, O_WRONLY | O_NOCTTY | O_NONBLOCK);
-    if (fd != -1) {
-        write(fd, task->sequences, task->len);
-        close(fd);
-    }
-    free(task->device);
-    free(task);
-    return NULL;
-}
-
 static void broadcast_to_terminals(const char *sequences, size_t len) {
   static struct utsname sys_info;
   uname(&sys_info);
@@ -89,26 +70,12 @@ static void broadcast_to_terminals(const char *sequences, size_t len) {
   }
 
   if (devices && device_count > 0) {
-    pthread_t threads[MAX_DEVICES];
-    int thread_count = 0;
-
-    for (int i = 0; i < device_count && thread_count < MAX_DEVICES; i++) {
-      TerminalTask *task = malloc(sizeof(TerminalTask));
-      if (!task) continue;
-      task->device = strdup(devices[i]);
-      task->sequences = sequences;
-      task->len = len;
-
-      if (pthread_create(&threads[thread_count], NULL, terminal_worker, task) != 0) {
-          free(task->device);
-          free(task);
-      } else {
-          thread_count++;
+    for (int i = 0; i < device_count; i++) {
+      int fd = open(devices[i], O_WRONLY | O_NOCTTY | O_NONBLOCK);
+      if (fd != -1) {
+        write(fd, sequences, len);
+        close(fd);
       }
-    }
-
-    for (int i = 0; i < thread_count; i++) {
-        pthread_join(threads[i], NULL);
     }
   }
 
@@ -197,25 +164,7 @@ static void sync_file(const char *src_path, const char *dest_path) {
   free(src_content);
 }
 
-typedef struct {
-  char *src;
-  char *dest;
-  char *reload_cmd;
-} SyncTask;
 
-static void *sync_worker(void *arg) {
-  SyncTask *task = (SyncTask *)arg;
-  sync_file(task->src, task->dest);
-  if (task->reload_cmd) {
-    logging(INFO, "Running reload command: %s", task->reload_cmd);
-    execute_command(task->reload_cmd);
-  }
-  free(task->src);
-  free(task->dest);
-  if (task->reload_cmd) free(task->reload_cmd);
-  free(task);
-  return NULL;
-}
 
 void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload) {
   if (no_reload) {
@@ -255,21 +204,14 @@ void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload) {
   free(xrdb_path);
 
   // 4. Dynamic Links & Reloads
-  if (config->num_links > 0) {
-    pthread_t *threads = malloc(sizeof(pthread_t) * config->num_links);
-    for (int i = 0; i < config->num_links; i++) {
-      SyncTask *task = malloc(sizeof(SyncTask));
-      task->src = build_path(out_dir, config->links[i].template_name);
-      task->dest = strdup(config->links[i].target_path);
-      task->reload_cmd = config->links[i].reload_cmd ? strdup(config->links[i].reload_cmd) : NULL;
-      
-      pthread_create(&threads[i], NULL, sync_worker, task);
+  for (int i = 0; i < config->num_links; i++) {
+    char *src = build_path(out_dir, config->links[i].template_name);
+    sync_file(src, config->links[i].target_path);
+    if (config->links[i].reload_cmd) {
+      logging(INFO, "Running reload command: %s", config->links[i].reload_cmd);
+      execute_command(config->links[i].reload_cmd);
     }
-
-    for (int i = 0; i < config->num_links; i++) {
-      pthread_join(threads[i], NULL);
-    }
-    free(threads);
+    free(src);
   }
 
   logging(INFO, "Finished applying colors to applications.");
