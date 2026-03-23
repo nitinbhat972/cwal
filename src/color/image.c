@@ -49,6 +49,18 @@ RawImage *image_load_from_file(const char *path) {
     return NULL;
   }
 
+  size_t width = MagickGetImageWidth(wand);
+  size_t height = MagickGetImageHeight(wand);
+
+  size_t nw = width / 5 ?: 1;
+  size_t nh = height / 5 ?: 1;
+
+  if (MagickSampleImage(wand, nw, nh) == MagickFalse) {
+    fprintf(stderr, "Failed to sample image: %s\n", path);
+    DestroyMagickWand(wand);
+    return NULL;
+  }
+
   RawImage *raw_image = (RawImage *)malloc(sizeof(RawImage));
   if (!raw_image) {
     fprintf(stderr, "Failed to allocate memory for RawImage.\n");
@@ -56,13 +68,12 @@ RawImage *image_load_from_file(const char *path) {
     return NULL;
   }
 
-  raw_image->width = MagickGetImageWidth(wand);
-  raw_image->height = MagickGetImageHeight(wand);
+  raw_image->width = nw;
+  raw_image->height = nh;
   raw_image->channels = 4;
 
   // Allocate memory for the pixel data
-  size_t buffer_size =
-      raw_image->width * raw_image->height * raw_image->channels;
+  size_t buffer_size = nw * nh * 4;
   raw_image->pixels = (unsigned char *)malloc(buffer_size);
   if (!raw_image->pixels) {
     fprintf(stderr, "Failed to allocate memory for pixel buffer.\n");
@@ -71,9 +82,8 @@ RawImage *image_load_from_file(const char *path) {
     return NULL;
   }
 
-  // Extract the pixels into our buffer in RGBA format
-  MagickExportImagePixels(wand, 0, 0, raw_image->width, raw_image->height,
-                          "RGBA", CharPixel, raw_image->pixels);
+  MagickExportImagePixels(wand, 0, 0, nw, nh, "RGBA", CharPixel,
+                          raw_image->pixels);
 
   DestroyMagickWand(wand);
   return raw_image;

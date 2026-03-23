@@ -26,19 +26,6 @@ void terminate_magickwand() {
   }
 }
 
-static inline int resize_image(MagickWand *wand, float amount) {
-  size_t height = MagickGetImageHeight(wand);
-  size_t width = MagickGetImageWidth(wand);
-
-  size_t new_height = (size_t)(height * amount);
-  size_t new_width = (size_t)(width * amount);
-
-  if (MagickAdaptiveResizeImage(wand, new_width, new_height) == MagickFalse) {
-    return -1;
-  }
-  return 0;
-}
-
 int generate_palette_cwal(RawImage *image, Palette *palette) {
   if (!image || !palette || !image->pixels) {
     return -1;
@@ -49,14 +36,8 @@ int generate_palette_cwal(RawImage *image, Palette *palette) {
     return -1;
   }
 
-  // Create a new MagickWand from the raw pixel data
   if (MagickConstituteImage(wand, image->width, image->height, "RGBA",
                             CharPixel, image->pixels) == MagickFalse) {
-    DestroyMagickWand(wand);
-    return -1;
-  }
-
-  if (resize_image(wand, 0.20) != 0) {
     DestroyMagickWand(wand);
     return -1;
   }
@@ -66,19 +47,10 @@ int generate_palette_cwal(RawImage *image, Palette *palette) {
     return -1;
   }
 
-  size_t colors = 8;
-
-  for (size_t tries = 0; tries < 20; tries++) {
-    size_t color_count = colors + tries;
-    if (MagickQuantizeImage(wand, color_count, LabColorspace, color_count * 2,
-                            FloydSteinbergDitherMethod,
-                            MagickFalse) != MagickFalse) {
-      break;
-    }
-    if (tries == 19) {
-      DestroyMagickWand(wand);
-      return -1;
-    }
+  if (MagickQuantizeImage(wand, 8, LabColorspace, 0, NoDitherMethod,
+                          MagickFalse) == MagickFalse) {
+    DestroyMagickWand(wand);
+    return -1;
   }
 
   PixelWand *pixel = NewPixelWand();
@@ -89,7 +61,7 @@ int generate_palette_cwal(RawImage *image, Palette *palette) {
 
   int status = 0;
 
-  for (size_t i = 0; i < colors; i++) {
+  for (size_t i = 0; i < 8; i++) {
     if (MagickGetImageColormapColor(wand, i, pixel) == MagickFalse) {
       status = -1;
       break;
