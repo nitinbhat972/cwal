@@ -10,6 +10,8 @@
 
 #include "utils.h"
 #include "core.h"
+#include <fcntl.h>
+#include <spawn.h>
 #include <pthread.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -19,7 +21,8 @@
 #include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <fcntl.h>
+
+extern char **environ;
 
 static bool quiet_mode = false;
 static pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -41,7 +44,8 @@ uint8_t clamp_byte(float value) {
 }
 
 void reverse_colors(Palette *palette) {
-  if (!palette) return;
+  if (!palette)
+    return;
   for (int i = 0; i < 4; i++) {
     Color temp = palette->colors[i];
     palette->colors[i] = palette->colors[7 - i];
@@ -61,8 +65,10 @@ void preview_palette() {
 
 void set_quiet_mode(bool quiet) { quiet_mode = quiet; }
 
-char *replace_placeholder(const char *str, const char *old, const char *new_str) {
-  if (!str || !old || !new_str) return str ? strdup(str) : NULL;
+char *replace_placeholder(const char *str, const char *old,
+                          const char *new_str) {
+  if (!str || !old || !new_str)
+    return str ? strdup(str) : NULL;
 
   char *result;
   int i, count = 0;
@@ -77,7 +83,8 @@ char *replace_placeholder(const char *str, const char *old, const char *new_str)
   }
 
   result = (char *)malloc(i + count * (newlen - oldlen) + 1);
-  if (!result) return NULL;
+  if (!result)
+    return NULL;
 
   i = 0;
   while (*str) {
@@ -97,45 +104,25 @@ int execute_command(const char *command) {
   if (!command || strlen(command) == 0)
     return 0;
 
-  pid_t pid = fork();
-  if (pid == 0) {
-    // Child process
-    int fd = open("/dev/null", O_WRONLY);
-    if (fd != -1) {
-        dup2(fd, STDOUT_FILENO);
-        dup2(fd, STDERR_FILENO);
-        close(fd);
-    }
+  char *args[] = {"sh", "-c", (char *)command, NULL};
 
-    char *cmd_copy = strdup(command);
-    char *args[64];
-    int i = 0;
-    char *saveptr;
-    char *token = strtok_r(cmd_copy, " ", &saveptr);
+  posix_spawn_file_actions_t file_actions;
+  posix_spawn_file_actions_init(&file_actions);
 
-    while (token != NULL && i < 63) {
-      args[i++] = token;
-      token = strtok_r(NULL, " ", &saveptr);
-    }
-    args[i] = NULL;
+  posix_spawn_file_actions_addopen(&file_actions, STDOUT_FILENO, "/dev/null",
+                                   O_WRONLY, 0);
+  posix_spawn_file_actions_adddup2(&file_actions, STDOUT_FILENO, STDERR_FILENO);
 
-    if (args[0] == NULL) {
-      free(cmd_copy);
-      exit(0);
-    }
+  posix_spawnattr_t attr;
+  posix_spawnattr_init(&attr);
 
-    execvp(args[0], args);
-    free(cmd_copy);
-    exit(1);
-  } else if (pid > 0) {
-    // Parent process
-    int status;
-    waitpid(pid, &status, 0);
-    return WIFEXITED(status) ? WEXITSTATUS(status) : -1;
-  } else {
-    perror("fork");
-    return -1;
-  }
+  pid_t pid;
+  int status = posix_spawnp(&pid, "sh", &file_actions, &attr, args, environ);
+
+  posix_spawnattr_destroy(&attr);
+  posix_spawn_file_actions_destroy(&file_actions);
+
+  return (status == 0) ? 0 : -1;
 }
 
 void logging(int log_level, const char *format, ...) {
