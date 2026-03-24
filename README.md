@@ -11,7 +11,6 @@ alt="cwal showcase" width="700"/>
 ## ✨ Features
 
 - **Dynamic Color Generation**: Extracts a vibrant 16-color palette from any image
-- **Parallel Processing**: Uses a multi-threaded engine for blazing-fast template generation and application reloading
 - **Surgical Config Injection**: Update specific sections of your existing configuration files without losing manual edits
 - **Persistent Configuration**: Remembers your preferred settings (alpha, mode, saturation, etc.) across sessions using a structured, XDG-compliant INI file
 - **XDG Compliant**: Follows the XDG Base Directory Specification for config, cache, and data
@@ -64,18 +63,7 @@ alt="cwal showcase" width="700"/>
 
 Ensure the following libraries are installed on your system:
 
-- `imagemagick`[I]: Selected random image: /home/jokerop/Pictures/Wallpaper/wallhaven-exmxpw_1920x1080.png
-[I]: Found cache: /home/jokerop/.cache/cwal//schemes/wallhaven-exmxpw_1920x1080.png_dark_darken_s0.00_c1.00_a1.00_cwal.cwal
-[I]: Processing templates from /usr/local/share/cwal/templates
-[I]: Processing templates from /home/jokerop/.config/cwal/templates
-[I]: [I]: Replacing file: /home/jokerop/.config/dunst/dunstrc.d/colors.confReplacing file: /home/jokerop/.config/cava/themes/cwal
-
-[I]: [I]: Running reload command: pkill dunst[I]: 
-Replacing file: /home/jokerop/.config/btop/themes/cwal.theme
-Running reload command: pkill -USR1 cava
-[I]: Running reload command: pkill -USR2 btop
-[I]: Finished applying colors to applications.
-[I]: Config saved to /home/jokerop/.config/cwal/cwal.ini
+- `imagemagick`
 - `libimagequant`
 - `lua` (or `liblua-dev`)
 
