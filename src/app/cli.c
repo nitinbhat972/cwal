@@ -9,7 +9,6 @@
  */
 
 #include "cli.h"
-#include "version.h"
 #include "utils/path.h"
 #include "utils/utils.h"
 #include <getopt.h>
@@ -211,7 +210,7 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       args->preview = true;
       break;
     case 'v':
-      printf("version %s\n", CWAL_VERSION);
+      printf("cwal v%s\n", CWAL_VERSION);
       return CLI_EXIT;
     case 'h':
       print_usage(argv[0]);

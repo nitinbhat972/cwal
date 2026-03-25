@@ -14,12 +14,6 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-# Generate version.h
-configure_file(
-    ${PROJECT_SOURCE_DIR}/include/version.h.in
-    ${PROJECT_BINARY_DIR}/include/version.h
-)
-
 # Find dependencies
 find_package(PkgConfig REQUIRED)
 
@@ -53,13 +47,14 @@ set(SOURCES
 # Create executable
 add_executable(cwal ${SOURCES})
 
+target_compile_definitions(cwal PRIVATE CWAL_VERSION="${PROJECT_VERSION}")
+
 # Link libraries and include directories via imported targets
 target_link_libraries(cwal
     PRIVATE
     PkgConfig::MagickWand
     PkgConfig::imagequant
     PkgConfig::Lua
-
     m
 )
 
@@ -67,7 +62,6 @@ target_link_libraries(cwal
 target_include_directories(cwal PRIVATE
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src
-    ${PROJECT_BINARY_DIR}/include
 )
 
 # Installation
