@@ -51,6 +51,7 @@ int main(int argv, char **argc) {
   set_quiet_mode(args.quiet);
 
   if (args.list_backends) {
+    init_backends();
     list_all_backends();
     free_config(app_config);
     free_cli_args(&args);
