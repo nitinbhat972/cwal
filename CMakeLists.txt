@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(cwal VERSION 0.7.0 LANGUAGES C)
+project(cwal VERSION 0.8.1 LANGUAGES C)
 
 # Set C standards
 set(CMAKE_C_STANDARD 11)

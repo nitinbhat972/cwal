@@ -14,7 +14,7 @@
       {
         packages.default = pkgs.stdenv.mkDerivation {
           pname = "cwal";
-          version = "0.7.0";
+          version = "0.8.1";
           src = ./.;
 
           nativeBuildInputs = with pkgs; [
