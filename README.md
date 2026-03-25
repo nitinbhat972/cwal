@@ -67,19 +67,19 @@ Ensure the following libraries are installed on your system:
 - `libimagequant`
 - `lua` (or `liblua-dev`)
 
-**Ubuntu/Debian:**
+**Ubuntu/Debian**
 
 ```bash
 sudo apt install libwandmagick-dev libimagequant-dev liblua5.4-dev
 ```
 
-**Arch Linux:**
+**Arch Linux**
 
 ```bash
 sudo pacman -S imagemagick libimagequant lua
 ```
 
-**Fedora/RHEL:**
+**Fedora/RHEL**
 
 ```bash
 sudo dnf install ImageMagick-devel libimagequant-devel lua-devel
@@ -90,9 +90,10 @@ sudo dnf install ImageMagick-devel libimagequant-devel lua-devel
 brew install imagemagick libimagequant lua
 ```
 
-### Arch Linux (AUR)
 
-Install directly from the AUR:
+## Package Manager
+
+**Arch Linux (AUR)**
 
 ```bash
 yay -S cwal
@@ -100,10 +101,7 @@ yay -S cwal
 paru -S cwal
 ```
 
-
-### Homebrew
-
-Install from the tap:
+**Homebrew**
 
 ```bash
 brew tap nitinbhat972/cwal
