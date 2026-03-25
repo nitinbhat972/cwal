@@ -53,7 +53,7 @@ void print_usage(const char *prog_name) {
   fprintf(stderr, "  -h, --help                 Display this help message\n");
 }
 
-int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
+CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
   args->image_path = NULL;
   args->mode = config->mode;
   args->cols16_mode = config->cols16_mode;
@@ -112,7 +112,7 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
           (actual_opt[2 + name_len] != '\0' && actual_opt[2 + name_len] != '=')) {
         fprintf(stderr, "%s: unrecognized option '%s'\n", argv[0], actual_opt);
         print_usage(argv[0]);
-        return 1;
+        return CLI_ERROR;
       }
     }
 
@@ -124,7 +124,7 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
         args->mode = LIGHT;
       } else {
         logging(ERROR, "Invalid mode: %s. Use 'dark' or 'light'.", optarg);
-        return 1;
+        return CLI_ERROR;
       }
       break;
     case 'c':
@@ -135,7 +135,7 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       } else {
         logging(ERROR, "Invalid cols16-mode: %s. Use 'darken' or 'lighten'.",
                 optarg);
-       return 1;
+       return CLI_ERROR;
      }
      break;
     case 's':
@@ -149,7 +149,7 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       if (args->alpha < 0.0f || args->alpha > 1.0f) {
         logging(ERROR, "Invalid alpha value: %s. Must be between 0.0 and 1.0.",
                 optarg);
-        return 1;
+        return CLI_ERROR;
       }
       break;
     case 'b':
@@ -212,13 +212,13 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       break;
     case 'v':
       printf("version %s\n", CWAL_VERSION);
-      return 1;
+      return CLI_EXIT;
     case 'h':
       print_usage(argv[0]);
-      return 1;
+      return CLI_EXIT;
     case '?':
       print_usage(argv[0]);
-      return 1;
+      return CLI_ERROR;
     }
   }
 
@@ -228,7 +228,7 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
     logging(ERROR, "Missing --img <image_path>, --random <directory>, or "
                    "--theme <theme_name> argument.");
     print_usage(argv[0]);
-    return 1;
+    return CLI_ERROR;
   }
 
   if (args->use_random_dir &&
@@ -236,16 +236,16 @@ int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
     logging(ERROR, "No random directory specified. Please provide one via "
                    "--random <dir> or set random_dir in your config.");
     print_usage(argv[0]);
-    return 1;
+    return CLI_ERROR;
   }
 
   if (args->image_path && args->random_dir && args->use_random_dir) {
     logging(ERROR,
             "Cannot use both --img and --random arguments simultaneously.");
-    return 1;
+    return CLI_ERROR;
   }
 
-  return 0;
+  return CLI_OK;
 }
 
 void free_cli_args(CliArgs *args) {

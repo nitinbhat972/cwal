@@ -36,6 +36,12 @@ typedef struct {
     bool preview;           // show palette preview.
 } CliArgs;
 
-int parse_cli_args(int argc, char **argv, Config *config, CliArgs *args);
+typedef enum {
+    CLI_OK,
+    CLI_ERROR,
+    CLI_EXIT
+} CliStatus;
+
+CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args);
 void free_cli_args(CliArgs *args);
 void print_usage(const char *prog_name);

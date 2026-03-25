@@ -34,10 +34,18 @@ int main(int argv, char **argc) {
   }
 
   // Parse command-line arguments
-  CliArgs args;
-  if (parse_cli_args(argv, argc, app_config, &args) != 0) {
+  CliArgs args = {0};
+  CliStatus cli_status = parse_cli_args(argv, argc, app_config, &args);
+  if (cli_status == CLI_ERROR) {
+    free_cli_args(&args);
     free_config(app_config);
     return 1;
+  }
+
+  if (cli_status == CLI_EXIT) {
+    free_cli_args(&args);
+    free_config(app_config);
+    return 0;
   }
 
   set_quiet_mode(args.quiet);
