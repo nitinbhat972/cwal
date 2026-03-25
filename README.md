@@ -70,7 +70,7 @@ Ensure the following libraries are installed on your system:
 **Ubuntu/Debian:**
 
 ```bash
-sudo apt install imagemagick libimagequant-dev liblua5.4-dev
+sudo apt install libwandmagick-dev libimagequant-dev liblua5.4-dev
 ```
 
 **Arch Linux:**
