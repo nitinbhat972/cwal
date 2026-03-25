@@ -10,7 +10,7 @@
 
 #include "backend.h"
 #include "core.h"
-#include <MagickWand/MagickWand.h>
+#include "magickwand.h"
 #include <stdbool.h>
 #include <stdio.h>
 

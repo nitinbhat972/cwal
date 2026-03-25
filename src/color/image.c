@@ -9,7 +9,7 @@
  */
 
 #include "image.h"
-#include <MagickWand/MagickWand.h>
+#include "magickwand.h"
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
