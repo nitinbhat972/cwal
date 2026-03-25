@@ -32,3 +32,34 @@ jobs:
         with:
           name: ${{ github.ref_name }}
           body: ${{ steps.cliff_latest.outputs.content }}
+
+  sync-version:
+    name: Sync VERSION
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Update VERSION
+        run: printf '%s\n' "${GITHUB_REF_NAME#v}" > VERSION
+        env:
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+
+      - name: Commit VERSION
+        run: |
+          if git diff --quiet -- VERSION; then
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add VERSION
+          git commit -m "chore(release): sync VERSION for ${GITHUB_REF_NAME}"
+          git push
+        env:
+          GITHUB_REF_NAME: ${{ github.ref_name }}

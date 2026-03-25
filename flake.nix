@@ -10,11 +10,12 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        version = builtins.replaceStrings [ "\n" ] [ "" ] (builtins.readFile ./VERSION);
       in
       {
         packages.default = pkgs.stdenv.mkDerivation {
           pname = "cwal";
-          version = "0.8.1";
+          inherit version;
           src = ./.;
 
           nativeBuildInputs = with pkgs; [
@@ -28,7 +29,10 @@
             lua
           ];
 
-          cmakeFlags = [ "-DCMAKE_BUILD_TYPE=Release" ];
+          cmakeFlags = [
+            "-DCMAKE_BUILD_TYPE=Release"
+            "-DCWAL_VERSION=${version}"
+          ];
 
           meta = with pkgs.lib; {
             description = "Blazing-fast pywal-like color palette generator written in C";
