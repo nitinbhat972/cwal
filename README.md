@@ -90,7 +90,6 @@ sudo dnf install ImageMagick-devel libimagequant-devel lua-devel
 brew install imagemagick libimagequant lua
 ```
 
-
 ### Arch Linux (AUR)
 
 Install directly from the AUR:
@@ -99,6 +98,16 @@ Install directly from the AUR:
 yay -S cwal
 # or
 paru -S cwal
+```
+
+
+### Homebrew
+
+Install from the tap:
+
+```bash
+brew tap nitinbhat972/cwal
+brew install cwal
 ```
 
 
