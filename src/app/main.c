@@ -33,9 +33,6 @@ int main(int argv, char **argc) {
     return 1;
   }
 
-  // Initialize backends
-  init_backends();
-
   // Parse command-line arguments
   CliArgs args;
   if (parse_cli_args(argv, argc, app_config, &args) != 0) {
@@ -66,6 +63,9 @@ int main(int argv, char **argc) {
     free_cli_args(&args);
     return 0;
   }
+
+  // Initialize backends
+  init_backends();
 
   // Palette structure initiallation
   Palette palette = {0};
