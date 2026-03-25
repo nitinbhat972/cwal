@@ -58,10 +58,15 @@ static const char *resolve_placeholder(const char *placeholder, const ColorTable
     memcpy(key, placeholder, key_len);
     key[key_len] = '\0';
     const char *fmt_str = dot + 1;
-    if (strcmp(fmt_str, "value") == 0) fmt_str = "hex";
+    int format_found = 0;
     for (int f = 0; f < FMT_COUNT; f++) {
-      if (strcmp(fmt_str, fmt_names[f]) == 0) { fmt_idx = f; break; }
+      if (strcmp(fmt_str, fmt_names[f]) == 0) {
+        fmt_idx = f;
+        format_found = 1;
+        break;
+      }
     }
+    if (!format_found) return NULL;
   } else {
     strncpy(key, placeholder, sizeof(key) - 1);
   }
