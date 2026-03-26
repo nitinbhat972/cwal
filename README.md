@@ -14,7 +14,7 @@ alt="cwal showcase" width="700"/>
 - **Surgical Config Injection**: Update specific sections of your existing configuration files without losing manual edits
 - **Persistent Configuration**: Remembers your preferred settings (alpha, mode, saturation, etc.) across sessions using a structured, XDG-compliant INI file
 - **XDG Compliant**: Follows the XDG Base Directory Specification for config, cache, and data
-- **Advanced Backend Support**: Utilizes `imagemagick` or `libimagequant` for efficient color quantization
+- **Advanced Backend Support**: Utilizes ImageMagick or `libimagequant` for efficient color quantization
 - **Lua Scripting Support**: Create custom backends using Lua scripts for advanced color quantization
 - **Extensive Customization**: Fine-tune saturation, contrast, alpha transparency, and theme mode (dark/light)
 - **Smart Template Engine**: Generates color schemes for various applications with intelligent shade generation
@@ -57,20 +57,20 @@ alt="cwal showcase" width="700"/>
 ## 🚀 Installation
 
 
-`cwal` requires `imagemagick`, `libimagequant`, and `lua` as dependencies.
+`cwal` requires ImageMagick 6 or 7, `libimagequant`, and Lua 5.2 or newer as dependencies.
 
 ### Prerequisites
 
 Ensure the following libraries are installed on your system:
 
-- `imagemagick`
+- `ImageMagick 6 or 7` (`MagickWand`)
 - `libimagequant`
-- `lua` (or `liblua-dev`)
+- `Lua >= 5.2`
 
 **Ubuntu/Debian**
 
 ```bash
-sudo apt install libwandmagick-dev libimagequant-dev liblua5.4-dev
+sudo apt install libmagickwand-dev libimagequant-dev liblua5.4-dev
 ```
 
 **Arch Linux**
