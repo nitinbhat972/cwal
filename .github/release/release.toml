@@ -31,10 +31,11 @@ postprocessors = [
 conventional_commits = true
 filter_unconventional = false
 protect_breaking_commits = true
-tag_pattern = "v[0-9]+\\.[0-9]+\\.[0-9]+"
+tag_pattern = "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
 sort_commits = "oldest"
 
 commit_parsers = [
+  { body = ".*security", group = "<!-- 7 -->Security" },
   { message = "^feat", group = "<!-- 0 -->Features" },
   { message = "^fix", group = "<!-- 1 -->Bug Fixes" },
   { message = "^perf", group = "<!-- 2 -->Performance" },
@@ -42,16 +43,11 @@ commit_parsers = [
   { message = "^docs?", group = "<!-- 4 -->Documentation" },
   { message = "^style", group = "<!-- 5 -->Style" },
   { message = "^test", group = "<!-- 6 -->Testing" },
-  { message = "^build", group = "<!-- 7 -->Build and CI" },
-  { message = "^ci", group = "<!-- 7 -->Build and CI" },
+  { message = "^revert", group = "<!-- 8 -->Reverts" },
+  { message = "^build", skip = true },
+  { message = "^ci", skip = true },
   { message = "^Merge ", skip = true },
   { message = "^Update README\\.md$", skip = true },
   { message = "^Updated README\\.md$", skip = true },
-  { message = "^chore: update changelog", skip = true },
-  { message = "^chore: bump version", skip = true },
-  { message = "^chore: update flake\\.nix", skip = true },
-  { message = "^chore", group = "<!-- 8 -->Maintenance" },
-  { body = ".*security", group = "<!-- 9 -->Security" },
-  { message = "^revert", group = "<!-- 10 -->Reverts" },
-  { message = ".*", group = "<!-- 11 -->Maintenance" },
+  { message = "^chore", skip = true },
 ]
