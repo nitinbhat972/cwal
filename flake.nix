@@ -10,37 +10,44 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        version = builtins.replaceStrings [ "\n" ] [ "" ] (builtins.readFile ./VERSION);
+        version =
+          builtins.replaceStrings [ "\n" ] [ "" ]
+          (builtins.readFile ./VERSION);
       in
       {
-        packages.default = pkgs.stdenv.mkDerivation {
-          pname = "cwal";
-          inherit version;
-          src = ./.;
+        packages = rec {
+          cwal = pkgs.stdenv.mkDerivation {
+            pname = "cwal";
+            inherit version;
+            src = ./.;
 
-          nativeBuildInputs = with pkgs; [
-            cmake
-            pkg-config
-          ];
+            nativeBuildInputs = with pkgs; [
+              cmake
+              pkg-config
+              makeWrapper
+            ];
 
-          buildInputs = with pkgs; [
-            imagemagick
-            libimagequant
-            lua
-          ];
+            buildInputs = with pkgs; [
+              imagemagick
+              libimagequant
+              lua
+            ];
 
-          cmakeFlags = [
-            "-DCMAKE_BUILD_TYPE=Release"
-            "-DCWAL_VERSION=${version}"
-          ];
+            postFixup = ''
+              wrapProgram $out/bin/cwal \
+                --prefix XDG_DATA_DIRS : $out/share
+            '';
 
-          meta = with pkgs.lib; {
-            description = "Blazing-fast pywal-like color palette generator written in C";
-            homepage = "https://github.com/nitinbhat972/cwal";
-            license = licenses.gpl3Only;
-            platforms = platforms.linux ++ platforms.darwin;
-            mainProgram = "cwal";
+            meta = with pkgs.lib; {
+              description = "Blazing-fast pywal-like color palette generator written in C";
+              homepage = "https://github.com/nitinbhat972/cwal";
+              license = licenses.gpl3Only;
+              platforms = platforms.unix;
+              mainProgram = "cwal";
+            };
           };
+
+          default = cwal;
         };
 
         devShells.default = pkgs.mkShell {
@@ -48,12 +55,11 @@
             cmake
             pkg-config
           ];
+
           buildInputs = with pkgs; [
             imagemagick
             libimagequant
             lua
-            gdb
-            valgrind
           ];
         };
       }
