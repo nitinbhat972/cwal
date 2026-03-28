@@ -124,7 +124,7 @@ int execute_command(const char *command) {
 }
 
 void logging(int log_level, const char *format, ...) {
-  if (quiet_mode) {
+  if (quiet_mode || format == NULL) {
     return;
   }
 
@@ -137,8 +137,8 @@ void logging(int log_level, const char *format, ...) {
 
   va_list args;
   va_start(args, format);
-  printf("[%s%c%s]: ", color[log_level], type[log_level], RESET);
-  vprintf(format, args);
-  printf("\n");
+  fprintf(stderr, "[%s%c%s]: ", color[log_level], type[log_level], RESET);
+  vfprintf(stderr, format, args);
+  fprintf(stderr, "\n");
   va_end(args);
 }
