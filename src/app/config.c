@@ -125,11 +125,14 @@ static void parse_link(Config *config, const char *key, const char *value) {
   }
 
   // Store the link
-  config->links = realloc(config->links, sizeof(Link) * (config->num_links + 1));
-  config->links[config->num_links].template_name = strdup(key);
-  config->links[config->num_links].target_path = expand_home(target_raw);
-  config->links[config->num_links].reload_cmd = cmd_raw ? strdup(cmd_raw) : NULL;
-  config->num_links++;
+  Link *new_links = realloc(config->links, sizeof(Link) * (config->num_links + 1));
+  if (new_links) {
+    config->links = new_links;
+    config->links[config->num_links].template_name = strdup(key);
+    config->links[config->num_links].target_path = expand_home(target_raw);
+    config->links[config->num_links].reload_cmd = cmd_raw ? strdup(cmd_raw) : NULL;
+    config->num_links++;
+  }
 
   free(val_copy);
 }

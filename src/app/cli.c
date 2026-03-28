@@ -253,6 +253,7 @@ void free_cli_args(CliArgs *args) {
     free(args->backend);
     free(args->script_path);
     free(args->out_dir);
+    free(args->random_dir);
     free(args->theme);
   }
 }
