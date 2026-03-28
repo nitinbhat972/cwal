@@ -93,6 +93,8 @@ static void parse_link(Config *config, const char *key, const char *value) {
   // key = template_name
   // value = target_path | reload_cmd
   
+  if (!key || !value || strlen(key) == 0 || strlen(value) == 0) return;
+
   char *val_copy = strdup(value);
   if (!val_copy) return;
 
@@ -122,6 +124,11 @@ static void parse_link(Config *config, const char *key, const char *value) {
     if (strlen(cmd_raw) == 0 || strncmp(cmd_raw, "none", 5) == 0) {
       cmd_raw = NULL;
     }
+  }
+
+  if (strlen(target_raw) == 0) {
+    free(val_copy);
+    return;
   }
 
   // Store the link
