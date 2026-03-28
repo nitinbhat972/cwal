@@ -25,36 +25,51 @@ static char **get_theme_dirs() {
 
   char *config_home = get_config_home();
   if (config_home) {
-    dirs = realloc(dirs, sizeof(char *) * (count + 1));
-    dirs[count++] = build_path(config_home, "cwal", "themes");
+    char **new_dirs = realloc(dirs, sizeof(char *) * (count + 1));
+    if (new_dirs) {
+      dirs = new_dirs;
+      dirs[count++] = build_path(config_home, "cwal", "themes");
+    }
     free(config_home);
   }
 
   char *data_home = get_data_home();
   if (data_home) {
-    dirs = realloc(dirs, sizeof(char *) * (count + 1));
-    dirs[count++] = build_path(data_home, "cwal", "themes");
+    char **new_dirs = realloc(dirs, sizeof(char *) * (count + 1));
+    if (new_dirs) {
+      dirs = new_dirs;
+      dirs[count++] = build_path(data_home, "cwal", "themes");
+    }
     free(data_home);
   }
 
   char **system_dirs = get_data_dirs();
   if (system_dirs) {
     for (int i = 0; system_dirs[i] != NULL; i++) {
-      dirs = realloc(dirs, sizeof(char *) * (count + 1));
-      dirs[count++] = build_path(system_dirs[i], "cwal", "themes");
+      char **new_dirs = realloc(dirs, sizeof(char *) * (count + 1));
+      if (new_dirs) {
+        dirs = new_dirs;
+        dirs[count++] = build_path(system_dirs[i], "cwal", "themes");
+      }
       free(system_dirs[i]);
     }
     free(system_dirs);
   }
 
-  dirs = realloc(dirs, sizeof(char *) * (count + 1));
-  dirs[count] = NULL;
+  char **new_dirs = realloc(dirs, sizeof(char *) * (count + 1));
+  if (new_dirs) {
+    dirs = new_dirs;
+    dirs[count] = NULL;
+  }
 
   return dirs;
 }
 
 int load_theme(Palette *palette, const char *theme_name) {
   char **theme_dirs = get_theme_dirs();
+  if (!theme_dirs) {
+    return -1;
+  }
   char theme_path[PATH_MAX];
   FILE *file = NULL;
 
@@ -127,6 +142,7 @@ int load_theme(Palette *palette, const char *theme_name) {
 
 int load_random_theme(Palette *palette, RandomMode mode) {
   char **theme_dirs = get_theme_dirs();
+  if (!theme_dirs) return -1;
   char **themes = NULL;
   int count = 0;
 
@@ -143,8 +159,11 @@ int load_random_theme(Palette *palette, RandomMode mode) {
         struct dirent *dir;
         while ((dir = readdir(d)) != NULL) {
           if (dir->d_type == DT_REG) {
-            themes = realloc(themes, sizeof(char *) * (count + 1));
-            themes[count++] = strdup(dir->d_name);
+            char **new_themes = realloc(themes, sizeof(char *) * (count + 1));
+            if (new_themes) {
+              themes = new_themes;
+              themes[count++] = strdup(dir->d_name);
+            }
           }
         }
         closedir(d);
@@ -159,8 +178,11 @@ int load_random_theme(Palette *palette, RandomMode mode) {
         struct dirent *dir;
         while ((dir = readdir(d)) != NULL) {
           if (dir->d_type == DT_REG) {
-            themes = realloc(themes, sizeof(char *) * (count + 1));
-            themes[count++] = strdup(dir->d_name);
+            char **new_themes = realloc(themes, sizeof(char *) * (count + 1));
+            if (new_themes) {
+              themes = new_themes;
+              themes[count++] = strdup(dir->d_name);
+            }
           }
         }
         closedir(d);

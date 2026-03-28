@@ -197,7 +197,9 @@ int process_template(const char *output_dir, const Palette *palette) {
   char *d1 = build_path(data_home, "cwal", "templates"), *d2 = build_path(config_home, "cwal", "templates");
   process_dir(d1, out_base, ct); process_dir(d2, out_base, ct);
   
-  generate_sequence(build_path(out_base, "sequences"), palette);
+  char *seq_path = build_path(out_base, "sequences");
+  generate_sequence(seq_path, palette);
+  free(seq_path);
   free(data_home); free(config_home); free(d1); free(d2); free(ct); free(out_base);
   return 0;
 }
