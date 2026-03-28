@@ -106,7 +106,16 @@ char **get_data_dirs(void) {
   char *saveptr;
   char *token = strtok_r(env_copy, ":", &saveptr);
   while (token != NULL) {
-    dirs[i++] = strdup(token);
+    char *dup = strdup(token);
+    if (!dup) {
+      for (int j = 0; j < i; j++) {
+        free(dirs[j]);
+      }
+      free(dirs);
+      free(env_copy);
+      return NULL;
+    }
+    dirs[i++] = dup;
     token = strtok_r(NULL, ":", &saveptr);
   }
   dirs[i] = NULL;
@@ -147,17 +156,19 @@ int validate_or_create_dir(const char *dir_in) {
     return -1;
   }
 
-  const char *dir = expand_home(dir_in);
+  char *dir = expand_home(dir_in);
   if (!dir) {
     errno = ENAMETOOLONG;
     return -1;
   }
 
   if (mkdir_p(dir, 0700) != 0 && errno != EEXIST) {
-    perror("Failed to create directory");
+    logging(ERROR, "Failed to create directory: %s", dir_in);
+    free(dir);
     return -1;
   }
 
+  free(dir);
   return 0;
 }
 
