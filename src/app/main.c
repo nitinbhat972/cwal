@@ -142,6 +142,7 @@ int main(int argv, char **argc) {
       // Use unified backend processing with fallback mechanism
       if (process_with_fallback(backend, path, &palette) != 0) {
         logging(ERROR, "All backends failed to process the image!");
+        free(image_to_process_path);
         free_config(app_config);
         free_cli_args(&args);
         return -1;
@@ -149,6 +150,7 @@ int main(int argv, char **argc) {
       process_colors(&palette, args.saturation, args.contrast);
       save_palette_to_cache(&palette, args.out_dir, args.backend);
     }
+    free(image_to_process_path);
   }
 
   // Generates template files

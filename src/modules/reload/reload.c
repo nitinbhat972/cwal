@@ -111,6 +111,18 @@ static void sync_file(const char *src_path, const char *dest_path) {
   char *src_content = read_file_to_buffer(src_path, &src_size);
   if (!src_content) return;
 
+  char *dest_copy = strdup(dest_path);
+  if (dest_copy) {
+    char *last_slash = strrchr(dest_copy, '/');
+    if (last_slash) {
+      *last_slash = '\0';
+      if(validate_or_create_dir(dest_copy) != 0){
+        logging(WARN,"Failed to create the dir: %s", dest_copy);
+      }
+    }
+    free(dest_copy);
+  }
+
   size_t dest_size;
   char *dest_content = read_file_to_buffer(dest_path, &dest_size);
 
@@ -145,8 +157,8 @@ static void sync_file(const char *src_path, const char *dest_path) {
       free(dest_content);
       return;
     }
-    free(dest_content);
   }
+  free(dest_content);
 
   // Full Overwrite
   char backup_path[PATH_MAX];
