@@ -200,9 +200,7 @@ void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload) {
   char *tty_script_path = build_path(out_dir, "colors-tty.sh");
   char *term_env = getenv("TERM");
   if (term_env && strncmp(term_env, "linux", 6) == 0 && access(tty_script_path, F_OK) == 0) {
-    char command[PATH_MAX + 10];
-    snprintf(command, sizeof(command), "sh %s", tty_script_path);
-    execute_command(command);
+    execute_command(tty_script_path);
   }
   free(tty_script_path);
 
