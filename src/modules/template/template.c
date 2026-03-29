@@ -29,32 +29,40 @@ typedef struct {
 typedef struct {
   ColorEntry colors[PALETTE_MAX_SIZE];
   char wallpaper[4096];
+  char alpha_str[16];
   float alpha;
 } ColorTable;
 
-static const char *fmt_names[] = {"hex", "xhex", "strip", "rgb", "rgba", "red", "green", "blue", "alpha_dec"};
+static const char *fmt_names[] = {"hex", "xhex",  "strip", "rgb",      "rgba",
+                                  "red", "green", "blue",  "alpha_dec"};
 
 static ColorTable *build_color_table(const Palette *palette) {
   ColorTable *ct = malloc(sizeof(ColorTable));
-  if (!ct) return NULL;
+  if (!ct)
+    return NULL;
   ct->alpha = palette->alpha;
-  snprintf(ct->wallpaper, sizeof(ct->wallpaper), "%s", palette->wallpaper ? palette->wallpaper : "");
+  snprintf(ct->alpha_str, sizeof(ct->alpha_str), "%.2f", palette->alpha);
+  snprintf(ct->wallpaper, sizeof(ct->wallpaper), "%s",
+           palette->wallpaper ? palette->wallpaper : "");
   for (int i = 0; i < PALETTE_MAX_SIZE; i++) {
     for (int f = 0; f < FMT_COUNT; f++) {
-      format_color(&palette->colors[i], fmt_names[f], ct->colors[i].fmt[f], COLOR_STR_MAX, palette->alpha);
+      format_color(&palette->colors[i], fmt_names[f], ct->colors[i].fmt[f],
+                   COLOR_STR_MAX, palette->alpha);
     }
   }
   return ct;
 }
 
-static const char *resolve_placeholder(const char *placeholder, const ColorTable *ct) {
+static const char *resolve_placeholder(const char *placeholder,
+                                       const ColorTable *ct) {
   char key[64] = {0};
   int fmt_idx = 0; // default hex
   const char *dot = strrchr(placeholder, '.');
 
   if (dot && dot != placeholder) {
     size_t key_len = (size_t)(dot - placeholder);
-    if (key_len >= sizeof(key)) key_len = sizeof(key) - 1;
+    if (key_len >= sizeof(key))
+      key_len = sizeof(key) - 1;
     memcpy(key, placeholder, key_len);
     key[key_len] = '\0';
     const char *fmt_str = dot + 1;
@@ -66,7 +74,8 @@ static const char *resolve_placeholder(const char *placeholder, const ColorTable
         break;
       }
     }
-    if (!format_found) return NULL;
+    if (!format_found)
+      return NULL;
   } else {
     strncpy(key, placeholder, sizeof(key) - 1);
   }
@@ -82,6 +91,8 @@ static const char *resolve_placeholder(const char *placeholder, const ColorTable
     return ct->colors[PALETTE_MAX_SIZE - 1].fmt[fmt_idx];
   } else if (strcmp(key, "wallpaper") == 0 && ct->wallpaper[0]) {
     return ct->wallpaper;
+  } else if (strcmp(key, "alpha") == 0) {
+    return ct->alpha_str;
   }
   return NULL;
 }
@@ -90,10 +101,12 @@ static void replacement(FILE *in, FILE *out, const ColorTable *ct) {
   fseek(in, 0, SEEK_END);
   long size = ftell(in);
   fseek(in, 0, SEEK_SET);
-  if (size <= 0) return;
+  if (size <= 0)
+    return;
 
   char *buf = malloc(size + 1);
-  if (!buf) return;
+  if (!buf)
+    return;
   size_t read_size = fread(buf, 1, size, in);
   buf[read_size] = '\0';
 
@@ -101,75 +114,146 @@ static void replacement(FILE *in, FILE *out, const ColorTable *ct) {
   char *p = buf;
   while (*p) {
     char *brace = strchr(p, '{');
-    if (!brace) { out_len += strlen(p); break; }
+    if (!brace) {
+      out_len += strlen(p);
+      break;
+    }
     out_len += (size_t)(brace - p);
+
     char *close = strchr(brace + 1, '}');
-    if (!close) { out_len += strlen(brace); break; }
-    
+    if (!close) {
+      out_len += strlen(brace);
+      break;
+    }
+
+    char *inner_brace = strchr(brace + 1, '{');
+    while (inner_brace && inner_brace < close) {
+      out_len += (size_t)(inner_brace - brace);
+      brace = inner_brace;
+      inner_brace = strchr(brace + 1, '{');
+    }
+
     char name[128] = {0};
     size_t len = (size_t)(close - (brace + 1));
     if (len < sizeof(name)) {
       memcpy(name, brace + 1, len);
       const char *res = resolve_placeholder(name, ct);
       out_len += res ? strlen(res) : (len + 2);
-    } else out_len += 1;
+    } else {
+      out_len += (len + 2);
+    }
     p = close + 1;
   }
 
   char *result = malloc(out_len + 1);
-  if (!result) { free(buf); return; }
-  size_t pos = 0; p = buf;
+  if (!result) {
+    free(buf);
+    return;
+  }
+  size_t pos = 0;
+  p = buf;
   while (*p) {
     char *brace = strchr(p, '{');
-    if (!brace) { strcpy(result + pos, p); pos += strlen(p); break; }
+    if (!brace) {
+      strcpy(result + pos, p);
+      pos += strlen(p);
+      break;
+    }
     size_t before = (size_t)(brace - p);
-    memcpy(result + pos, p, before); pos += before;
+    memcpy(result + pos, p, before);
+    pos += before;
+
     char *close = strchr(brace + 1, '}');
-    if (!close) { strcpy(result + pos, brace); pos += strlen(brace); break; }
-    
+    if (!close) {
+      strcpy(result + pos, brace);
+      pos += strlen(brace);
+      break;
+    }
+
+    char *inner_brace = strchr(brace + 1, '{');
+    while (inner_brace && inner_brace < close) {
+      size_t skip = (size_t)(inner_brace - brace);
+      memcpy(result + pos, brace, skip);
+      pos += skip;
+      brace = inner_brace;
+      inner_brace = strchr(brace + 1, '{');
+    }
+
     char name[128] = {0};
     size_t len = (size_t)(close - (brace + 1));
     if (len < sizeof(name)) {
       memcpy(name, brace + 1, len);
       const char *res = resolve_placeholder(name, ct);
-      if (res) { size_t rlen = strlen(res); memcpy(result + pos, res, rlen); pos += rlen; }
-      else { memcpy(result + pos, brace, len + 2); pos += len + 2; }
-    } else result[pos++] = '{';
+      if (res) {
+        size_t rlen = strlen(res);
+        memcpy(result + pos, res, rlen);
+        pos += rlen;
+      } else {
+        memcpy(result + pos, brace, len + 2);
+        pos += len + 2;
+      }
+    } else {
+      memcpy(result + pos, brace, len + 2);
+      pos += len + 2;
+    }
     p = close + 1;
   }
   result[pos] = '\0';
   fwrite(result, 1, pos, out);
-  free(result); free(buf);
+  free(result);
+  free(buf);
 }
 
 static void generate_sequence(const char *out_path, const Palette *palette) {
   char seq[4096];
   int n = 0;
   for (int i = 0; i < 16; i++)
-    n += snprintf(seq + n, sizeof(seq) - n, "\033]4;%d;#%02x%02x%02x\033\\", i, palette->colors[i].red, palette->colors[i].green, palette->colors[i].blue);
+    n += snprintf(seq + n, sizeof(seq) - n, "\033]4;%d;#%02x%02x%02x\033\\", i,
+                  palette->colors[i].red, palette->colors[i].green,
+                  palette->colors[i].blue);
   const Color *fg = &palette->colors[15], *bg = &palette->colors[0];
-  n += snprintf(seq + n, sizeof(seq) - n, "\033]10;#%02x%02x%02x\033\\\033]11;#%02x%02x%02x\033\\\033]12;#%02x%02x%02x\033\\\033]13;#%02x%02x%02x\033\\\033]17;#%02x%02x%02x\033\\\033]19;#%02x%02x%02x\033\\\033]4;232;#%02x%02x%02x\033\\\033]4;256;#%02x%02x%02x\033\\\033]4;257;#%02x%02x%02x\033\\\033]708;#%02x%02x%02x\033\\",
-    fg->red, fg->green, fg->blue, bg->red, bg->green, bg->blue, fg->red, fg->green, fg->blue, fg->red, fg->green, fg->blue, fg->red, fg->green, fg->blue, bg->red, bg->green, bg->blue, bg->red, bg->green, bg->blue, fg->red, fg->green, fg->blue, bg->red, bg->green, bg->blue, bg->red, bg->green, bg->blue);
+  n += snprintf(
+      seq + n, sizeof(seq) - n,
+      "\033]10;#%02x%02x%02x\033\\\033]11;#%02x%02x%02x\033\\\033]12;#%02x%02x%"
+      "02x\033\\\033]13;#%02x%02x%02x\033\\\033]17;#%02x%02x%02x\033\\\033]19;#"
+      "%02x%02x%02x\033\\\033]4;232;#%02x%02x%02x\033\\\033]4;256;#%02x%02x%"
+      "02x\033\\\033]4;257;#%02x%02x%02x\033\\\033]708;#%02x%02x%02x\033\\",
+      fg->red, fg->green, fg->blue, bg->red, bg->green, bg->blue, fg->red,
+      fg->green, fg->blue, fg->red, fg->green, fg->blue, fg->red, fg->green,
+      fg->blue, bg->red, bg->green, bg->blue, bg->red, bg->green, bg->blue,
+      fg->red, fg->green, fg->blue, bg->red, bg->green, bg->blue, bg->red,
+      bg->green, bg->blue);
   FILE *out = fopen(out_path, "w");
-  if (out) { fwrite(seq, 1, n, out); fclose(out); }
+  if (out) {
+    fwrite(seq, 1, n, out);
+    fclose(out);
+  }
 }
 
-static void process_dir(const char *current_dir, const char *out_base, const ColorTable *ct) {
+static void process_dir(const char *current_dir, const char *out_base,
+                        const ColorTable *ct) {
   struct stat st;
-  if (stat(current_dir, &st) == -1 || !S_ISDIR(st.st_mode)) return;
+  if (stat(current_dir, &st) == -1 || !S_ISDIR(st.st_mode))
+    return;
   logging(INFO, "Processing templates from %s", current_dir);
   DIR *dir = opendir(current_dir);
-  if (!dir) return;
+  if (!dir)
+    return;
   struct dirent *entry;
   while ((entry = readdir(dir)) != NULL) {
-    if (entry->d_name[0] == '.') continue;
+    if (entry->d_name[0] == '.')
+      continue;
     char *full_in = build_path(current_dir, entry->d_name);
     struct stat fst;
     if (stat(full_in, &fst) == 0 && S_ISREG(fst.st_mode)) {
       char *full_out = build_path(out_base, entry->d_name);
       FILE *in = fopen(full_in, "r"), *out = fopen(full_out, "w");
-      if (in && out) replacement(in, out, ct);
-      if (in) fclose(in); if (out) fclose(out);
+      if (in && out)
+        replacement(in, out, ct);
+      if (in)
+        fclose(in);
+      if (out)
+        fclose(out);
       free(full_out);
     }
     free(full_in);
@@ -179,27 +263,41 @@ static void process_dir(const char *current_dir, const char *out_base, const Col
 
 int process_template(const char *output_dir, const Palette *palette) {
   char *out_base = build_path(output_dir, "");
-  if (validate_or_create_dir(out_base) == -1) { free(out_base); return 1; }
+  if (validate_or_create_dir(out_base) == -1) {
+    free(out_base);
+    return 1;
+  }
   ColorTable *ct = build_color_table(palette);
-  if (!ct) { free(out_base); return 1; }
+  if (!ct) {
+    free(out_base);
+    return 1;
+  }
 
   char **system_dirs = get_data_dirs();
   if (system_dirs) {
     for (int i = 0; system_dirs[i]; i++) {
       char *p = build_path(system_dirs[i], "cwal", "templates");
       process_dir(p, out_base, ct);
-      free(p); free(system_dirs[i]);
+      free(p);
+      free(system_dirs[i]);
     }
     free(system_dirs);
   }
 
   char *data_home = get_data_home(), *config_home = get_config_home();
-  char *d1 = build_path(data_home, "cwal", "templates"), *d2 = build_path(config_home, "cwal", "templates");
-  process_dir(d1, out_base, ct); process_dir(d2, out_base, ct);
-  
+  char *d1 = build_path(data_home, "cwal", "templates"),
+       *d2 = build_path(config_home, "cwal", "templates");
+  process_dir(d1, out_base, ct);
+  process_dir(d2, out_base, ct);
+
   char *seq_path = build_path(out_base, "sequences");
   generate_sequence(seq_path, palette);
   free(seq_path);
-  free(data_home); free(config_home); free(d1); free(d2); free(ct); free(out_base);
+  free(data_home);
+  free(config_home);
+  free(d1);
+  free(d2);
+  free(ct);
+  free(out_base);
   return 0;
 }
