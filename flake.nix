@@ -24,7 +24,7 @@
             nativeBuildInputs = with pkgs; [
               cmake
               pkg-config
-              makeWrapper
+              makeBinaryWrapper
             ];
 
             buildInputs = with pkgs; [
