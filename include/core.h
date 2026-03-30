@@ -25,7 +25,7 @@ typedef enum { DARK, LIGHT } COLOR_MODE;
 typedef enum { NONE, LIGHTEN, DARKEN } SHADE_MODE;
 
 typedef struct {
-  const char *wallpaper;
+  char *wallpaper;
   Color colors[PALETTE_MAX_SIZE];
   float saturation;
   float contrast;

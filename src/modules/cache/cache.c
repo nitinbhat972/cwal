@@ -27,7 +27,7 @@ static void generate_cache_filename(char *buffer, size_t buffer_size,
   if (filename) {
     filename++;
   } else {
-    filename = (char *)palette->wallpaper;
+    filename = palette->wallpaper;
   }
 
   const char *mode_str = (palette->mode == DARK) ? "dark" : "light";

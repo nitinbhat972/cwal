@@ -111,20 +111,26 @@ static void sync_file(const char *src_path, const char *dest_path) {
   char *src_content = read_file_to_buffer(src_path, &src_size);
   if (!src_content) return;
 
-  char *dest_copy = strdup(dest_path);
+  char *resolved_dest_path = expand_home(dest_path);
+  if (!resolved_dest_path) {
+    free(src_content);
+    return;
+  }
+
+  char *dest_copy = strdup(resolved_dest_path);
   if (dest_copy) {
     char *last_slash = strrchr(dest_copy, '/');
     if (last_slash) {
       *last_slash = '\0';
-      if(validate_or_create_dir(dest_copy) != 0){
-        logging(WARN,"Failed to create the dir: %s", dest_copy);
+      if (validate_or_create_dir(dest_copy) != 0) {
+        logging(WARN, "Failed to create the dir: %s", dest_copy);
       }
     }
     free(dest_copy);
   }
 
   size_t dest_size;
-  char *dest_content = read_file_to_buffer(dest_path, &dest_size);
+  char *dest_content = read_file_to_buffer(resolved_dest_path, &dest_size);
 
   if (dest_content) {
     char *start_marker = strstr(dest_content, "$CWAL_START");
@@ -132,9 +138,9 @@ static void sync_file(const char *src_path, const char *dest_path) {
 
     if (start_marker && end_marker && end_marker > start_marker) {
       // Surgical Injection
-      logging(INFO, "Injecting colors into %s", dest_path);
+      logging(INFO, "Injecting colors into %s", resolved_dest_path);
       
-      FILE *f = fopen(dest_path, "wb");
+      FILE *f = fopen(resolved_dest_path, "wb");
       if (f) {
         char *start_write_pos = strchr(start_marker, '\n');
         if (!start_write_pos) start_write_pos = start_marker + strlen("$CWAL_START");
@@ -155,6 +161,7 @@ static void sync_file(const char *src_path, const char *dest_path) {
       }
       free(src_content);
       free(dest_content);
+      free(resolved_dest_path);
       return;
     }
   }
@@ -162,18 +169,19 @@ static void sync_file(const char *src_path, const char *dest_path) {
 
   // Full Overwrite
   char backup_path[PATH_MAX];
-  snprintf(backup_path, sizeof(backup_path), "%s.bak", dest_path);
-  if (access(dest_path, F_OK) == 0 && access(backup_path, F_OK) != 0) {
-    rename(dest_path, backup_path);
+  snprintf(backup_path, sizeof(backup_path), "%s.bak", resolved_dest_path);
+  if (access(resolved_dest_path, F_OK) == 0 && access(backup_path, F_OK) != 0) {
+    rename(resolved_dest_path, backup_path);
   }
 
-  logging(INFO, "Replacing file: %s", dest_path);
-  FILE *f = fopen(dest_path, "wb");
+  logging(INFO, "Replacing file: %s", resolved_dest_path);
+  FILE *f = fopen(resolved_dest_path, "wb");
   if (f) {
     fwrite(src_content, 1, src_size, f);
     fclose(f);
   }
   free(src_content);
+  free(resolved_dest_path);
 }
 
 
@@ -184,8 +192,15 @@ void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload) {
     return;
   }
 
+  char *resolved_out_dir = expand_home(out_dir);
+  if (!resolved_out_dir) {
+    logging(ERROR, "Failed to resolve output directory: %s",
+            out_dir ? out_dir : "(null)");
+    return;
+  }
+
   // 1. Terminal Sequences
-  char *sequences_path = build_path(out_dir, "sequences");
+  char *sequences_path = build_path(resolved_out_dir, "sequences");
   size_t seq_len;
   char *sequences = read_file_to_buffer(sequences_path, &seq_len);
   if (sequences) {
@@ -197,7 +212,7 @@ void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload) {
   free(sequences_path);
 
   // 2. Legacy TTY
-  char *tty_script_path = build_path(out_dir, "colors-tty.sh");
+  char *tty_script_path = build_path(resolved_out_dir, "colors-tty.sh");
   char *term_env = getenv("TERM");
   if (term_env && strncmp(term_env, "linux", 6) == 0 && access(tty_script_path, F_OK) == 0) {
     execute_command(tty_script_path);
@@ -205,7 +220,7 @@ void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload) {
   free(tty_script_path);
 
   // 3. Xresources
-  char *xrdb_path = build_path(out_dir, "colors.Xresources");
+  char *xrdb_path = build_path(resolved_out_dir, "colors.Xresources");
   if (command_exists("xrdb") && access(xrdb_path, F_OK) == 0) {
     char command[PATH_MAX + 30];
     snprintf(command, sizeof(command), "xrdb -merge -quiet %s", xrdb_path);
@@ -215,7 +230,7 @@ void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload) {
 
   // 4. Dynamic Links & Reloads
   for (int i = 0; i < config->num_links; i++) {
-    char *src = build_path(out_dir, config->links[i].template_name);
+    char *src = build_path(resolved_out_dir, config->links[i].template_name);
     sync_file(src, config->links[i].target_path);
     if (config->links[i].reload_cmd) {
       logging(INFO, "Running reload command: %s", config->links[i].reload_cmd);
@@ -225,4 +240,5 @@ void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload) {
   }
 
   logging(INFO, "Finished applying colors to applications.");
+  free(resolved_out_dir);
 }

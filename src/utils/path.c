@@ -252,20 +252,6 @@ char *get_random_image_path(const char *directory_in) {
   return random_image_path;
 }
 
-char *normalize_cli_path(const char *path) {
-  char *expanded_path = expand_home(path);
-  if (!expanded_path)
-    return NULL;
-
-  char *resolved_path = realpath(expanded_path, NULL);
-  if (resolved_path) {
-    free(expanded_path);
-    return resolved_path;
-  }
-
-  return expanded_path;
-}
-
 char *build_path_internal(const char *first, ...) {
   if (!first)
     return NULL;

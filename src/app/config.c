@@ -19,27 +19,22 @@ static void parse_key_value(Config *config, const char *key,
                             const char *value) {
   if (strncmp(key, "out_dir", 8) == 0) {
     if (strlen(value) > 0) {
-      free(config->out_dir);
-      config->out_dir = expand_home(value);
-      if (!config->out_dir) {
+      char *new_value = strdup(value);
+      if (!new_value) {
         logging(ERROR, "Failed to allocate out_dir");
         return;
       }
-    }
-  } else if (strncmp(key, "current_wallpaper", 18) == 0) {
-    free(config->current_wallpaper);
-    config->current_wallpaper = expand_home(value);
-    if (!config->current_wallpaper) {
-      logging(ERROR, "Failed to allocate current_wallpaper");
-      return;
+      free(config->out_dir);
+      config->out_dir = new_value;
     }
   } else if (strncmp(key, "backend", 8) == 0) {
-    free(config->backend);
-    config->backend = strdup(value);
-    if (!config->backend) {
+    char *new_value = strdup(value);
+    if (!new_value) {
       logging(ERROR, "Failed to allocate backend");
       return;
     }
+    free(config->backend);
+    config->backend = new_value;
   } else if (strncmp(key, "alpha", 6) == 0) {
     if (strlen(value) > 0) {
       config->alpha = atof(value);
@@ -54,13 +49,23 @@ static void parse_key_value(Config *config, const char *key,
     }
   } else if (strncmp(key, "script_path", 12) == 0) {
     if (strlen(value) > 0) {
+      char *new_value = strdup(value);
+      if (!new_value) {
+        logging(ERROR, "Failed to allocate script_path");
+        return;
+      }
       free(config->script_path);
-      config->script_path = expand_home(value);
+      config->script_path = new_value;
     }
   } else if (strncmp(key, "random_dir", 11) == 0) {
     if (strlen(value) > 0) {
+      char *new_value = strdup(value);
+      if (!new_value) {
+        logging(ERROR, "Failed to allocate random_dir");
+        return;
+      }
       free(config->random_dir);
-      config->random_dir = expand_home(value);
+      config->random_dir = new_value;
     }
   } else if (strncmp(key, "mode", 5) == 0) {
     if (strlen(value) > 0) {
@@ -131,14 +136,29 @@ static void parse_link(Config *config, const char *key, const char *value) {
     return;
   }
 
+  char *template_name = strdup(key);
+  char *target_path = strdup(target_raw);
+  char *reload_cmd = cmd_raw ? strdup(cmd_raw) : NULL;
+  if (!template_name || !target_path || (cmd_raw && !reload_cmd)) {
+    free(template_name);
+    free(target_path);
+    free(reload_cmd);
+    free(val_copy);
+    return;
+  }
+
   // Store the link
   Link *new_links = realloc(config->links, sizeof(Link) * (config->num_links + 1));
   if (new_links) {
     config->links = new_links;
-    config->links[config->num_links].template_name = strdup(key);
-    config->links[config->num_links].target_path = expand_home(target_raw);
-    config->links[config->num_links].reload_cmd = cmd_raw ? strdup(cmd_raw) : NULL;
+    config->links[config->num_links].template_name = template_name;
+    config->links[config->num_links].target_path = target_path;
+    config->links[config->num_links].reload_cmd = reload_cmd;
     config->num_links++;
+  } else {
+    free(template_name);
+    free(target_path);
+    free(reload_cmd);
   }
 
   free(val_copy);
@@ -197,10 +217,16 @@ Config *load_config(void) {
 
   // Set default values (these can be overridden by CLI arguments)
   char *cache_home = get_cache_home();
-  config->out_dir = build_path(cache_home, "cwal");
+  config->out_dir = cache_home ? build_path(cache_home, "cwal") : NULL;
   free(cache_home);
-
-  config->current_wallpaper = NULL;
+  if (!config->out_dir) {
+    config->out_dir = strdup("~/.cache/cwal");
+  }
+  if (!config->out_dir) {
+    perror("Failed to allocate out_dir");
+    free(config);
+    return NULL;
+  }
   config->backend = NULL;
   config->mode = DARK;
   config->cols16_mode = DARKEN;
@@ -296,8 +322,7 @@ void save_config(const Config *config) {
   }
 
   fprintf(file, "[general]\n");
-  fprintf(file, "out_dir = %s\n", config->out_dir);
-  fprintf(file, "current_wallpaper = %s\n", config->current_wallpaper ? config->current_wallpaper : "");
+  fprintf(file, "out_dir = %s\n", config->out_dir ? config->out_dir : "");
   fprintf(file, "backend = %s\n", config->backend ? config->backend : "cwal");
   fprintf(file, "script_path = %s\n", config->script_path ? config->script_path : "");
 
@@ -317,10 +342,16 @@ void save_config(const Config *config) {
   if (config->num_links > 0) {
     fprintf(file, "\n[links]\n");
     for (int i = 0; i < config->num_links; i++) {
-      fprintf(file, "%s = %s | %s\n", 
-              config->links[i].template_name,
-              config->links[i].target_path,
-              config->links[i].reload_cmd ? config->links[i].reload_cmd : "none");
+      if (config->links[i].reload_cmd && strlen(config->links[i].reload_cmd) > 0) {
+        fprintf(file, "%s = %s | %s\n",
+                config->links[i].template_name,
+                config->links[i].target_path ? config->links[i].target_path : "",
+                config->links[i].reload_cmd);
+      } else {
+        fprintf(file, "%s = %s\n",
+                config->links[i].template_name,
+                config->links[i].target_path ? config->links[i].target_path : "");
+      }
     }
   }
 
@@ -334,7 +365,6 @@ void save_config(const Config *config) {
 void free_config(Config *config) {
   if (config) {
     free(config->out_dir);
-    free(config->current_wallpaper);
     free(config->backend);
     free(config->script_path);
     free(config->random_dir);

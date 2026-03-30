@@ -113,13 +113,18 @@ int main(int argv, char **argc) {
       }
       logging(INFO, "Selected random image: %s", image_to_process_path);
     } else if (args.image_path) {
-      image_to_process_path = strdup(args.image_path);
+      image_to_process_path = expand_home(args.image_path);
+      if (!image_to_process_path) {
+        logging(ERROR, "Failed to resolve image path.");
+        free_config(app_config);
+        free_cli_args(&args);
+        return -1;
+      }
     }
 
     const char *path = image_to_process_path;
     if (!path) {
-      logging(ERROR, "Could not resolve path for %s", image_to_process_path);
-      free(image_to_process_path);
+      logging(ERROR, "Failed to resolve image path.");
       free_config(app_config);
       free_cli_args(&args);
       return -1;
@@ -136,13 +141,15 @@ int main(int argv, char **argc) {
     }
 
     // Apply settings from CLI
-    palette.wallpaper = strdup(path);
+    palette.wallpaper = image_to_process_path;
+    image_to_process_path = NULL;
     // Loads colors from cache
     if (load_palette_from_cache(&palette, args.out_dir, args.backend) != 0) {
       // Use unified backend processing with fallback mechanism
       if (process_with_fallback(backend, path, &palette) != 0) {
         logging(ERROR, "All backends failed to process the image!");
-        free(image_to_process_path);
+        free(palette.wallpaper);
+        palette.wallpaper = NULL;
         free_config(app_config);
         free_cli_args(&args);
         return -1;
@@ -150,7 +157,6 @@ int main(int argv, char **argc) {
       process_colors(&palette, args.saturation, args.contrast);
       save_palette_to_cache(&palette, args.out_dir, args.backend);
     }
-    free(image_to_process_path);
   }
 
   // Generates template files
@@ -161,23 +167,24 @@ int main(int argv, char **argc) {
 
   // Runs post hooks
   if (args.script_path) {
-    char *final_cmd =
-        replace_placeholder(args.script_path, "$current_wallpaper",
-                            palette.wallpaper ? palette.wallpaper : "");
-    logging(INFO, "Running post-hook script: %s", final_cmd);
-    execute_command(final_cmd);
-    free(final_cmd);
+    char *resolved_script_path = expand_home(args.script_path);
+    if (resolved_script_path) {
+      char *final_cmd = replace_placeholder(
+          resolved_script_path, "$current_wallpaper",
+          palette.wallpaper ? palette.wallpaper : "");
+      if (final_cmd) {
+        logging(INFO, "Running post-hook script: %s", final_cmd);
+        execute_command(final_cmd);
+        free(final_cmd);
+      }
+      free(resolved_script_path);
+    } else {
+      logging(ERROR, "Failed to resolve post-hook script path.");
+    }
   }
 
-  // Updates the config wallpaper path
-  free(app_config->current_wallpaper);
-  if (palette.wallpaper) {
-    app_config->current_wallpaper = strdup(palette.wallpaper);
-    free((char *)palette.wallpaper);
-    palette.wallpaper = NULL;
-  } else {
-    app_config->current_wallpaper = strdup("");
-  }
+  free(palette.wallpaper);
+  palette.wallpaper = NULL;
 
   // Updates the config file to the current values
   free(app_config->out_dir);

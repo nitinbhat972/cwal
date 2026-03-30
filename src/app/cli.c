@@ -9,7 +9,6 @@
  */
 
 #include "cli.h"
-#include "utils/path.h"
 #include "utils/utils.h"
 #include <getopt.h>
 #include <stdio.h>
@@ -157,15 +156,15 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       break;
     case 'i':
       free(args->image_path);
-      args->image_path = normalize_cli_path(optarg);
+      args->image_path = strdup(optarg);
       break;
     case 'S':
       free(args->script_path);
-      args->script_path = normalize_cli_path(optarg);
+      args->script_path = strdup(optarg);
       break;
     case 'o':
       free(args->out_dir);
-      args->out_dir = normalize_cli_path(optarg);
+      args->out_dir = strdup(optarg);
       break;
     case 'n':
       args->no_reload = true;
@@ -186,7 +185,7 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
 
       if (optarg) {
         free(args->random_dir);
-        args->random_dir = normalize_cli_path(optarg);
+        args->random_dir = strdup(optarg);
       }
       args->use_random_dir = true;
       break;
