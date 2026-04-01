@@ -182,7 +182,6 @@ The structured INI file is located at `${XDG_CONFIG_HOME:-~/.config}/cwal/cwal.i
 ```ini
 [general]
 out_dir = /home/user/.cache/cwal/
-current_wallpaper = /home/user/Pictures/wall.png
 backend = cwal
 script_path = /home/user/.local/bin/post-cwal.sh
 
