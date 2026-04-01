@@ -142,7 +142,8 @@ int load_theme(Palette *palette, const char *theme_name) {
 
 int load_random_theme(Palette *palette, RandomMode mode) {
   char **theme_dirs = get_theme_dirs();
-  if (!theme_dirs) return -1;
+  if (!theme_dirs)
+    return -1;
   char **themes = NULL;
   int count = 0;
 
@@ -222,6 +223,10 @@ int load_random_theme(Palette *palette, RandomMode mode) {
 
 void list_themes() {
   char **theme_dirs = get_theme_dirs();
+  if (theme_dirs == NULL) {
+    logging(ERROR, "Failed to get theme directories");
+    return;
+  }
 
   for (int i = 0; theme_dirs[i] != NULL; i++) {
     struct stat st;
