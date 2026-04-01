@@ -108,6 +108,24 @@ brew tap nitinbhat972/cwal
 brew install cwal
 ```
 
+## Nix
+
+### Run without installing
+```bash
+nix run github:nitinbhat972/cwal
+```
+
+### Install (user profile)
+```bash
+nix profile install nixpkgs#cwal
+```
+
+### NixOS (system-wide)
+```nix
+environment.systemPackages = with pkgs; [
+  cwal
+];
+```
 
 ### Building from Source
 
