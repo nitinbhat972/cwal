@@ -115,12 +115,22 @@ int execute_command(const char *command) {
   posix_spawnattr_init(&attr);
 
   pid_t pid;
-  int status = posix_spawnp(&pid, "sh", &file_actions, &attr, args, environ);
+  int spawn_status =
+      posix_spawnp(&pid, "sh", &file_actions, &attr, args, environ);
 
   posix_spawnattr_destroy(&attr);
   posix_spawn_file_actions_destroy(&file_actions);
 
-  return (status == 0) ? 0 : -1;
+  if (spawn_status != 0) {
+    return -1;
+  }
+
+  int child_status;
+  if (waitpid(pid, &child_status, 0) == -1) {
+    return -1;
+  }
+
+  return WIFEXITED(child_status) ? WEXITSTATUS(child_status) : -1;
 }
 
 void logging(int log_level, const char *format, ...) {

@@ -60,6 +60,13 @@ static char **get_theme_dirs() {
   if (new_dirs) {
     dirs = new_dirs;
     dirs[count] = NULL;
+  } else if (dirs) {
+    // realloc failed but we have entries; free them to avoid leaks
+    for (int i = 0; i < count; i++) {
+      free(dirs[i]);
+    }
+    free(dirs);
+    return NULL;
   }
 
   return dirs;
@@ -222,6 +229,10 @@ int load_random_theme(Palette *palette, RandomMode mode) {
 
 void list_themes() {
   char **theme_dirs = get_theme_dirs();
+  if (!theme_dirs) {
+    logging(ERROR, "Failed to get theme directories.");
+    return;
+  }
 
   for (int i = 0; theme_dirs[i] != NULL; i++) {
     struct stat st;

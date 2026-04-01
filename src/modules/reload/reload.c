@@ -56,17 +56,17 @@ static void broadcast_to_terminals(const char *sequences, size_t len) {
   glob_t glob_result;
   char **devices = NULL;
   int device_count = 0;
+  int glob_ok = 0;
 
   if (strncmp(os, "Darwin", 7) == 0) {
-    if (glob("/dev/ttys00[0-9]*", 0, NULL, &glob_result) == 0) {
-      devices = glob_result.gl_pathv;
-      device_count = glob_result.gl_pathc;
-    }
+    glob_ok = (glob("/dev/ttys00[0-9]*", 0, NULL, &glob_result) == 0);
   } else {
-    if (glob("/dev/pts/[0-9]*", 0, NULL, &glob_result) == 0) {
-      devices = glob_result.gl_pathv;
-      device_count = glob_result.gl_pathc;
-    }
+    glob_ok = (glob("/dev/pts/[0-9]*", 0, NULL, &glob_result) == 0);
+  }
+
+  if (glob_ok) {
+    devices = glob_result.gl_pathv;
+    device_count = glob_result.gl_pathc;
   }
 
   if (devices && device_count > 0) {
@@ -79,7 +79,7 @@ static void broadcast_to_terminals(const char *sequences, size_t len) {
     }
   }
 
-  if (strncmp(os, "OpenBSD", 8) != 0) {
+  if (glob_ok) {
     globfree(&glob_result);
   }
 }

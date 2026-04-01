@@ -268,8 +268,11 @@ Config *load_config(void) {
     }
 
     if (trimmed_line[0] == '[' && trimmed_line[len - 1] == ']') {
-      strncpy(section, trimmed_line + 1, len - 2);
-      section[len - 2] = '\0';
+      size_t sect_len = len - 2;
+      if (sect_len >= sizeof(section))
+        sect_len = sizeof(section) - 1;
+      memcpy(section, trimmed_line + 1, sect_len);
+      section[sect_len] = '\0';
     } else if (strlen(section) > 0) {
       char *equals = strchr(trimmed_line, '=');
       if (equals) {
