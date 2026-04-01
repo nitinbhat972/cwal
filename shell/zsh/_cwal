@@ -48,20 +48,39 @@ _cwal_get_backends() {
 }
 
 _arguments \
+    '-m[Set theme mode (required)]:mode:(dark light)' \
     '--mode[Set theme mode (required)]:mode:(dark light)' \
+    '-c[Set 16-color mode (required)]:cols16:(darken lighten)' \
     '--cols16-mode[Set 16-color mode (required)]:cols16:(darken lighten)' \
+    '-s[Overall saturation (required)]:float:' \
     '--saturation[Overall saturation (required)]:float:' \
+    '-C[Contrast ratio (required)]:float:' \
     '--contrast[Contrast ratio (required)]:float:' \
+    '-a[Alpha transparency (required)]:float:' \
     '--alpha[Alpha transparency (required)]:float:' \
+    '-o[Output directory (required)]:path:_directories' \
     '--out-dir[Output directory (required)]:path:_directories' \
+    '-b[Processing backend (required)]:backend:_cwal_get_backends' \
     '--backend[Processing backend (required)]:backend:_cwal_get_backends' \
+    '-i[Specify image path (required)]:image:_files -g "*.(jpg|jpeg|png|gif|webp)"' \
     '--img[Specify image path (required)]:image:_files -g "*.(jpg|jpeg|png|gif|webp)"' \
+    '-S[Run custom script (required)]:script:_files' \
     '--script[Run custom script (required)]:script:_files' \
+    '-n[Disable reloading]' \
     '--no-reload[Disable reloading]' \
+    '-B[List available backends]' \
     '--list-backends[List available backends]' \
+    '-T[List available themes]' \
     '--list-themes[List available themes]' \
+    '-q[Suppress all output]' \
     '--quiet[Suppress all output]' \
+    '-r[Select random image (optional)]::directory:_directories' \
     '--random[Select random image (optional)]::directory:_directories' \
+    '-t[Select a theme (required)]:theme:_cwal_get_themes' \
     '--theme[Select a theme (required)]:theme:_cwal_get_themes' \
+    '-p[Show palette preview]' \
     '--preview[Show palette preview]' \
+    '-v[Show version]' \
+    '--version[Show version]' \
+    '-h[Display help message]' \
     '--help[Display help message]'

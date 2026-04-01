@@ -66,20 +66,21 @@ function __fish_cwal_backends
     end
 end
 
-complete -c cwal -l mode -d "Set theme mode (required: <dark|light>)" -r -xa "dark light"
-complete -c cwal -l cols16-mode -d "Set 16-color mode (required: <darken|lighten>)" -r -xa "darken lighten"
-complete -c cwal -l saturation -d "Overall saturation (required: <float>)" -r
-complete -c cwal -l contrast -d "Contrast ratio (required: <float>)" -r
-complete -c cwal -l alpha -d "Alpha transparency (required: <float>)" -r
-complete -c cwal -l out-dir -d "Output directory (required: <path>)" -r -xa "(__fish_complete_directories)"
-complete -c cwal -l backend -d "Processing backend (required: <name>)" -r -xa "(__fish_cwal_backends)"
-complete -c cwal -l img -d "Specify image path (required: <path>)" -r -xa "(__fish_complete_suffix .jpg .jpeg .png .gif .webp)"
-complete -c cwal -l script -d "Run custom script (required: <path>)" -r
-complete -c cwal -l theme -d "Select a theme (required: <name>)" -r -xa "(__fish_cwal_themes)"
-complete -c cwal -l random -d "Select random image (optional: [directory])" -xa "(__fish_complete_directories)"
-complete -c cwal -l no-reload -d "Disable reloading"
-complete -c cwal -l list-backends -d "List available backends"
-complete -c cwal -l list-themes -d "List available themes"
-complete -c cwal -l quiet -d "Suppress all output"
-complete -c cwal -l preview -d "Preview palette"
-complete -c cwal -l help -d "Display help"
+complete -c cwal -s m -l mode -d "Set theme mode (required: <dark|light>)" -r -xa "dark light"
+complete -c cwal -s c -l cols16-mode -d "Set 16-color mode (required: <darken|lighten>)" -r -xa "darken lighten"
+complete -c cwal -s s -l saturation -d "Overall saturation (required: <float>)" -r
+complete -c cwal -s C -l contrast -d "Contrast ratio (required: <float>)" -r
+complete -c cwal -s a -l alpha -d "Alpha transparency (required: <float>)" -r
+complete -c cwal -s o -l out-dir -d "Output directory (required: <path>)" -r -xa "(__fish_complete_directories)"
+complete -c cwal -s b -l backend -d "Processing backend (required: <name>)" -r -xa "(__fish_cwal_backends)"
+complete -c cwal -s i -l img -d "Specify image path (required: <path>)" -r -xa "(__fish_complete_suffix .jpg .jpeg .png .gif .webp)"
+complete -c cwal -s S -l script -d "Run custom script (required: <path>)" -r
+complete -c cwal -s t -l theme -d "Select a theme (required: <name>)" -r -xa "(__fish_cwal_themes)"
+complete -c cwal -s r -l random -d "Select random image (optional: [directory])" -xa "(__fish_complete_directories)"
+complete -c cwal -s n -l no-reload -d "Disable reloading"
+complete -c cwal -s B -l list-backends -d "List available backends"
+complete -c cwal -s T -l list-themes -d "List available themes"
+complete -c cwal -s q -l quiet -d "Suppress all output"
+complete -c cwal -s p -l preview -d "Preview palette"
+complete -c cwal -s v -l version -d "Show version"
+complete -c cwal -s h -l help -d "Display help"

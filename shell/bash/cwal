@@ -13,18 +13,18 @@ _cwal_completions() {
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="--mode --cols16-mode --saturation --contrast --alpha --out-dir --backend --img --script --no-reload --list-backends --list-themes --quiet --random --theme --preview --help"
+    opts="-m --mode -c --cols16-mode -s --saturation -C --contrast -a --alpha -o --out-dir -b --backend -i --img -S --script -n --no-reload -B --list-backends -T --list-themes -q --quiet -r --random -t --theme -p --preview -v --version -h --help"
 
     case "$prev" in
-        --mode)
+        --mode|-m)
             COMPREPLY=( $(compgen -W "dark light" -- "$cur") )
             return 0
             ;;
-        --cols16-mode)
+        --cols16-mode|-c)
             COMPREPLY=( $(compgen -W "darken lighten" -- "$cur") )
             return 0
             ;;
-        --theme)
+        --theme|-t)
             local themes="random_dark random_light random_all "
             local config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
             local data_home="${XDG_DATA_HOME:-$HOME/.local/share}"
@@ -47,7 +47,7 @@ _cwal_completions() {
             COMPREPLY=( $(compgen -W "$themes" -- "$cur") )
             return 0
             ;;
-        --backend)
+        --backend|-b)
             local backends="cwal libimagequant "
             local config_home="${XDG_CONFIG_HOME:-$HOME/.config}"
             if [[ -d "$config_home/cwal/backends" ]]; then
@@ -56,15 +56,15 @@ _cwal_completions() {
             COMPREPLY=( $(compgen -W "$backends" -- "$cur") )
             return 0
             ;;
-        --img)
+        --img|-i)
             COMPREPLY=( $(compgen -f -X '!*@(.jpg|.jpeg|.png|.gif|.webp)' -- "$cur") )
             return 0
             ;;
-        --out-dir|--random)
+        --out-dir|-o|--random|-r)
             COMPREPLY=( $(compgen -d -- "$cur") )
             return 0
             ;;
-        --script)
+        --script|-S)
             COMPREPLY=( $(compgen -f -- "$cur") )
             return 0
             ;;
