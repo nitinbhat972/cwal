@@ -27,7 +27,8 @@
 
 static int command_exists(const char *cmd) {
   char *path_env = getenv("PATH");
-  if (!path_env) return 0;
+  if (!path_env)
+    return 0;
   char *path_copy = strdup(path_env);
   if (!path_copy)
     return 0;
@@ -53,20 +54,20 @@ static void broadcast_to_terminals(const char *sequences, size_t len) {
   uname(&sys_info);
   const char *os = sys_info.sysname;
 
-  glob_t glob_result;
+  glob_t glob_result = {0};
   char **devices = NULL;
   int device_count = 0;
+  int glob_status;
 
   if (strncmp(os, "Darwin", 7) == 0) {
-    if (glob("/dev/ttys00[0-9]*", 0, NULL, &glob_result) == 0) {
-      devices = glob_result.gl_pathv;
-      device_count = glob_result.gl_pathc;
-    }
+    glob_status = glob("/dev/ttys[0-9]*", 0, NULL, &glob_result);
   } else {
-    if (glob("/dev/pts/[0-9]*", 0, NULL, &glob_result) == 0) {
-      devices = glob_result.gl_pathv;
-      device_count = glob_result.gl_pathc;
-    }
+    glob_status = glob("/dev/pts/[0-9]*", 0, NULL, &glob_result);
+  }
+
+  if (glob_status == 0) {
+    devices = glob_result.gl_pathv;
+    device_count = glob_result.gl_pathc;
   }
 
   if (devices && device_count > 0) {
@@ -79,22 +80,21 @@ static void broadcast_to_terminals(const char *sequences, size_t len) {
     }
   }
 
-  if (strncmp(os, "OpenBSD", 8) != 0) {
-    globfree(&glob_result);
-  }
+  globfree(&glob_result);
 }
 
 static char *read_file_to_buffer(const char *path, size_t *size) {
   FILE *f = fopen(path, "rb");
-  if (!f) return NULL;
+  if (!f)
+    return NULL;
 
   fseek(f, 0, SEEK_END);
   *size = ftell(f);
   fseek(f, 0, SEEK_SET);
 
   if (*size == 0) {
-      fclose(f);
-      return NULL;
+    fclose(f);
+    return NULL;
   }
 
   char *buffer = malloc(*size + 1);
@@ -109,7 +109,8 @@ static char *read_file_to_buffer(const char *path, size_t *size) {
 static void sync_file(const char *src_path, const char *dest_path) {
   size_t src_size;
   char *src_content = read_file_to_buffer(src_path, &src_size);
-  if (!src_content) return;
+  if (!src_content)
+    return;
 
   char *resolved_dest_path = expand_home(dest_path);
   if (!resolved_dest_path) {
@@ -139,12 +140,14 @@ static void sync_file(const char *src_path, const char *dest_path) {
     if (start_marker && end_marker && end_marker > start_marker) {
       // Surgical Injection
       logging(INFO, "Injecting colors into %s", resolved_dest_path);
-      
+
       FILE *f = fopen(resolved_dest_path, "wb");
       if (f) {
         char *start_write_pos = strchr(start_marker, '\n');
-        if (!start_write_pos) start_write_pos = start_marker + strlen("$CWAL_START");
-        else start_write_pos++;
+        if (!start_write_pos)
+          start_write_pos = start_marker + strlen("$CWAL_START");
+        else
+          start_write_pos++;
 
         char *end_write_pos = end_marker;
         while (end_write_pos > dest_content && *(end_write_pos - 1) != '\n') {
@@ -152,9 +155,10 @@ static void sync_file(const char *src_path, const char *dest_path) {
         }
 
         fwrite(dest_content, 1, start_write_pos - dest_content, f);
-        
+
         fwrite(src_content, 1, src_size, f);
-        if (src_content[src_size-1] != '\n') fputc('\n', f);
+        if (src_content[src_size - 1] != '\n')
+          fputc('\n', f);
 
         fwrite(end_write_pos, 1, strlen(end_write_pos), f);
         fclose(f);
@@ -184,8 +188,6 @@ static void sync_file(const char *src_path, const char *dest_path) {
   free(resolved_dest_path);
 }
 
-
-
 void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload) {
   if (no_reload) {
     logging(INFO, "Skipping application reload as --no-reload was specified.");
@@ -214,7 +216,8 @@ void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload) {
   // 2. Legacy TTY
   char *tty_script_path = build_path(resolved_out_dir, "colors-tty.sh");
   char *term_env = getenv("TERM");
-  if (term_env && strncmp(term_env, "linux", 6) == 0 && access(tty_script_path, F_OK) == 0) {
+  if (term_env && strncmp(term_env, "linux", 6) == 0 &&
+      access(tty_script_path, F_OK) == 0) {
     execute_command(tty_script_path);
   }
   free(tty_script_path);
