@@ -133,11 +133,26 @@ int main(int argv, char **argc) {
     // Selects backend
     ImageBackend *backend = backend_get(args.backend);
     if (!backend) {
-      logging(ERROR, "Backend not found!");
-      free(image_to_process_path);
-      free_config(app_config);
-      free_cli_args(&args);
-      return -1;
+      logging(WARN, "Backend '%s' not found. Falling back to cwal.",
+              args.backend);
+      free(args.backend);
+      args.backend = strdup("cwal");
+      if (!args.backend) {
+        logging(ERROR, "Failed to allocate backend fallback.");
+        free(image_to_process_path);
+        free_config(app_config);
+        free_cli_args(&args);
+        return -1;
+      }
+
+      backend = backend_get(args.backend);
+      if (!backend) {
+        logging(ERROR, "Default backend not found!");
+        free(image_to_process_path);
+        free_config(app_config);
+        free_cli_args(&args);
+        return -1;
+      }
     }
 
     // Apply settings from CLI

@@ -164,9 +164,8 @@ int process_with_fallback(ImageBackend *backend, const char *image_path,
 
   int lua_index = is_lua_backend(backend);
   if (lua_index >= 0) {
-    processed =
-        run_lua_backend(backend, lua_script_paths[lua_index], image_path,
-                        palette) == 0;
+    processed = run_lua_backend(backend, lua_script_paths[lua_index],
+                                image_path, palette) == 0;
   } else {
     raw_img = image_load_from_file(image_path);
     if (raw_img) {
@@ -206,7 +205,6 @@ int process_with_fallback(ImageBackend *backend, const char *image_path,
   return processed ? 0 : -1;
 }
 
-
 void init_backends() {
   num_backends = 0;
   num_lua_scripts = 0;
@@ -222,7 +220,7 @@ ImageBackend *backend_get(const char *name) {
     if (strcmp(name, (*backend)->name) == 0)
       return (*backend);
   }
-  return &cwal;
+  return NULL;
 }
 
 void list_all_backends() {
