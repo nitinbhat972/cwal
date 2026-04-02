@@ -20,7 +20,7 @@ find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(MagickWand REQUIRED IMPORTED_TARGET MagickWand)
 pkg_check_modules(imagequant REQUIRED IMPORTED_TARGET imagequant)
-pkg_check_modules(Lua REQUIRED IMPORTED_TARGET lua)
+pkg_check_modules(Lua REQUIRED IMPORTED_TARGET luajit)
 
 # Collect source files
 set(SOURCES
