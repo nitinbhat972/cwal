@@ -154,7 +154,7 @@ static int run_raw_backend(ImageBackend *backend, RawImage *raw_img,
 }
 
 int process_with_fallback(ImageBackend *backend, const char *image_path,
-                          Palette *palette) {
+                          Palette *palette, ImageBackend **used_backend) {
   if (!backend || !image_path || !palette) {
     return -1;
   }
@@ -171,6 +171,9 @@ int process_with_fallback(ImageBackend *backend, const char *image_path,
     if (raw_img) {
       processed = run_raw_backend(backend, raw_img, palette) == 0;
     }
+  }
+  if (processed && used_backend) {
+    *used_backend = backend;
   }
 
   for (ImageBackend **backend_ptr = available_backends; *backend_ptr;
@@ -196,6 +199,9 @@ int process_with_fallback(ImageBackend *backend, const char *image_path,
       if (raw_img) {
         processed = run_raw_backend(fallback, raw_img, palette) == 0;
       }
+    }
+    if (processed && used_backend) {
+      *used_backend = fallback;
     }
   }
 

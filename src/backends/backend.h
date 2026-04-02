@@ -23,6 +23,6 @@ ImageBackend *backend_get(const char *name);
 void list_all_backends(void);
 int process_backend(ImageBackend *backend, RawImage *img, Palette *palette);
 int process_with_fallback(ImageBackend *backend, const char *image_path,
-                          Palette *palette);
+                          Palette *palette, ImageBackend **used_backend);
 void init_backends(void);
 int is_lua_backend(ImageBackend *backend);

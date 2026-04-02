@@ -155,19 +155,33 @@ int main(int argv, char **argc) {
       }
     }
 
-    // Apply settings from CLI
     palette.wallpaper = image_to_process_path;
     image_to_process_path = NULL;
+    ImageBackend *used_backend = backend;
+
     // Loads colors from cache
     if (load_palette_from_cache(&palette, args.out_dir, args.backend) != 0) {
-      // Use unified backend processing with fallback mechanism
-      if (process_with_fallback(backend, path, &palette) != 0) {
+      if (process_with_fallback(backend, path, &palette, &used_backend) != 0) {
         logging(ERROR, "All backends failed to process the image!");
         free(palette.wallpaper);
         palette.wallpaper = NULL;
         free_config(app_config);
         free_cli_args(&args);
         return -1;
+      }
+
+      if (used_backend && strcmp(args.backend, used_backend->name) != 0) {
+        char *resolved_backend = strdup(used_backend->name);
+        if (!resolved_backend) {
+          logging(ERROR, "Failed to store resolved backend name.");
+          free(palette.wallpaper);
+          palette.wallpaper = NULL;
+          free_config(app_config);
+          free_cli_args(&args);
+          return -1;
+        }
+        free(args.backend);
+        args.backend = resolved_backend;
       }
       process_colors(&palette, args.saturation, args.contrast);
       save_palette_to_cache(&palette, args.out_dir, args.backend);
