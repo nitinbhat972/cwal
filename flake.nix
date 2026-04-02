@@ -30,7 +30,7 @@
             buildInputs = with pkgs; [
               imagemagick
               libimagequant
-              lua
+              luajit
             ];
 
             postFixup = ''
@@ -59,7 +59,7 @@
           buildInputs = with pkgs; [
             imagemagick
             libimagequant
-            lua
+            luajit
           ];
         };
       }
