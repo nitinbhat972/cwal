@@ -59,6 +59,7 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
   args->contrast = config->contrast;
   args->alpha = config->alpha;
   args->backend = strdup(config->backend ? config->backend : "cwal");
+  args->backend_specified = false;
   args->script_path = config->script_path ? strdup(config->script_path) : NULL;
   args->out_dir = strdup(config->out_dir);
   args->no_reload = false;
@@ -153,6 +154,7 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
     case 'b':
       free(args->backend);
       args->backend = strdup(optarg);
+      args->backend_specified = true;
       break;
     case 'i':
       free(args->image_path);

@@ -22,6 +22,7 @@ typedef struct {
     float contrast;         // Contrast ratio.
     float alpha;            // Alpha transparency value.
     char *backend;          // Name of the image processing backend to use.
+    bool backend_specified; // Flag to indicate if the backend was specified via CLI.
     char *script_path;      // Path to a script to run after processing.
     char *out_dir;          // Output directory for generated files.
     bool no_reload;         // Flag to prevent reloading applications.
