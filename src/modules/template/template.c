@@ -29,6 +29,7 @@ typedef struct {
 typedef struct {
   ColorEntry colors[PALETTE_MAX_SIZE];
   char wallpaper[4096];
+  char mode[16];
   char alpha_str[16];
   float alpha;
 } ColorTable;
@@ -44,6 +45,8 @@ static ColorTable *build_color_table(const Palette *palette) {
   snprintf(ct->alpha_str, sizeof(ct->alpha_str), "%.2f", palette->alpha);
   snprintf(ct->wallpaper, sizeof(ct->wallpaper), "%s",
            palette->wallpaper ? palette->wallpaper : "");
+  snprintf(ct->mode, sizeof(ct->mode), "%s",
+           (palette->mode == LIGHT) ? "light" : "dark");
   for (int i = 0; i < PALETTE_MAX_SIZE; i++) {
     for (int f = 0; f < FMT_COUNT; f++) {
       format_color(&palette->colors[i], fmt_names[f], ct->colors[i].fmt[f],
@@ -91,6 +94,8 @@ static const char *resolve_placeholder(const char *placeholder,
     return ct->colors[PALETTE_MAX_SIZE - 1].fmt[fmt_idx];
   } else if (strcmp(key, "wallpaper") == 0 && ct->wallpaper[0]) {
     return ct->wallpaper;
+  } else if (strcmp(key, "mode") == 0) {
+    return ct->mode;
   } else if (strcmp(key, "alpha") == 0) {
     return ct->alpha_str;
   }
