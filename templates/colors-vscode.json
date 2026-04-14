@@ -1,14 +1,272 @@
 {
-    "editor.tokenColorCustomizations": {
-       "functions":    "{color1}", 
-        "keywords":     "{color2}",
-        "numbers":      "{color3}", 
-        "strings":      "{color4}", 
-        "types":        "{color5}", 
-        "variables":    "{color6}", 
-        "comments":     "{color8}"
+  "$schema": "vscode://schemas/color-theme",
+  "name": "cwal",
+  "type": "{mode}",
+  "colors": {
+    "focusBorder": "{color12}",
+    "foreground": "{foreground}",
+    "descriptionForeground": "{color7}",
+    "errorForeground": "{color9}",
+    "textLink.foreground": "{color12}",
+    "textLink.activeForeground": "{color14}",
+    "editor.background": "{background}",
+    "editor.foreground": "{foreground}",
+    "editorCursor.foreground": "{cursor}",
+    "editorLineNumber.foreground": "{color8}",
+    "editorLineNumber.activeForeground": "{color12}",
+    "editor.selectionBackground": "{color8}66",
+    "editor.inactiveSelectionBackground": "{color8}44",
+    "editor.selectionHighlightBackground": "{color4}33",
+    "editor.wordHighlightBackground": "{color4}22",
+    "editor.wordHighlightStrongBackground": "{color10}22",
+    "editor.findMatchBackground": "{color11}88",
+    "editor.findMatchHighlightBackground": "{color11}44",
+    "editor.lineHighlightBackground": "{color0}",
+    "editorIndentGuide.background1": "{color8}33",
+    "editorIndentGuide.activeBackground1": "{color8}88",
+    "editorWhitespace.foreground": "{color8}66",
+    "editorBracketMatch.background": "{color8}33",
+    "editorBracketMatch.border": "{color14}",
+    "editorError.foreground": "{color9}",
+    "editorWarning.foreground": "{color11}",
+    "editorInfo.foreground": "{color12}",
+    "editorHint.foreground": "{color14}",
+    "editorGutter.addedBackground": "{color10}",
+    "editorGutter.modifiedBackground": "{color12}",
+    "editorGutter.deletedBackground": "{color9}",
+    "editorWidget.background": "{color0}",
+    "editorWidget.border": "{color8}",
+    "editorSuggestWidget.background": "{color0}",
+    "editorSuggestWidget.border": "{color8}",
+    "editorSuggestWidget.foreground": "{foreground}",
+    "editorSuggestWidget.highlightForeground": "{color14}",
+    "editorSuggestWidget.selectedBackground": "{color8}55",
+    "editorHoverWidget.background": "{color0}",
+    "editorHoverWidget.border": "{color8}",
+    "editorGroupHeader.tabsBackground": "{background}",
+    "editorGroupHeader.tabsBorder": "{color0}",
+    "tab.activeBackground": "{color8}33",
+    "tab.activeForeground": "{foreground}",
+    "tab.inactiveBackground": "{background}",
+    "tab.inactiveForeground": "{color7}",
+    "tab.unfocusedActiveBackground": "{color8}22",
+    "tab.unfocusedActiveForeground": "{foreground}",
+    "tab.unfocusedInactiveBackground": "{background}",
+    "tab.unfocusedInactiveForeground": "{color7}",
+    "tab.lastPinnedBorder": "{color0}",
+    "sideBar.background": "{color0}",
+    "sideBar.foreground": "{foreground}",
+    "sideBar.border": "{color0}",
+    "sideBarTitle.foreground": "{color15}",
+    "list.activeSelectionBackground": "{color8}55",
+    "list.activeSelectionForeground": "{foreground}",
+    "list.inactiveSelectionBackground": "{color8}33",
+    "list.hoverBackground": "{color8}22",
+    "list.highlightForeground": "{color14}",
+    "activityBar.background": "{color0}",
+    "activityBar.foreground": "{foreground}",
+    "activityBar.activeBorder": "{color12}",
+    "activityBarBadge.background": "{color12}",
+    "activityBarBadge.foreground": "{foreground}",
+    "statusBar.background": "{color0}",
+    "statusBar.foreground": "{foreground}",
+    "statusBar.border": "{color0}",
+    "statusBar.noFolderBackground": "{color0}",
+    "statusBar.noFolderForeground": "{foreground}",
+    "statusBar.debuggingBackground": "{color11}",
+    "statusBar.debuggingForeground": "{background}",
+    "statusBar.debuggingBorder": "{color11}",
+    "statusBarItem.activeBackground": "{color0}",
+    "statusBarItem.hoverBackground": "{color0}",
+    "statusBarItem.hoverForeground": "{foreground}",
+    "statusBarItem.prominentBackground": "{color0}",
+    "statusBarItem.prominentForeground": "{foreground}",
+    "statusBarItem.prominentHoverBackground": "{color0}",
+    "statusBarItem.prominentHoverForeground": "{foreground}",
+    "statusBarItem.warningBackground": "{color0}",
+    "statusBarItem.warningForeground": "{foreground}",
+    "statusBarItem.warningHoverBackground": "{color0}",
+    "statusBarItem.warningHoverForeground": "{foreground}",
+    "statusBarItem.errorBackground": "{color0}",
+    "statusBarItem.errorForeground": "{foreground}",
+    "statusBarItem.errorHoverBackground": "{color0}",
+    "statusBarItem.errorHoverForeground": "{foreground}",
+    "statusBarItem.remoteBackground": "{color0}",
+    "statusBarItem.remoteForeground": "{foreground}",
+    "statusBarItem.remoteHoverBackground": "{color0}",
+    "statusBarItem.remoteHoverForeground": "{foreground}",
+    "titleBar.activeBackground": "{color0}",
+    "titleBar.activeForeground": "{foreground}",
+    "titleBar.inactiveBackground": "{color0}",
+    "titleBar.inactiveForeground": "{color7}",
+    "panel.background": "{background}",
+    "panel.border": "{color0}",
+    "terminal.background": "{background}",
+    "terminal.foreground": "{foreground}",
+    "terminal.ansiBlack": "{color0}",
+    "terminal.ansiRed": "{color1}",
+    "terminal.ansiGreen": "{color2}",
+    "terminal.ansiYellow": "{color3}",
+    "terminal.ansiBlue": "{color4}",
+    "terminal.ansiMagenta": "{color5}",
+    "terminal.ansiCyan": "{color6}",
+    "terminal.ansiWhite": "{color7}",
+    "terminal.ansiBrightBlack": "{color8}",
+    "terminal.ansiBrightRed": "{color9}",
+    "terminal.ansiBrightGreen": "{color10}",
+    "terminal.ansiBrightYellow": "{color11}",
+    "terminal.ansiBrightBlue": "{color12}",
+    "terminal.ansiBrightMagenta": "{color13}",
+    "terminal.ansiBrightCyan": "{color14}",
+    "terminal.ansiBrightWhite": "{color15}",
+    "badge.background": "{color12}",
+    "badge.foreground": "{foreground}",
+    "notifications.background": "{color0}",
+    "notifications.foreground": "{foreground}",
+    "notifications.border": "{color8}"
+  },
+  "tokenColors": [
+    {
+      "name": "Comment",
+      "scope": [
+        "comment",
+        "punctuation.definition.comment"
+      ],
+      "settings": {
+        "foreground": "{color8}",
+        "fontStyle": "italic"
+      }
     },
-    "workbench.colorCustomizations": {
-        "editor.background": "{background}"
+    {
+      "name": "Keyword",
+      "scope": [
+        "keyword",
+        "storage",
+        "storage.type",
+        "storage.modifier"
+      ],
+      "settings": {
+        "foreground": "{color11}",
+        "fontStyle": "italic bold"
+      }
+    },
+    {
+      "name": "String",
+      "scope": [
+        "string",
+        "string.template",
+        "constant.other.symbol"
+      ],
+      "settings": {
+        "foreground": "{color14}",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "name": "Number And Constants",
+      "scope": [
+        "constant.numeric",
+        "constant.language",
+        "constant.character",
+        "constant.escape",
+        "support.constant"
+      ],
+      "settings": {
+        "foreground": "{color13}",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "Functions",
+      "scope": [
+        "entity.name.function",
+        "support.function",
+        "meta.function-call",
+        "variable.function"
+      ],
+      "settings": {
+        "foreground": "{color12}",
+        "fontStyle": "italic bold"
+      }
+    },
+    {
+      "name": "Variables",
+      "scope": [
+        "variable",
+        "meta.definition.variable.name",
+        "support.variable"
+      ],
+      "settings": {
+        "foreground": "{foreground}"
+      }
+    },
+    {
+      "name": "Parameters",
+      "scope": [
+        "variable.parameter"
+      ],
+      "settings": {
+        "foreground": "{color6}"
+      }
+    },
+    {
+      "name": "Types",
+      "scope": [
+        "entity.name.type",
+        "entity.name.class",
+        "support.type",
+        "support.class",
+        "storage.type"
+      ],
+      "settings": {
+        "foreground": "{color9}",
+        "fontStyle": "bold"
+      }
+    },
+    {
+      "name": "Tags",
+      "scope": [
+        "entity.name.tag",
+        "meta.tag",
+        "punctuation.definition.tag"
+      ],
+      "settings": {
+        "foreground": "{color9}"
+      }
+    },
+    {
+      "name": "Attributes",
+      "scope": [
+        "entity.other.attribute-name"
+      ],
+      "settings": {
+        "foreground": "{color12}",
+        "fontStyle": "italic"
+      }
+    },
+    {
+      "name": "Operators And Punctuation",
+      "scope": [
+        "keyword.operator",
+        "punctuation",
+        "delimiter"
+      ],
+      "settings": {
+        "foreground": "{color7}"
+      }
+    },
+    {
+      "name": "Invalid",
+      "scope": [
+        "invalid",
+        "invalid.illegal"
+      ],
+      "settings": {
+        "foreground": "{color9}",
+        "fontStyle": "underline"
+      }
     }
+  ]
 }
+
+
