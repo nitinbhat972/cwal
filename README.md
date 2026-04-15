@@ -261,7 +261,16 @@ Terminal emulators (Alacritty, Kitty, Wezterm, Ghostty, Foot), window managers (
 | `red`            | Red component value (0-255)                     | `255`                                                        |
 | `green`          | Green component value (0-255)                   | `128`                                                        |
 | `blue`           | Blue component value (0-255)                    | `0`                                                          |
-| `alpha_dec`      | Alpha transparency value (0.0-1.0)              | `0.8`                                                        |
+
+
+In addition to color-specific formats, you can use these global placeholders anywhere in your template:
+
+| Placeholder   | Description                                      | Example Output |
+| :------------ | :----------------------------------------------- | :------------- |
+| `{mode}`      | Current theme mode (`dark` or `light`)           | `dark`         |
+| `{wallpaper}` | Absolute path to the current wallpaper image     | `/home/user/Pictures/wall.jpg` |
+| `{alpha}`     | Alpha transparency value (0.00 - 1.00)   | `0.80`         |
+
 
 **Example usage in a template:**
 
