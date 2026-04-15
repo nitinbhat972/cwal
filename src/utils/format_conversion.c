@@ -41,8 +41,6 @@ void format_color(const Color *color, const char *ft, char *out,
     snprintf(out, out_size, "%d", color->green);
   } else if (strncmp(ft, "blue", 5) == 0) {
     snprintf(out, out_size, "%d", color->blue);
-  } else if (strncmp(ft, "alpha_dec", 10) == 0) {
-    snprintf(out, out_size, "%.1f", alpha);
   } else {
     snprintf(out, out_size, "{color.%s}", ft);
   }
