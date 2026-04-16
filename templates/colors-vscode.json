@@ -76,25 +76,21 @@
     "statusBar.debuggingBackground": "{color11}",
     "statusBar.debuggingForeground": "{background}",
     "statusBar.debuggingBorder": "{color11}",
-    "statusBarItem.activeBackground": "{color0}",
-    "statusBarItem.hoverBackground": "{color0}",
-    "statusBarItem.hoverForeground": "{foreground}",
+    "statusBarItem.activeBackground": "{color8}33",
+    "statusBarItem.focusBackground": "{color8}33",
+    "statusBarItem.hoverBackground": "{color8}22",
     "statusBarItem.prominentBackground": "{color0}",
     "statusBarItem.prominentForeground": "{foreground}",
-    "statusBarItem.prominentHoverBackground": "{color0}",
-    "statusBarItem.prominentHoverForeground": "{foreground}",
+    "statusBarItem.prominentHoverBackground": "{color8}22",
     "statusBarItem.warningBackground": "{color0}",
     "statusBarItem.warningForeground": "{foreground}",
-    "statusBarItem.warningHoverBackground": "{color0}",
-    "statusBarItem.warningHoverForeground": "{foreground}",
+    "statusBarItem.warningHoverBackground": "{color8}22",
     "statusBarItem.errorBackground": "{color0}",
     "statusBarItem.errorForeground": "{foreground}",
-    "statusBarItem.errorHoverBackground": "{color0}",
-    "statusBarItem.errorHoverForeground": "{foreground}",
+    "statusBarItem.errorHoverBackground": "{color8}22",
     "statusBarItem.remoteBackground": "{color0}",
     "statusBarItem.remoteForeground": "{foreground}",
-    "statusBarItem.remoteHoverBackground": "{color0}",
-    "statusBarItem.remoteHoverForeground": "{foreground}",
+    "statusBarItem.remoteHoverBackground": "{color8}22",
     "titleBar.activeBackground": "{color0}",
     "titleBar.activeForeground": "{foreground}",
     "titleBar.inactiveBackground": "{color0}",
@@ -268,5 +264,6 @@
     }
   ]
 }
+
 
 
