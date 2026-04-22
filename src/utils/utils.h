@@ -17,9 +17,12 @@ uint8_t clamp_byte(float value);
 void reverse_colors(Palette *palette);
 void preview_palette();
 
-#define RED "\x1b[38;2;220;50;47m"
-#define BLUE "\x1b[38;2;38;139;210m"
-#define YELLOW "\x1b[38;2;181;137;0m"
+#define RED "\x1b[31m"
+#define BLUE "\x1b[34m"
+#define YELLOW "\x1b[33m"
+#define GREEN "\x1b[32m"
+#define CYAN "\x1b[36m"
+#define BOLD "\x1b[1m"
 #define RESET "\x1b[0m"
 
 // Enumeration for different logging levels.

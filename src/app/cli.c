@@ -16,39 +16,51 @@
 #include <string.h>
 
 void print_usage(const char *prog_name) {
-  fprintf(stderr, "Usage: %s [OPTIONS] --img <image_path>\n", prog_name);
-  fprintf(stderr, "Options:\n");
-  fprintf(stderr,
-          "  -m, --mode <dark|light>    Set theme mode (overrides config)\n");
-  fprintf(stderr, "  -c, --cols16-mode <darken|lighten> Set 16-color generation "
-                  "mode (overrides config)\n");
-  fprintf(
-      stderr,
-      "  -s, --saturation <float>   Set overall saturation (overrides config)\n");
-  fprintf(stderr,
-          "  -C, --contrast <float>     Set contrast ratio (overrides config)\n");
-  fprintf(stderr, "  -a, --alpha <float>        Set alpha transparency (0.0-1.0, "
-                  "overrides config)\n");
-  fprintf(stderr, "  -o, --out-dir <path>       Set output directory for all "
-                  "generated files (overrides config)\n");
-  fprintf(stderr, "  -b, --backend <name>       Set image processing backend "
+  fprintf(stderr, BOLD "Usage:" RESET " %s [OPTIONS] --img <image_path>\n",
+          prog_name);
+  fprintf(stderr, BOLD "Options:" RESET "\n");
+  fprintf(stderr, "  " YELLOW "-m, --mode" RESET " " CYAN "<dark|light>" RESET
+                  "    Set theme mode (overrides config)\n");
+  fprintf(stderr, "  " YELLOW "-c, --cols16-mode" RESET " " CYAN
+                  "<darken|lighten>" RESET
+                  " Set 16-color generation mode (overrides config)\n");
+  fprintf(stderr, "  " YELLOW "-s, --saturation" RESET " " CYAN "<float>" RESET
+                  "   Set overall saturation (overrides config)\n");
+  fprintf(stderr, "  " YELLOW "-C, --contrast" RESET " " CYAN "<float>" RESET
+                  "     Set contrast ratio (overrides config)\n");
+  fprintf(stderr, "  " YELLOW "-a, --alpha" RESET " " CYAN "<float>" RESET
+                  "        Set alpha transparency (0.0-1.0, overrides "
+                  "config)\n");
+  fprintf(stderr, "  " YELLOW "-o, --out-dir" RESET " " CYAN "<path>" RESET
+                  "       Set output directory for all generated files "
                   "(overrides config)\n");
+  fprintf(stderr, "  " YELLOW "-b, --backend" RESET " " CYAN "<name>" RESET
+                  "       Set image processing backend (overrides config)\n");
+  fprintf(stderr, "  " YELLOW "-i, --img" RESET " " CYAN "<image_path>" RESET
+                  "     Specify the image path (required)\n");
+  fprintf(stderr, "  " YELLOW "-S, --script" RESET " " CYAN
+                  "<script_path>" RESET " Run a script after processing\n");
+  fprintf(stderr, "  " YELLOW "-n, --no-reload" RESET
+                  "            Do not reload applications after processing\n");
+  fprintf(stderr, "  " YELLOW "-B, --list-backends" RESET
+                  "        List all available image processing backends\n");
+  fprintf(stderr, "  " YELLOW "-T, --list-themes" RESET
+                  "          List all available themes\n");
   fprintf(stderr,
-          "  -i, --img <image_path>     Specify the image path (required)\n");
-  fprintf(stderr, "  -S, --script <script_path> Run a script after processing\n");
-  fprintf(
-      stderr,
-      "  -n, --no-reload            Do not reload applications after processing\n");
-  fprintf(stderr, "  -B, --list-backends        List all available image "
-                  "processing backends\n");
-  fprintf(stderr, "  -T, --list-themes          List all available themes\n");
-  fprintf(stderr, "  -q, --quiet                Suppress all output\n");
-  fprintf(stderr, "  -r, --random [directory]   Select random image (uses config default if directory omitted)\n");
-  fprintf(stderr, "  -t, --theme <theme_name|random_dark|random_light|random_all> "
-                  "Select a theme or a random one\n");
-  fprintf(stderr, "  -p, --preview              show palette preview\n");
-  fprintf(stderr, "  -v, --version              Show the version number\n");
-  fprintf(stderr, "  -h, --help                 Display this help message\n");
+          "  " YELLOW "-q, --quiet" RESET "                Suppress all "
+          "output\n");
+  fprintf(stderr, "  " YELLOW "-r, --random" RESET " " CYAN "[directory]" RESET
+                  "   Select random image (uses config default if directory "
+                  "omitted)\n");
+  fprintf(stderr, "  " YELLOW "-t, --theme" RESET " " CYAN
+                  "<theme_name|random_dark|random_light|random_all>" RESET
+                  " Select a theme or a random one\n");
+  fprintf(stderr, "  " YELLOW "-p, --preview" RESET
+                  "              show palette preview\n");
+  fprintf(stderr, "  " YELLOW "-v, --version" RESET
+                  "              Show the version number\n");
+  fprintf(stderr, "  " YELLOW "-h, --help" RESET
+                  "                 Display this help message\n");
 }
 
 CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
@@ -108,7 +120,8 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       const char *name = long_options[long_index].name;
       size_t name_len = strlen(name);
       if (strncmp(actual_opt + 2, name, name_len) != 0 ||
-          (actual_opt[2 + name_len] != '\0' && actual_opt[2 + name_len] != '=')) {
+          (actual_opt[2 + name_len] != '\0' &&
+           actual_opt[2 + name_len] != '=')) {
         fprintf(stderr, "%s: unrecognized option '%s'\n", argv[0], actual_opt);
         print_usage(argv[0]);
         return CLI_ERROR;
@@ -134,9 +147,9 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       } else {
         logging(ERROR, "Invalid cols16-mode: %s. Use 'darken' or 'lighten'.",
                 optarg);
-       return CLI_ERROR;
-     }
-     break;
+        return CLI_ERROR;
+      }
+      break;
     case 's':
       args->saturation = atof(optarg);
       break;
