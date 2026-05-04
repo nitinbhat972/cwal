@@ -131,7 +131,7 @@ static void parse_link(Config *config, const char *key, const char *value) {
     }
   }
 
-  if (strlen(target_raw) == 0) {
+  if (strlen(target_raw) == 0 && !cmd_raw) {
     free(val_copy);
     return;
   }

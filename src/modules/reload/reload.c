@@ -233,13 +233,17 @@ void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload) {
 
   // 4. Dynamic Links & Reloads
   for (int i = 0; i < config->num_links; i++) {
-    char *src = build_path(resolved_out_dir, config->links[i].template_name);
-    sync_file(src, config->links[i].target_path);
+    if (config->links[i].target_path &&
+        strlen(config->links[i].target_path) > 0) {
+      char *src = build_path(resolved_out_dir, config->links[i].template_name);
+      sync_file(src, config->links[i].target_path);
+      free(src);
+    }
+
     if (config->links[i].reload_cmd) {
       logging(INFO, "Running reload command: %s", config->links[i].reload_cmd);
       execute_command(config->links[i].reload_cmd);
     }
-    free(src);
   }
 
   logging(INFO, "Finished applying colors to applications.");
