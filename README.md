@@ -215,7 +215,12 @@ random_dir = /home/user/Pictures/Wallpapers
 [links]
 # format: template_name = destination_path | reload_command
 colors-waybar.css = ~/.config/waybar/colors.css | pkill -USR2 waybar
-colors-sway = ~/.config/sway/config | swaymsg reload
+
+# Omit the command to only sync the file
+colors-kitty.conf = ~/.config/kitty/current-theme.conf
+
+# Omit the destination path to only run a reload command
+colors-mako = | makoctl reload
 ```
 
 ### Surgical Injection (Placeholders)
