@@ -95,9 +95,9 @@ brew install imagemagick libimagequant luajit
 **Arch Linux (AUR)**
 
 ```bash
-yay -S cwal
+yay -S cwal-git
 # or
-paru -S cwal
+paru -S cwal-git
 ```
 
 **Homebrew**
