@@ -110,7 +110,8 @@ BREAKING CHANGE: the `output_dir` config key has been renamed to
 
 - `cli`
 - `backend`
-- `template`
+- `template` (For changes to the core template engine in `src/`)
+- `template/<app>` (For adding or modifying specific template files, e.g., `feat(template/hyprland): ...`)
 - `config`
 - `cache`
 - `utils`
