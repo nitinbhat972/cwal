@@ -220,7 +220,7 @@ int main(int argv, char **argc) {
         }
       }
 
-      process_colors(&palette, args.saturation, args.contrast);
+      process_colors(&palette);
       save_palette_to_cache(&palette, args.out_dir, actual_backend_name);
     }
 

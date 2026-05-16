@@ -61,7 +61,8 @@ static void boost_light_colors(Palette *palette) {
     float lum = w3_luminance(palette->colors[i]);
     bool needs_boost = false;
 
-    // If the color is too light (high luminance), darken it for better contrast against light background
+    // If the color is too light (high luminance), darken it for better contrast
+    // against light background
     if (lum > 0.6f) {
       palette->colors[i] = darken_color(palette->colors[i], 0.3f);
       needs_boost = true;
@@ -168,8 +169,7 @@ static void generate_16_colors(Palette *palette) {
   }
 }
 
-void process_colors(Palette *palette, float saturation_amount,
-                    float contrast_ratio) {
+void process_colors(Palette *palette) {
   // First, check if we are in dark mode and boost colors if they are too
   // dark/desaturated
   if (palette->mode == DARK) {
@@ -210,7 +210,7 @@ void process_colors(Palette *palette, float saturation_amount,
   generate_16_colors(palette);
 
   // Apply overall saturation and contrast adjustments
-  saturate_all_colors(palette, saturation_amount);
-  ensure_contrast(palette, contrast_ratio, palette->mode == LIGHT,
+  saturate_all_colors(palette, palette->saturation);
+  ensure_contrast(palette, palette->contrast, palette->mode == LIGHT,
                   palette->colors[0]);
 }
