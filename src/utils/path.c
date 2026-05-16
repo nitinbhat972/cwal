@@ -96,7 +96,7 @@ char **get_data_dirs(void) {
   }
   count++; // Add one for the last element
 
-  char **dirs = malloc(sizeof(char *) * (count + 1));
+  char **dirs = calloc(count + 1, sizeof(char *));
   if (!dirs) {
     free(env_copy);
     return NULL;
@@ -274,7 +274,7 @@ char *build_path_internal(const char *first, ...) {
     return NULL;
   }
 
-  strcpy(result, first);
+  snprintf(result, total_len + 1, "%s", first);
   size_t res_len = strlen(result);
   if (res_len > 0 && result[res_len - 1] == '/') {
     result[--res_len] = '\0';
@@ -288,13 +288,13 @@ char *build_path_internal(const char *first, ...) {
       continue;
     }
 
-    strcat(result, separator);
-    
+    strcat_s(result, total_len + 1, separator);
+
     const char *to_add = next;
     if (to_add[0] == '/') {
       to_add++;
     }
-    strcat(result, to_add);
+    strcat_s(result, total_len + 1, to_add);
 
     res_len = strlen(result);
     if (res_len > 0 && result[res_len - 1] == '/') {
