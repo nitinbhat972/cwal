@@ -1,4 +1,4 @@
-{{
+{
     "cursor": "{cursor}",
     "number": "{foreground}",
     "parens": "{color13}",
@@ -12,4 +12,4 @@
     "separator": "{color3}",
     "background": "{background}",
     "editorbackground": "{background}"
-}}
+}

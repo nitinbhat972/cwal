@@ -1,4 +1,4 @@
-const char *colorname[] = {{
+const char *colorname[] = {
 
   /* 8 normal colors */
   [0] = "{color0}", /* black   */
@@ -24,7 +24,7 @@ const char *colorname[] = {{
   [256] = "{background}", /* background */
   [257] = "{foreground}", /* foreground */
   [258] = "{cursor}",     /* cursor */
-}};
+};
 
 /* Default colors (colorname index)
  * foreground, background, cursor */
