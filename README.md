@@ -371,6 +371,8 @@ name to avoid confusion with the original project.
 
 ## 🤝 Contributing
 
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute and our commit message conventions.
+
 Report issues, request features, or contribute via PRs. See the GitHub repository for more info.
 
 ## 📄 License
