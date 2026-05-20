@@ -78,11 +78,11 @@ int main(int argv, char **argc) {
 
   // Palette structure initiallation
   Palette palette = {0};
-  palette.mode = args.mode;
-  palette.cols16_mode = args.cols16_mode;
-  palette.saturation = args.saturation;
-  palette.contrast = args.contrast;
-  palette.alpha = args.alpha;
+  palette.mode         = args.opts.mode;
+  palette.cols16_mode  = args.opts.cols16_mode;
+  palette.saturation   = args.opts.saturation;
+  palette.contrast     = args.opts.contrast;
+  palette.alpha        = args.opts.alpha;
 
   if (args.use_random_theme) {
     if (load_random_theme(&palette, args.random_mode) != 0) {
@@ -105,7 +105,7 @@ int main(int argv, char **argc) {
 
     char *image_to_process_path = NULL;
     if (args.use_random_dir) {
-      image_to_process_path = get_random_image_path(args.random_dir);
+      image_to_process_path = get_random_image_path(args.opts.random_dir);
       if (!image_to_process_path) {
         free_config(app_config);
         free_cli_args(&args);
@@ -131,7 +131,7 @@ int main(int argv, char **argc) {
     }
 
     // Selects backend
-    char *original_requested_backend = strdup(args.backend);
+    char *original_requested_backend = strdup(args.opts.backend);
     if (!original_requested_backend) {
       logging(ERROR, "Failed to allocate memory for backend tracking.");
       free(image_to_process_path);
@@ -140,13 +140,13 @@ int main(int argv, char **argc) {
       return -1;
     }
 
-    ImageBackend *backend = backend_get(args.backend);
+    ImageBackend *backend = backend_get(args.opts.backend);
     if (!backend) {
       logging(WARN, "Backend '%s' not found. Falling back to cwal.",
-              args.backend);
-      free(args.backend);
-      args.backend = strdup("cwal");
-      if (!args.backend) {
+              args.opts.backend);
+      free(args.opts.backend);
+      args.opts.backend = strdup("cwal");
+      if (!args.opts.backend) {
         logging(ERROR, "Failed to allocate backend fallback.");
         free(original_requested_backend);
         free(image_to_process_path);
@@ -155,7 +155,7 @@ int main(int argv, char **argc) {
         return -1;
       }
 
-      backend = backend_get(args.backend);
+      backend = backend_get(args.opts.backend);
       if (!backend) {
         logging(ERROR, "Default backend not found!");
         free(original_requested_backend);
@@ -172,18 +172,18 @@ int main(int argv, char **argc) {
     bool backend_success = false;
 
     // Loads colors from cache
-    if (load_palette_from_cache(&palette, args.out_dir, args.backend) == 0) {
-      backend_success = (strcmp(original_requested_backend, args.backend) == 0);
+    if (load_palette_from_cache(&palette, args.opts.out_dir, args.opts.backend) == 0) {
+      backend_success = (strcmp(original_requested_backend, args.opts.backend) == 0);
       if (!backend_success) {
         if (args.backend_specified) {
           logging(WARN,
                   "Specified backend '%s' failed or not found. Reverting to "
                   "previous backend '%s' in config.",
                   original_requested_backend,
-                  app_config->backend ? app_config->backend : "cwal");
+                  app_config->opts.backend ? app_config->opts.backend : "cwal");
         } else {
           logging(WARN, "Configured backend '%s' failed. Falling back to '%s'.",
-                  original_requested_backend, args.backend);
+                  original_requested_backend, args.opts.backend);
         }
       }
     } else {
@@ -198,8 +198,8 @@ int main(int argv, char **argc) {
       }
 
       const char *actual_backend_name =
-          used_backend ? used_backend->name : args.backend;
-      if (used_backend && strcmp(args.backend, used_backend->name) != 0) {
+          used_backend ? used_backend->name : args.opts.backend;
+      if (used_backend && strcmp(args.opts.backend, used_backend->name) != 0) {
         logging(INFO, "Using backend %s", actual_backend_name);
       }
 
@@ -213,7 +213,7 @@ int main(int argv, char **argc) {
                   "Specified backend '%s' failed. Reverting to previous "
                   "backend '%s' in config.",
                   original_requested_backend,
-                  app_config->backend ? app_config->backend : "cwal");
+                  app_config->opts.backend ? app_config->opts.backend : "cwal");
         } else {
           logging(WARN, "Configured backend '%s' failed. Falling back to '%s'.",
                   original_requested_backend, actual_backend_name);
@@ -221,26 +221,25 @@ int main(int argv, char **argc) {
       }
 
       process_colors(&palette);
-      save_palette_to_cache(&palette, args.out_dir, actual_backend_name);
+      save_palette_to_cache(&palette, args.opts.out_dir, actual_backend_name);
     }
 
-    // Update config backend only if specified via CLI and it worked
     if (args.backend_specified && backend_success) {
-      free(app_config->backend);
-      app_config->backend = strdup(args.backend);
+      free(app_config->opts.backend);
+      app_config->opts.backend = strdup(args.opts.backend);
     }
     free(original_requested_backend);
   }
 
   // Generates template files
-  process_template(args.out_dir, &palette);
+  process_template(args.opts.out_dir, &palette);
 
   // Reloads the app colors
-  apply_colors_to_apps(args.out_dir, app_config, args.no_reload);
+  apply_colors_to_apps(args.opts.out_dir, app_config, args.no_reload);
 
   // Runs post hooks
-  if (args.script_path) {
-    char *resolved_script_path = expand_home(args.script_path);
+  if (args.opts.script_path) {
+    char *resolved_script_path = expand_home(args.opts.script_path);
     if (resolved_script_path) {
       char *final_cmd = replace_placeholder(
           resolved_script_path, "$current_wallpaper",
@@ -259,21 +258,21 @@ int main(int argv, char **argc) {
   free(palette.wallpaper);
   palette.wallpaper = NULL;
 
-  // Updates the config file to the current values
-  free(app_config->out_dir);
-  app_config->out_dir = strdup(args.out_dir);
-  app_config->mode = palette.mode;
-  app_config->cols16_mode = palette.cols16_mode;
-  app_config->alpha = palette.alpha;
-  app_config->saturation = palette.saturation;
-  app_config->contrast = palette.contrast;
+  free(app_config->opts.out_dir);
+  app_config->opts.out_dir    = strdup(args.opts.out_dir);
+  app_config->opts.mode       = palette.mode;
+  app_config->opts.cols16_mode = palette.cols16_mode;
+  app_config->opts.alpha      = palette.alpha;
+  app_config->opts.saturation = palette.saturation;
+  app_config->opts.contrast   = palette.contrast;
 
-  free(app_config->script_path);
-  app_config->script_path = args.script_path ? strdup(args.script_path) : NULL;
+  free(app_config->opts.script_path);
+  app_config->opts.script_path = args.opts.script_path
+                                   ? strdup(args.opts.script_path) : NULL;
 
-  if (args.random_dir) {
-    free(app_config->random_dir);
-    app_config->random_dir = strdup(args.random_dir);
+  if (args.opts.random_dir) {
+    free(app_config->opts.random_dir);
+    app_config->opts.random_dir = strdup(args.opts.random_dir);
   }
 
   // Saves the config

@@ -24,8 +24,8 @@ static void parse_key_value(Config *config, const char *key,
         logging(ERROR, "Failed to allocate out_dir");
         return;
       }
-      free(config->out_dir);
-      config->out_dir = new_value;
+      free(config->opts.out_dir);
+      config->opts.out_dir = new_value;
     }
   } else if (strncmp(key, "backend", 8) == 0) {
     char *new_value = strdup(value);
@@ -33,19 +33,19 @@ static void parse_key_value(Config *config, const char *key,
       logging(ERROR, "Failed to allocate backend");
       return;
     }
-    free(config->backend);
-    config->backend = new_value;
+    free(config->opts.backend);
+    config->opts.backend = new_value;
   } else if (strncmp(key, "alpha", 6) == 0) {
     if (strlen(value) > 0) {
-      config->alpha = atof(value);
+      config->opts.alpha = atof(value);
     }
   } else if (strncmp(key, "saturation", 11) == 0) {
     if (strlen(value) > 0) {
-      config->saturation = atof(value);
+      config->opts.saturation = atof(value);
     }
   } else if (strncmp(key, "contrast", 9) == 0) {
     if (strlen(value) > 0) {
-      config->contrast = atof(value);
+      config->opts.contrast = atof(value);
     }
   } else if (strncmp(key, "script_path", 12) == 0) {
     if (strlen(value) > 0) {
@@ -54,8 +54,8 @@ static void parse_key_value(Config *config, const char *key,
         logging(ERROR, "Failed to allocate script_path");
         return;
       }
-      free(config->script_path);
-      config->script_path = new_value;
+      free(config->opts.script_path);
+      config->opts.script_path = new_value;
     }
   } else if (strncmp(key, "random_dir", 11) == 0) {
     if (strlen(value) > 0) {
@@ -64,15 +64,15 @@ static void parse_key_value(Config *config, const char *key,
         logging(ERROR, "Failed to allocate random_dir");
         return;
       }
-      free(config->random_dir);
-      config->random_dir = new_value;
+      free(config->opts.random_dir);
+      config->opts.random_dir = new_value;
     }
   } else if (strncmp(key, "mode", 5) == 0) {
     if (strlen(value) > 0) {
       if (strncmp(value, "dark", 5) == 0) {
-        config->mode = DARK;
+        config->opts.mode = DARK;
       } else if (strncmp(value, "light", 6) == 0) {
-        config->mode = LIGHT;
+        config->opts.mode = LIGHT;
       } else {
         logging(WARN, "Invalid mode value in config: %s. Using default.",
                 value);
@@ -81,11 +81,11 @@ static void parse_key_value(Config *config, const char *key,
   } else if (strncmp(key, "cols16_mode", 12) == 0) {
     if (strlen(value) > 0) {
       if (strncmp(value, "darken", 7) == 0) {
-        config->cols16_mode = DARKEN;
+        config->opts.cols16_mode = DARKEN;
       } else if (strncmp(value, "lighten", 8) == 0) {
-        config->cols16_mode = LIGHTEN;
+        config->opts.cols16_mode = LIGHTEN;
       } else if (strncmp(value, "none", 5) == 0) {
-        config->cols16_mode = NONE;
+        config->opts.cols16_mode = NONE;
       } else {
         logging(WARN, "Invalid cols16_mode value in config: %s. Using default.",
                 value);
@@ -217,25 +217,25 @@ Config *load_config(void) {
 
   // Set default values (these can be overridden by CLI arguments)
   char *cache_home = get_cache_home();
-  config->out_dir = cache_home ? build_path(cache_home, "cwal") : NULL;
+  config->opts.out_dir = cache_home ? build_path(cache_home, "cwal") : NULL;
   free(cache_home);
-  if (!config->out_dir) {
-    config->out_dir = strdup("~/.cache/cwal");
+  if (!config->opts.out_dir) {
+    config->opts.out_dir = strdup("~/.cache/cwal");
   }
-  if (!config->out_dir) {
+  if (!config->opts.out_dir) {
     perror("Failed to allocate out_dir");
     free(config);
     return NULL;
   }
-  config->backend = NULL;
-  config->mode = DARK;
-  config->cols16_mode = DARKEN;
-  config->alpha = 1.0;
-  config->saturation = 0.0;
-  config->contrast = 1.0;
-  config->script_path = NULL;
-  config->random_dir = NULL;
-  config->links = NULL;
+  config->opts.backend    = NULL;
+  config->opts.mode       = DARK;
+  config->opts.cols16_mode = DARKEN;
+  config->opts.alpha      = 1.0;
+  config->opts.saturation = 0.0;
+  config->opts.contrast   = 1.0;
+  config->opts.script_path = NULL;
+  config->opts.random_dir  = NULL;
+  config->links     = NULL;
   config->num_links = 0;
 
   char *config_home = get_config_home();
@@ -322,22 +322,22 @@ void save_config(const Config *config) {
   }
 
   fprintf(file, "[general]\n");
-  fprintf(file, "out_dir = %s\n", config->out_dir ? config->out_dir : "");
-  fprintf(file, "backend = %s\n", config->backend ? config->backend : "cwal");
-  fprintf(file, "script_path = %s\n", config->script_path ? config->script_path : "");
+  fprintf(file, "out_dir = %s\n", config->opts.out_dir ? config->opts.out_dir : "");
+  fprintf(file, "backend = %s\n", config->opts.backend ? config->opts.backend : "cwal");
+  fprintf(file, "script_path = %s\n", config->opts.script_path ? config->opts.script_path : "");
 
   fprintf(file, "\n[options]\n");
-  fprintf(file, "alpha = %.2f\n", config->alpha);
-  fprintf(file, "saturation = %.2f\n", config->saturation);
-  fprintf(file, "contrast = %.2f\n", config->contrast);
-  fprintf(file, "mode = %s\n", config->mode == DARK ? "dark" : "light");
+  fprintf(file, "alpha = %.2f\n", config->opts.alpha);
+  fprintf(file, "saturation = %.2f\n", config->opts.saturation);
+  fprintf(file, "contrast = %.2f\n", config->opts.contrast);
+  fprintf(file, "mode = %s\n", config->opts.mode == DARK ? "dark" : "light");
   fprintf(file, "cols16_mode = %s\n",
-          config->cols16_mode == DARKEN
+          config->opts.cols16_mode == DARKEN
               ? "darken"
-              : (config->cols16_mode == LIGHTEN ? "lighten" : "none"));
+              : (config->opts.cols16_mode == LIGHTEN ? "lighten" : "none"));
 
   fprintf(file, "\n[random]\n");
-  fprintf(file, "random_dir = %s\n", config->random_dir ? config->random_dir : "");
+  fprintf(file, "random_dir = %s\n", config->opts.random_dir ? config->opts.random_dir : "");
 
   if (config->num_links > 0) {
     fprintf(file, "\n[links]\n");
@@ -364,10 +364,10 @@ void save_config(const Config *config) {
 
 void free_config(Config *config) {
   if (config) {
-    free(config->out_dir);
-    free(config->backend);
-    free(config->script_path);
-    free(config->random_dir);
+    free(config->opts.out_dir);
+    free(config->opts.backend);
+    free(config->opts.script_path);
+    free(config->opts.random_dir);
     for (int i = 0; i < config->num_links; i++) {
       free(config->links[i].template_name);
       free(config->links[i].target_path);

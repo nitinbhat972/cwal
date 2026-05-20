@@ -21,17 +21,21 @@ typedef struct {
 } Link;
 
 typedef struct {
-  char *backend;           // Name of the image processing backend to use.
-  COLOR_MODE mode;         // Theme mode (dark or light).
-  SHADE_MODE cols16_mode;  // 16-color generation mode (darken or lighten).
-  float alpha;             // Alpha value for the palette.
-  float saturation;        // Saturation adjustment.
-  float contrast;          // Contrast adjustment.
-  char *script_path;       // Path to a script to run after processing.
-  char *random_dir;        // Path to a directory for random image selection.
-  char *out_dir;           // Output directory for generated files.
-  Link *links;             // Array of file links.
-  int num_links;           // Current number of links.
+  COLOR_MODE  mode;         // Theme mode (dark or light).
+  SHADE_MODE  cols16_mode;  // 16-color generation mode (darken or lighten).
+  float       alpha;        // Alpha value for the palette.
+  float       saturation;   // Saturation adjustment.
+  float       contrast;     // Contrast adjustment.
+  char       *backend;      // Image processing backend name.
+  char       *script_path;  // Post-hook script path.
+  char       *out_dir;      // Output directory for generated files.
+  char       *random_dir;   // Directory for random image selection.
+} AppOptions;
+
+typedef struct {
+  AppOptions  opts;        // All shared persistent+CLI-overridable options.
+  Link       *links;       // Array of file links (config-only).
+  int         num_links;   // Current number of links (config-only).
 } Config;
 
 Config *load_config(void);
