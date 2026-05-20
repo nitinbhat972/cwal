@@ -31,16 +31,25 @@ typedef struct {
   char wallpaper[4096];
   char mode[16];
   char alpha_str[16];
+  char alpha_hex[8];
+  char alpha_pct[8];
+  char alpha_int[8];
 } ColorTable;
 
-static const char *fmt_names[] = {"hex", "xhex",  "strip", "rgb",      "rgba",
-                                  "red", "green", "blue"};
+static const char *fmt_names[] = {"hex",  "xhex", "strip", "rgb",
+                                  "rgba", "red",  "green", "blue"};
 
 static ColorTable *build_color_table(const Palette *palette) {
   ColorTable *ct = malloc(sizeof(ColorTable));
   if (!ct)
     return NULL;
   snprintf(ct->alpha_str, sizeof(ct->alpha_str), "%.2f", palette->alpha);
+  snprintf(ct->alpha_hex, sizeof(ct->alpha_hex), "%02x",
+           (int)(palette->alpha * 255.0f + 0.5f));
+  snprintf(ct->alpha_pct, sizeof(ct->alpha_pct), "%d",
+           (int)(palette->alpha * 100.0f + 0.5f));
+  snprintf(ct->alpha_int, sizeof(ct->alpha_int), "%d",
+           (int)(palette->alpha * 255.0f + 0.5f));
   snprintf(ct->wallpaper, sizeof(ct->wallpaper), "%s",
            palette->wallpaper ? palette->wallpaper : "");
   snprintf(ct->mode, sizeof(ct->mode), "%s",
@@ -59,6 +68,22 @@ static const char *resolve_placeholder(const char *placeholder,
   char key[64] = {0};
   int fmt_idx = 0; // default hex
   const char *dot = strrchr(placeholder, '.');
+
+  if (strcmp(placeholder, "alpha") == 0) {
+    return ct->alpha_str;
+  }
+  if (strncmp(placeholder, "alpha.", 6) == 0) {
+    const char *fmt_str = placeholder + 6;
+    if (strcmp(fmt_str, "hex") == 0)
+      return ct->alpha_hex;
+    if (strcmp(fmt_str, "pct") == 0 || strcmp(fmt_str, "percent") == 0)
+      return ct->alpha_pct;
+    if (strcmp(fmt_str, "dec") == 0 || strcmp(fmt_str, "float") == 0)
+      return ct->alpha_str;
+    if (strcmp(fmt_str, "int") == 0 || strcmp(fmt_str, "num") == 0)
+      return ct->alpha_int;
+    return NULL;
+  }
 
   if (dot && dot != placeholder) {
     size_t key_len = (size_t)(dot - placeholder);
@@ -94,8 +119,6 @@ static const char *resolve_placeholder(const char *placeholder,
     return ct->wallpaper;
   } else if (strcmp(key, "mode") == 0) {
     return ct->mode;
-  } else if (strcmp(key, "alpha") == 0) {
-    return ct->alpha_str;
   }
   return NULL;
 }
