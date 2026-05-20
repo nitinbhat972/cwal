@@ -177,6 +177,7 @@ Usage: cwal [OPTIONS] --img <image_path>
 - `--random [directory]`                Select random image (uses config default if directory omitted)
 - `--theme <theme_name|random_all>`     Select a theme or a random one
 - `--preview`                           Preview palette
+- `--skip-cursor`                       Skip writing the cursor color sequence
 - `--version`                           Show version number
 - `--help`                              Help
 
@@ -188,6 +189,7 @@ cwal --random ~/Pictures/wallpapers    # Use specific path and save it
 cwal --random                          # Use the directory saved in config
 cwal --theme random_all                # Pick a random predefined theme
 cwal --img /path/to/image.jpg --alpha 0.8 --saturation 0.1
+cwal --img /path/to/image.jpg --skip-cursor  # Skip OSC 12 cursor color sequence
 ```
 
 ## ⚙️ Configuration
@@ -208,6 +210,7 @@ saturation = 0.00
 contrast = 1.00
 mode = dark
 cols16_mode = darken
+skip_cursor = false
 
 [random]
 random_dir = /home/user/Pictures/Wallpapers
