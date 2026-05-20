@@ -30,6 +30,7 @@ typedef struct {
   char       *script_path;  // Post-hook script path.
   char       *out_dir;      // Output directory for generated files.
   char       *random_dir;   // Directory for random image selection.
+  bool        skip_cursor;  // If true, skip writing the OSC 12 cursor color sequence.
 } AppOptions;
 
 typedef struct {

@@ -230,7 +230,8 @@ static void replacement(FILE *in, FILE *out, const ColorTable *ct) {
   free(buf);
 }
 
-static void generate_sequence(const char *out_path, const Palette *palette) {
+static void generate_sequence(const char *out_path, const Palette *palette,
+                              bool skip_cursor) {
   char seq[4096];
   int n = 0;
   for (int i = 0; i < 16; i++)
@@ -238,17 +239,23 @@ static void generate_sequence(const char *out_path, const Palette *palette) {
                   palette->colors[i].red, palette->colors[i].green,
                   palette->colors[i].blue);
   const Color *fg = &palette->colors[15], *bg = &palette->colors[0];
+  n += snprintf(seq + n, sizeof(seq) - n,
+                "\033]10;#%02x%02x%02x\033\\\033]11;#%02x%02x%02x\033\\",
+                fg->red, fg->green, fg->blue, bg->red, bg->green, bg->blue);
+
   n += snprintf(
       seq + n, sizeof(seq) - n,
-      "\033]10;#%02x%02x%02x\033\\\033]11;#%02x%02x%02x\033\\\033]12;#%02x%02x%"
-      "02x\033\\\033]13;#%02x%02x%02x\033\\\033]17;#%02x%02x%02x\033\\\033]19;#"
+      "\033]13;#%02x%02x%02x\033\\\033]17;#%02x%02x%02x\033\\\033]19;#"
       "%02x%02x%02x\033\\\033]4;232;#%02x%02x%02x\033\\\033]4;256;#%02x%02x%"
       "02x\033\\\033]4;257;#%02x%02x%02x\033\\\033]708;#%02x%02x%02x\033\\",
-      fg->red, fg->green, fg->blue, bg->red, bg->green, bg->blue, fg->red,
-      fg->green, fg->blue, fg->red, fg->green, fg->blue, fg->red, fg->green,
-      fg->blue, bg->red, bg->green, bg->blue, bg->red, bg->green, bg->blue,
-      fg->red, fg->green, fg->blue, bg->red, bg->green, bg->blue, bg->red,
-      bg->green, bg->blue);
+      fg->red, fg->green, fg->blue, fg->red, fg->green, fg->blue, bg->red,
+      bg->green, bg->blue, bg->red, bg->green, bg->blue, fg->red, fg->green,
+      fg->blue, bg->red, bg->green, bg->blue, bg->red, bg->green, bg->blue);
+
+  if (!skip_cursor)
+    n += snprintf(seq + n, sizeof(seq) - n, "\033]12;#%02x%02x%02x\033\\",
+                  fg->red, fg->green, fg->blue);
+
   FILE *out = fopen(out_path, "w");
   if (out) {
     fwrite(seq, 1, n, out);
@@ -287,7 +294,8 @@ static void process_dir(const char *current_dir, const char *out_base,
   closedir(dir);
 }
 
-int process_template(const char *output_dir, const Palette *palette) {
+int process_template(const char *output_dir, const Palette *palette,
+                     bool skip_cursor) {
   char *out_base = expand_home(output_dir);
   if (!out_base) {
     logging(ERROR, "Failed to resolve output directory: %s",
@@ -322,7 +330,7 @@ int process_template(const char *output_dir, const Palette *palette) {
   process_dir(d2, out_base, ct);
 
   char *seq_path = build_path(out_base, "sequences");
-  generate_sequence(seq_path, palette);
+  generate_sequence(seq_path, palette, skip_cursor);
   free(seq_path);
   free(data_home);
   free(config_home);

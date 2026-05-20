@@ -57,6 +57,8 @@ void print_usage(const char *prog_name) {
                   " Select a theme or a random one\n");
   fprintf(stderr, "  " YELLOW "-p, --preview" RESET
                   "              show palette preview\n");
+  fprintf(stderr, "  " YELLOW "-N, --skip-cursor" RESET
+                  "          Skip writing the cursor color sequence\n");
   fprintf(stderr, "  " YELLOW "-v, --version" RESET
                   "              Show the version number\n");
   fprintf(stderr, "  " YELLOW "-h, --help" RESET
@@ -64,22 +66,25 @@ void print_usage(const char *prog_name) {
 }
 
 CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
-  args->opts           = config->opts;  // copy all shared defaults from config
-  args->opts.backend   = strdup(config->opts.backend ? config->opts.backend : "cwal");
-  args->opts.script_path = config->opts.script_path ? strdup(config->opts.script_path) : NULL;
-  args->opts.out_dir   = strdup(config->opts.out_dir);
-  args->opts.random_dir = config->opts.random_dir ? strdup(config->opts.random_dir) : NULL;
-  args->image_path     = NULL;
+  args->opts = config->opts; // copy all shared defaults from config
+  args->opts.backend =
+      strdup(config->opts.backend ? config->opts.backend : "cwal");
+  args->opts.script_path =
+      config->opts.script_path ? strdup(config->opts.script_path) : NULL;
+  args->opts.out_dir = strdup(config->opts.out_dir);
+  args->opts.random_dir =
+      config->opts.random_dir ? strdup(config->opts.random_dir) : NULL;
+  args->image_path = NULL;
   args->backend_specified = false;
-  args->no_reload      = false;
-  args->list_backends  = false;
-  args->list_themes    = false;
-  args->quiet          = false;
+  args->no_reload = false;
+  args->list_backends = false;
+  args->list_themes = false;
+  args->quiet = false;
   args->use_random_dir = false;
   args->use_random_theme = false;
-  args->random_mode    = RANDOM_ALL;
-  args->theme          = NULL;
-  args->preview        = false;
+  args->random_mode = RANDOM_ALL;
+  args->theme = NULL;
+  args->preview = false;
 
   static struct option long_options[] = {
       {"mode", required_argument, 0, 'm'},
@@ -98,6 +103,7 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       {"random", optional_argument, 0, 'r'},
       {"theme", required_argument, 0, 't'},
       {"preview", no_argument, 0, 'p'},
+      {"skip-cursor", no_argument, 0, 'N'},
       {"version", no_argument, 0, 'v'},
       {"help", no_argument, 0, 'h'},
       {0, 0, 0, 0}};
@@ -106,7 +112,7 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
   int long_index = 0;
   optind = 1;
 
-  while ((opt = getopt_long(argc, argv, "m:c:s:C:a:b:i:S:o:nBTqr::t:pvh",
+  while ((opt = getopt_long(argc, argv, "m:c:s:C:a:b:i:S:o:nBTqr::t:pNvh",
                             long_options, &long_index)) != -1) {
     const char *actual_opt = (optarg && argv[optind - 1] == optarg)
                                  ? argv[optind - 2]
@@ -218,6 +224,9 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       break;
     case 'p':
       args->preview = true;
+      break;
+    case 'N':
+      args->opts.skip_cursor = true;
       break;
     case 'v':
       printf("cwal v%s\n", CWAL_VERSION);

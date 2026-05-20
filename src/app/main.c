@@ -232,7 +232,7 @@ int main(int argv, char **argc) {
   }
 
   // Generates template files
-  process_template(args.opts.out_dir, &palette);
+  process_template(args.opts.out_dir, &palette, args.opts.skip_cursor);
 
   // Reloads the app colors
   apply_colors_to_apps(args.opts.out_dir, app_config, args.no_reload);
@@ -274,6 +274,7 @@ int main(int argv, char **argc) {
     free(app_config->opts.random_dir);
     app_config->opts.random_dir = strdup(args.opts.random_dir);
   }
+  app_config->opts.skip_cursor = args.opts.skip_cursor;
 
   // Saves the config
   save_config(app_config);

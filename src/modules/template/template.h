@@ -11,4 +11,4 @@
 #pragma once
 #include "core.h"
 
-int process_template(const char *output_base_dir, const Palette *palette);
+int process_template(const char *output_base_dir, const Palette *palette, bool skip_cursor);

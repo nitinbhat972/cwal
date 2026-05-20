@@ -91,17 +91,21 @@ static void parse_key_value(Config *config, const char *key,
                 value);
       }
     }
+  } else if (strncmp(key, "skip_cursor", 12) == 0) {
+    config->opts.skip_cursor = (strncmp(value, "true", 5) == 0);
   }
 }
 
 static void parse_link(Config *config, const char *key, const char *value) {
   // key = template_name
   // value = target_path | reload_cmd
-  
-  if (!key || !value || strlen(key) == 0 || strlen(value) == 0) return;
+
+  if (!key || !value || strlen(key) == 0 || strlen(value) == 0)
+    return;
 
   char *val_copy = strdup(value);
-  if (!val_copy) return;
+  if (!val_copy)
+    return;
 
   char *pipe = strchr(val_copy, '|');
   char *target_raw = val_copy;
@@ -113,17 +117,21 @@ static void parse_link(Config *config, const char *key, const char *value) {
   }
 
   // Trim target_path
-  while (*target_raw == ' ' || *target_raw == '\t') target_raw++;
+  while (*target_raw == ' ' || *target_raw == '\t')
+    target_raw++;
   size_t t_len = strlen(target_raw);
-  while (t_len > 0 && (target_raw[t_len-1] == ' ' || target_raw[t_len-1] == '\t')) {
+  while (t_len > 0 &&
+         (target_raw[t_len - 1] == ' ' || target_raw[t_len - 1] == '\t')) {
     target_raw[--t_len] = '\0';
   }
 
   // Trim reload_cmd
   if (cmd_raw) {
-    while (*cmd_raw == ' ' || *cmd_raw == '\t') cmd_raw++;
+    while (*cmd_raw == ' ' || *cmd_raw == '\t')
+      cmd_raw++;
     size_t c_len = strlen(cmd_raw);
-    while (c_len > 0 && (cmd_raw[c_len-1] == ' ' || cmd_raw[c_len-1] == '\t')) {
+    while (c_len > 0 &&
+           (cmd_raw[c_len - 1] == ' ' || cmd_raw[c_len - 1] == '\t')) {
       cmd_raw[--c_len] = '\0';
     }
     if (strlen(cmd_raw) == 0 || strncmp(cmd_raw, "none", 5) == 0) {
@@ -148,7 +156,8 @@ static void parse_link(Config *config, const char *key, const char *value) {
   }
 
   // Store the link
-  Link *new_links = realloc(config->links, sizeof(Link) * (config->num_links + 1));
+  Link *new_links =
+      realloc(config->links, sizeof(Link) * (config->num_links + 1));
   if (new_links) {
     config->links = new_links;
     config->links[config->num_links].template_name = template_name;
@@ -227,22 +236,24 @@ Config *load_config(void) {
     free(config);
     return NULL;
   }
-  config->opts.backend    = NULL;
-  config->opts.mode       = DARK;
+  config->opts.backend = NULL;
+  config->opts.mode = DARK;
   config->opts.cols16_mode = DARKEN;
-  config->opts.alpha      = 1.0;
+  config->opts.alpha = 1.0;
   config->opts.saturation = 0.0;
-  config->opts.contrast   = 1.0;
+  config->opts.contrast = 1.0;
   config->opts.script_path = NULL;
-  config->opts.random_dir  = NULL;
-  config->links     = NULL;
+  config->opts.random_dir = NULL;
+  config->opts.skip_cursor = false;
+  config->links = NULL;
   config->num_links = 0;
 
   char *config_home = get_config_home();
   char *expanded_path = build_path(config_home, "cwal", "cwal.ini");
   FILE *file = fopen(expanded_path, "r");
   if (!file) {
-    logging(WARN, "Config file not found (%s), using default values.", expanded_path);
+    logging(WARN, "Config file not found (%s), using default values.",
+            expanded_path);
     free(config_home);
     free(expanded_path);
     return config;
@@ -322,9 +333,12 @@ void save_config(const Config *config) {
   }
 
   fprintf(file, "[general]\n");
-  fprintf(file, "out_dir = %s\n", config->opts.out_dir ? config->opts.out_dir : "");
-  fprintf(file, "backend = %s\n", config->opts.backend ? config->opts.backend : "cwal");
-  fprintf(file, "script_path = %s\n", config->opts.script_path ? config->opts.script_path : "");
+  fprintf(file, "out_dir = %s\n",
+          config->opts.out_dir ? config->opts.out_dir : "");
+  fprintf(file, "backend = %s\n",
+          config->opts.backend ? config->opts.backend : "cwal");
+  fprintf(file, "script_path = %s\n",
+          config->opts.script_path ? config->opts.script_path : "");
 
   fprintf(file, "\n[options]\n");
   fprintf(file, "alpha = %.2f\n", config->opts.alpha);
@@ -335,22 +349,26 @@ void save_config(const Config *config) {
           config->opts.cols16_mode == DARKEN
               ? "darken"
               : (config->opts.cols16_mode == LIGHTEN ? "lighten" : "none"));
+  fprintf(file, "skip_cursor = %s\n",
+          config->opts.skip_cursor ? "true" : "false");
 
   fprintf(file, "\n[random]\n");
-  fprintf(file, "random_dir = %s\n", config->opts.random_dir ? config->opts.random_dir : "");
+  fprintf(file, "random_dir = %s\n",
+          config->opts.random_dir ? config->opts.random_dir : "");
 
   if (config->num_links > 0) {
     fprintf(file, "\n[links]\n");
     for (int i = 0; i < config->num_links; i++) {
-      if (config->links[i].reload_cmd && strlen(config->links[i].reload_cmd) > 0) {
-        fprintf(file, "%s = %s | %s\n",
-                config->links[i].template_name,
-                config->links[i].target_path ? config->links[i].target_path : "",
+      if (config->links[i].reload_cmd &&
+          strlen(config->links[i].reload_cmd) > 0) {
+        fprintf(file, "%s = %s | %s\n", config->links[i].template_name,
+                config->links[i].target_path ? config->links[i].target_path
+                                             : "",
                 config->links[i].reload_cmd);
       } else {
-        fprintf(file, "%s = %s\n",
-                config->links[i].template_name,
-                config->links[i].target_path ? config->links[i].target_path : "");
+        fprintf(file, "%s = %s\n", config->links[i].template_name,
+                config->links[i].target_path ? config->links[i].target_path
+                                             : "");
       }
     }
   }
