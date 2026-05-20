@@ -22,6 +22,7 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.ref_name }}
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Validate release input
         id: meta
