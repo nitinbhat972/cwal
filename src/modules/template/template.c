@@ -19,7 +19,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#define FMT_COUNT 8
+#define FMT_COUNT 9
 #define COLOR_STR_MAX 32
 
 typedef struct {
@@ -36,7 +36,7 @@ typedef struct {
   char alpha_int[8];
 } ColorTable;
 
-static const char *fmt_names[] = {"hex",  "xhex", "strip", "rgb",
+static const char *fmt_names[] = {"hex",  "xhex", "hexa",  "strip", "rgb",
                                   "rgba", "red",  "green", "blue"};
 
 static ColorTable *build_color_table(const Palette *palette) {

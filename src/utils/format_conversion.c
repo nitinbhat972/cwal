@@ -26,6 +26,10 @@ void format_color(const Color *color, const char *ft, char *out,
   } else if (strncmp(ft, "xhex", 5) == 0) {
     snprintf(out, out_size, "0x%02x%02x%02x", color->red, color->green,
              color->blue);
+  } else if (strncmp(ft, "hexa", 5) == 0) {
+    int alpha_hex = (int)(alpha * 255.0f + 0.5f);
+    snprintf(out, out_size, "#%02x%02x%02x%02x", color->red, color->green,
+             color->blue, alpha_hex);
   } else if (strncmp(ft, "strip", 6) == 0) {
     snprintf(out, out_size, "%02x%02x%02x", color->red, color->green,
              color->blue);
