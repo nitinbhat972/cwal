@@ -263,6 +263,7 @@ Terminal emulators (Alacritty, Kitty, Wezterm, Ghostty, Foot), window managers (
 | `strip`          | Hexadecimal color code without prefix           | `ff8000`                                                     |
 | `rgb`            | RGB format (e.g., `rgb(R,G,B)`)                 | `rgb(255,128,0)`                                             |
 | `rgba`           | RGBA format (e.g., `rgba(R,G,B,A)`)             | `rgba(255,128,0,0.8)`                                        |
+| `hexa`           | Hexadecimal color code with alpha (e.g., `#RRGGBBAA`) | `#ff8000cc`                                                 |
 | `red`            | Red component value (0-255)                     | `255`                                                        |
 | `green`          | Green component value (0-255)                   | `128`                                                        |
 | `blue`           | Blue component value (0-255)                    | `0`                                                          |
@@ -274,7 +275,11 @@ In addition to color-specific formats, you can use these global placeholders any
 | :------------ | :----------------------------------------------- | :------------- |
 | `{mode}`      | Current theme mode (`dark` or `light`)           | `dark`         |
 | `{wallpaper}` | Absolute path to the current wallpaper image     | `/home/user/Pictures/wall.jpg` |
-| `{alpha}`     | Alpha transparency value (0.00 - 1.00)   | `0.80`         |
+| `{alpha}`     | Alpha transparency value (0.00 - 1.00)           | `0.80`         |
+| `{alpha.hex}` | Alpha transparency in 2-digit hexadecimal format  | `cc`           |
+| `{alpha.pct}` | Alpha transparency in percentage integer format  | `80`           |
+| `{alpha.int}` | Alpha transparency in raw integer format (0-255) | `204`          |
+| `{alpha.dec}` | Alpha transparency in decimal float format       | `0.80`         |
 
 
 **Example usage in a template:**
