@@ -31,7 +31,6 @@ typedef struct {
   char wallpaper[4096];
   char mode[16];
   char alpha_str[16];
-  float alpha;
 } ColorTable;
 
 static const char *fmt_names[] = {"hex", "xhex",  "strip", "rgb",      "rgba",
@@ -41,7 +40,6 @@ static ColorTable *build_color_table(const Palette *palette) {
   ColorTable *ct = malloc(sizeof(ColorTable));
   if (!ct)
     return NULL;
-  ct->alpha = palette->alpha;
   snprintf(ct->alpha_str, sizeof(ct->alpha_str), "%.2f", palette->alpha);
   snprintf(ct->wallpaper, sizeof(ct->wallpaper), "%s",
            palette->wallpaper ? palette->wallpaper : "");
