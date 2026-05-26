@@ -47,9 +47,15 @@ set(SOURCES
 # Create executable
 add_executable(cwal ${SOURCES})
 
+target_compile_options(cwal PRIVATE
+    -Wall
+    -Wextra
+    -Wpedantic
+    -Wshadow
+)
+
 target_compile_definitions(cwal PRIVATE CWAL_VERSION="${PROJECT_VERSION}")
 
-# Link libraries and include directories via imported targets
 target_link_libraries(cwal
     PRIVATE
     PkgConfig::MagickWand
