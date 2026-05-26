@@ -9,7 +9,6 @@
  */
 
 #include "template.h"
-#include "core.h"
 #include "utils/format_conversion.h"
 #include "utils/path.h"
 #include "utils/utils.h"

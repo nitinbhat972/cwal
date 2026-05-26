@@ -59,13 +59,11 @@ static void boost_dark_colors(Palette *palette) {
 static void boost_light_colors(Palette *palette) {
   for (int i = 1; i < 7; i++) {
     float lum = w3_luminance(palette->colors[i]);
-    bool needs_boost = false;
 
     // If the color is too light (high luminance), darken it for better contrast
     // against light background
     if (lum > 0.6f) {
       palette->colors[i] = darken_color(palette->colors[i], 0.3f);
-      needs_boost = true;
     }
 
     // Apply similar saturation boost if desaturated
@@ -73,7 +71,6 @@ static void boost_light_colors(Palette *palette) {
     if (hsv.s < MIN_SATURATION) {
       hsv.s += SATURATION_BOOST * (1.0f - hsv.s);
       palette->colors[i] = hsv_to_rgb(hsv);
-      needs_boost = true;
     }
   }
 }

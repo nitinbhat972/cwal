@@ -9,7 +9,6 @@
  */
 
 #include "utils.h"
-#include "core.h"
 #include <fcntl.h>
 #include <spawn.h>
 #include <stdarg.h>
@@ -18,7 +17,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/wait.h>
 #include <unistd.h>
 
 extern char **environ;

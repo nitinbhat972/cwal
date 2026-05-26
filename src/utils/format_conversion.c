@@ -9,7 +9,6 @@
  */
 
 #include "format_conversion.h"
-#include "core.h"
 #include <string.h>
 
 void format_color(const Color *color, const char *ft, char *out,

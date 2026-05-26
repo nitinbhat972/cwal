@@ -9,14 +9,12 @@
  */
 
 #include "backend.h"
-#include "core.h"
 #include "lua_backend.h"
 #include "utils/path.h"
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 
 extern ImageBackend cwal;
 extern ImageBackend libimagequant;
@@ -230,38 +228,8 @@ ImageBackend *backend_get(const char *name) {
 }
 
 void list_all_backends() {
+  printf("Available Backends:\n");
   for (ImageBackend **backend = available_backends; *backend; backend++) {
     printf("\t-> %s\n", (*backend)->name);
   }
-}
-
-int process_backend(ImageBackend *initial_backend, RawImage *img,
-                    Palette *palette) {
-  if (!initial_backend || !img || !palette)
-    return -1;
-  if (initial_backend->init_backend)
-    initial_backend->init_backend();
-  if (initial_backend->generate_palette(img, palette) == 0) {
-    if (initial_backend->terminate_backend)
-      initial_backend->terminate_backend();
-    return 0;
-  }
-  if (initial_backend->terminate_backend)
-    initial_backend->terminate_backend();
-  for (ImageBackend **backend_ptr = available_backends; *backend_ptr;
-       backend_ptr++) {
-    ImageBackend *backend = *backend_ptr;
-    if (backend == initial_backend)
-      continue;
-    if (backend->init_backend)
-      backend->init_backend();
-    if (backend->generate_palette(img, palette) == 0) {
-      if (backend->terminate_backend)
-        backend->terminate_backend();
-      return 0;
-    }
-    if (backend->terminate_backend)
-      backend->terminate_backend();
-  }
-  return -1;
 }

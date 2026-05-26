@@ -9,10 +9,7 @@
  */
 
 #include "backend.h"
-#include "core.h"
 #include "magickwand.h"
-#include <stdbool.h>
-#include <stdio.h>
 
 static void init_magickwand() {
   if (!IsMagickWandInstantiated()) {

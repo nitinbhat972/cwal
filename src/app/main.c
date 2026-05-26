@@ -19,11 +19,8 @@
 #include "modules/theme/themes.h"
 #include "utils/path.h"
 #include "utils/utils.h"
-#include <dirent.h>
-#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 int main(int argv, char **argc) {
   // Load config file

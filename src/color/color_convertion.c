@@ -9,10 +9,8 @@
  */
 
 #include "color_convertion.h"
-#include "core.h"
 #include "utils/utils.h"
 #include <math.h>
-#include <stdint.h>
 
 HSL rgb_to_hsl(Color clr) {
   float r = clr.red / 255.0f;
@@ -42,8 +40,8 @@ HSL rgb_to_hsl(Color clr) {
       h += 1.0f;
   }
 
-  HSL hls = {h, l, s};
-  return hls;
+  HSL hsl = {h, l, s};
+  return hsl;
 }
 
 static float calc(float t, float temp1, float temp2) {
@@ -164,6 +162,9 @@ Color hsv_to_rgb(HSV hsv) {
       r = v;
       g = p;
       b = q;
+      break;
+    default:
+      r = g = b = 0;
       break;
     }
   }

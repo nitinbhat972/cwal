@@ -10,7 +10,6 @@
 
 #include "color_operation.h"
 #include "color_convertion.h"
-#include "core.h"
 #include "utils/utils.h"
 #include <math.h>
 
@@ -54,7 +53,7 @@ float w3_luminance(Color clr) {
 Color binary_luminance_adjust(float luminance_desired, float hue, float s_min,
                               float s_max, float v_min, float v_max,
                               int iterations) {
-  HSV result = {hue, (s_min + s_max) / 2, (v_min + v_max) / 2, 1.0f};
+  HSV result = {hue, (s_min + s_max) / 2, (v_min + v_max) / 2};
 
   for (int i = 0; i < iterations; i++) {
     result.s = (s_min + s_max) / 2.0f;
@@ -75,15 +74,4 @@ Color binary_luminance_adjust(float luminance_desired, float hue, float s_min,
   result.s = (s_min + s_max) / 2.0f;
   result.v = (v_min + v_max) / 2.0f;
   return hsv_to_rgb(result);
-}
-
-float calculate_contrast_ratio(Color color1, Color color2) {
-  float lum1 = w3_luminance(color1);
-  float lum2 = w3_luminance(color2);
-
-  if (lum1 > lum2) {
-    return (lum1 + 0.05f) / (lum2 + 0.05f);
-  } else {
-    return (lum2 + 0.05f) / (lum1 + 0.05f);
-  }
 }

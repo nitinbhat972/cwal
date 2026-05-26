@@ -11,19 +11,14 @@
 #include "reload.h"
 #include "utils/path.h"
 #include "utils/utils.h"
-#include <dirent.h>
 #include <fcntl.h>
 #include <glob.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <sys/utsname.h>
 #include <unistd.h>
-
-#define MAX_DEVICES 256
-#define LINE_BUFFER_SIZE 256
 
 static int command_exists(const char *cmd) {
   char *path_env = getenv("PATH");

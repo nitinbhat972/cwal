@@ -9,11 +9,8 @@
  */
 
 #include "backend.h"
-#include "core.h"
 
 #include <libimagequant.h>
-
-#define RESIZE_FACTOR 0.20f
 
 static int generate_palette_libimagequant(RawImage *image, Palette *palette) {
   if (!image || !palette || !image->pixels) {
@@ -43,7 +40,7 @@ static int generate_palette_libimagequant(RawImage *image, Palette *palette) {
 
   const liq_palette *liq_pal = liq_get_palette(res);
 
-  for (int i = 0; i < liq_pal->count; ++i) {
+  for (unsigned i = 0; i < liq_pal->count; ++i) {
     palette->colors[i].red = liq_pal->entries[i].r;
     palette->colors[i].green = liq_pal->entries[i].g;
     palette->colors[i].blue = liq_pal->entries[i].b;

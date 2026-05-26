@@ -13,11 +13,11 @@
 #include "core.h"
 
 typedef struct {
-  float h, l, s, a;
+  float h, l, s;
 } HSL;
 
 typedef struct {
-  float h, s, v, a;
+  float h, s, v;
 } HSV;
 
 HSL rgb_to_hsl(Color clr);
