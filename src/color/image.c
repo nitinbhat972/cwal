@@ -16,7 +16,7 @@
 #include <string.h>
 
 // Initialize MagickWand on first use.
-void init_magickwand_once() {
+static void init_magickwand_once() {
   static int is_initialized = 0;
   if (!is_initialized) {
     MagickWandGenesis();

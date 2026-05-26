@@ -14,19 +14,19 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-void init_magickwand() {
+static void init_magickwand() {
   if (!IsMagickWandInstantiated()) {
     MagickWandGenesis();
   }
 }
 
-void terminate_magickwand() {
+static void terminate_magickwand() {
   if (IsMagickWandInstantiated()) {
     MagickWandTerminus();
   }
 }
 
-int generate_palette_cwal(RawImage *image, Palette *palette) {
+static int generate_palette_cwal(RawImage *image, Palette *palette) {
   if (!image || !palette || !image->pixels) {
     return -1;
   }

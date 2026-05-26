@@ -15,7 +15,7 @@
 
 #define RESIZE_FACTOR 0.20f
 
-int generate_palette_libimagequant(RawImage *image, Palette *palette) {
+static int generate_palette_libimagequant(RawImage *image, Palette *palette) {
   if (!image || !palette || !image->pixels) {
     return -1;
   }
