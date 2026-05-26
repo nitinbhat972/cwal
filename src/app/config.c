@@ -15,6 +15,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+static char *trim_value(char *s) {
+  if (!s)
+    return NULL;
+  while (*s == ' ' || *s == '\t')
+    s++;
+  size_t len = strlen(s);
+  while (len > 0 && (s[len - 1] == ' ' || s[len - 1] == '\t'))
+    s[--len] = '\0';
+  if (len >= 2 && ((s[0] == '"' && s[len - 1] == '"') ||
+                   (s[0] == '\'' && s[len - 1] == '\''))) {
+    s[len - 1] = '\0';
+    s++;
+  }
+  return s;
+}
+
 static void parse_key_value(Config *config, const char *key,
                             const char *value) {
   if (strncmp(key, "out_dir", 8) == 0) {
@@ -116,27 +132,12 @@ static void parse_link(Config *config, const char *key, const char *value) {
     cmd_raw = pipe + 1;
   }
 
-  // Trim target_path
-  while (*target_raw == ' ' || *target_raw == '\t')
-    target_raw++;
-  size_t t_len = strlen(target_raw);
-  while (t_len > 0 &&
-         (target_raw[t_len - 1] == ' ' || target_raw[t_len - 1] == '\t')) {
-    target_raw[--t_len] = '\0';
-  }
+  target_raw = trim_value(target_raw);
 
-  // Trim reload_cmd
   if (cmd_raw) {
-    while (*cmd_raw == ' ' || *cmd_raw == '\t')
-      cmd_raw++;
-    size_t c_len = strlen(cmd_raw);
-    while (c_len > 0 &&
-           (cmd_raw[c_len - 1] == ' ' || cmd_raw[c_len - 1] == '\t')) {
-      cmd_raw[--c_len] = '\0';
-    }
-    if (strlen(cmd_raw) == 0 || strncmp(cmd_raw, "none", 5) == 0) {
+    cmd_raw = trim_value(cmd_raw);
+    if (strlen(cmd_raw) == 0 || strncmp(cmd_raw, "none", 5) == 0)
       cmd_raw = NULL;
-    }
   }
 
   if (strlen(target_raw) == 0 && !cmd_raw) {
@@ -288,13 +289,8 @@ Config *load_config(void) {
         *equals = '\0';
         char *key = trimmed_line;
         char *value = equals + 1;
-        while (*key == ' ' || *key == '\t')
-          key++;
-        len = strlen(key);
-        while (len > 0 && (key[len - 1] == ' ' || key[len - 1] == '\t'))
-          key[--len] = '\0';
-        while (*value == ' ' || *value == '\t')
-          value++;
+        key = trim_value(key);
+        value = trim_value(value);
 
         if (strncmp(section, "links", 5) == 0) {
           parse_link(config, key, value);
