@@ -116,4 +116,4 @@ BREAKING CHANGE: the `output_dir` config key has been renamed to
 - `cache`
 - `utils`
 
-Scopes should reflect the area of the codebase affected. If a change genuinely spans multiple scopes, consider splitting it into separate commits. For small changes that touch multiple areas, scopes may be comma-separated (e.g., `refactor(backend,color): ...`).
+Scopes should reflect the area of the codebase affected. If a change genuinely spans multiple scopes, consider splitting it into separate commits. For small changes that touch multiple areas, scopes may be comma-separated (e.g., `refactor(backend,color): ...`). For minor changes that span many areas, the scope may be omitted entirely (e.g., `refactor: clean up dead code`).
