@@ -34,6 +34,20 @@ For documentation changes, the scope is typically omitted:
 docs: <subject>
 ```
 
+For broad refactors or minor changes that span many areas, the scope is also omitted:
+
+```text
+refactor: clean up dead code and unused includes
+```
+
+When omitting the scope, list each affected area in the body:
+
+```text
+main: remove unused system headers
+backend: remove dead code and redundant includes
+color: fix compiler warnings
+```
+
 ### Full Example
 
 ```text
@@ -92,7 +106,7 @@ BREAKING CHANGE: the `output_dir` config key has been renamed to
 - **Use the imperative mood:** Write "add", "remove", "update", "fix" — not "added", "removed", "updated", "fixed".
 - **Keep it short:** The subject line should be 72 characters or fewer.
 - **Lowercase:** The subject should start with a lowercase letter and not end with a period.
-- **Body (optional):** Use the body to explain *what* changed and *why*, not *how*. Wrap lines at 72 characters.
+- **Body (optional):** Use the body to explain *what* changed and *why*, not *how*. Wrap lines at 72 characters. When the scope is omitted, list each affected area as `area: description` lines in the body to provide context.
 - **Footer (optional):** Reference issues (`Closes #123`, `Fixes #456`) or document breaking changes here.
 
 #### Good vs. Bad Examples
@@ -116,4 +130,4 @@ BREAKING CHANGE: the `output_dir` config key has been renamed to
 - `cache`
 - `utils`
 
-Scopes should reflect the area of the codebase affected. If a change genuinely spans multiple scopes, consider splitting it into separate commits. For small changes that touch multiple areas, scopes may be comma-separated (e.g., `refactor(backend,color): ...`). For minor changes that span many areas, the scope may be omitted entirely (e.g., `refactor: clean up dead code`).
+Scopes should reflect the area of the codebase affected. If a change genuinely spans multiple scopes, consider splitting it into separate commits. For small changes that touch multiple areas, scopes may be comma-separated (e.g., `refactor(backend,color): ...`).
