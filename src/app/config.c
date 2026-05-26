@@ -252,8 +252,9 @@ Config *load_config(void) {
   char *expanded_path = build_path(config_home, "cwal", "cwal.ini");
   FILE *file = fopen(expanded_path, "r");
   if (!file) {
-    logging(WARN, "Config file not found (%s), using default values.",
+    logging(WARN, "Config file not found (%s), creating default config.",
             expanded_path);
+    save_config(config);
     free(config_home);
     free(expanded_path);
     return config;

@@ -255,27 +255,6 @@ int main(int argv, char **argc) {
   free(palette.wallpaper);
   palette.wallpaper = NULL;
 
-  free(app_config->opts.out_dir);
-  app_config->opts.out_dir    = strdup(args.opts.out_dir);
-  app_config->opts.mode       = palette.mode;
-  app_config->opts.cols16_mode = palette.cols16_mode;
-  app_config->opts.alpha      = palette.alpha;
-  app_config->opts.saturation = palette.saturation;
-  app_config->opts.contrast   = palette.contrast;
-
-  free(app_config->opts.script_path);
-  app_config->opts.script_path = args.opts.script_path
-                                   ? strdup(args.opts.script_path) : NULL;
-
-  if (args.opts.random_dir) {
-    free(app_config->opts.random_dir);
-    app_config->opts.random_dir = strdup(args.opts.random_dir);
-  }
-  app_config->opts.skip_cursor = args.opts.skip_cursor;
-
-  // Saves the config
-  save_config(app_config);
-
   // Prints the generated color palatte
   preview_palette();
 
