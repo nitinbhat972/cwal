@@ -52,8 +52,8 @@ RawImage *image_load_from_file(const char *path) {
   size_t width = MagickGetImageWidth(wand);
   size_t height = MagickGetImageHeight(wand);
 
-  size_t nw = width / 5 ?: 1;
-  size_t nh = height / 5 ?: 1;
+  size_t nw = width / 5 ? width / 5 : 1;
+  size_t nh = height / 5 ? height / 5 : 1;
 
   if (MagickSampleImage(wand, nw, nh) == MagickFalse) {
     fprintf(stderr, "Failed to sample image: %s\n", path);
