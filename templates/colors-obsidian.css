@@ -5,8 +5,8 @@
 --background-secondary: {color0};
 --background-secondary-alt: {color0};
 
---background-primary-rgb: {background-rgb};
---background-secondary-rgb: {background-rgb};
+--background-primary-rgb: {background.rgb};
+--background-secondary-rgb: {background.rgb};
 
 --text-normal: {foreground};
 --text-muted: {color7};
@@ -14,10 +14,10 @@
 
 --interactive-accent: {color4};
 --interactive-accent-hover: {color5};
---interactive-accent-rgb: {color4-rgb};
+--interactive-accent-rgb: {color4.rgb};
 
 --text-accent: {color4};
---text-accent-rgb: {color4-rgb};
+--text-accent-rgb: {color4.rgb};
 
 --divider-color: {color8};
 
