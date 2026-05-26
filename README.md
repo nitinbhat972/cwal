@@ -12,7 +12,6 @@ alt="cwal showcase" width="700"/>
 
 - **Dynamic Color Generation**: Extracts a vibrant 16-color palette from any image
 - **Surgical Config Injection**: Update specific sections of your existing configuration files without losing manual edits
-- **Persistent Configuration**: Remembers your preferred settings (alpha, mode, saturation, etc.) across sessions using a structured, XDG-compliant INI file
 - **XDG Compliant**: Follows the XDG Base Directory Specification for config, cache, and data
 - **Advanced Backend Support**: Utilizes ImageMagick or `libimagequant` for efficient color quantization
 - **Lua Scripting Support**: Create custom backends using Lua scripts for advanced color quantization
@@ -196,7 +195,7 @@ cwal --img /path/to/image.jpg --skip-cursor  # Skip OSC 12 cursor color sequence
 
 `cwal` follows the **XDG Base Directory Specification**.
 
-The structured INI file is located at `${XDG_CONFIG_HOME:-~/.config}/cwal/cwal.ini`. Most CLI flags are automatically saved to this file, so you don't have to provide them every time.
+The structured INI file is located at `${XDG_CONFIG_HOME:-~/.config}/cwal/cwal.ini`.
 
 ```ini
 [general]
