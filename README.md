@@ -8,6 +8,23 @@ alt="cwal showcase" width="700"/>
 `cwal` is a fast and lightweight command-line tool for generating dynamic color schemes from images. It extracts dominant colors from your chosen image and applies them to your terminal, applications, and other system components, providing a cohesive and visually appealing desktop experience.
 
 
+## Table of Contents
+
+- [Features](#features)
+- [Showcase](#showcase)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration](#configuration)
+- [Templates](#templates)
+- [Advanced Usage](#advanced-usage)
+- [Lua Scripting Support](#lua-scripting-support)
+- [Shell Completions](#shell-completions)
+- [Name and Attribution](#name-and-attribution)
+- [Contributing](#contributing)
+- [License](#license)
+- [Special Thanks](#special-thanks)
+
+
 ## ✨ Features
 
 - **Dynamic Color Generation**: Extracts a vibrant 16-color palette from any image
