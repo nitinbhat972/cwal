@@ -25,7 +25,7 @@ alt="cwal showcase" width="700"/>
 - [Special Thanks](#special-thanks)
 
 
-## ✨ Features
+## Features
 
 - **Dynamic Color Generation**: Extracts a vibrant 16-color palette from any image
 - **Surgical Config Injection**: Update specific sections of your existing configuration files without losing manual edits
@@ -41,7 +41,7 @@ alt="cwal showcase" width="700"/>
 - **Shell Completions**: Smart completion scripts for Bash, Zsh, and Fish
 
 
-## 🖼️ Showcase
+## Showcase
 
 
 - Dark mode
@@ -70,7 +70,7 @@ alt="cwal showcase" width="700"/>
 </p>
 
 
-## 🚀 Installation
+## Installation
 
 
 `cwal` requires ImageMagick 6 or 7, `libimagequant`, and LuaJIT as dependencies.
@@ -171,7 +171,7 @@ make
 sudo make install
 ```
 
-## 💡 Usage
+## Usage
 
 ```bash
 Usage: cwal [OPTIONS] --img <image_path>
@@ -208,7 +208,7 @@ cwal --img /path/to/image.jpg --alpha 0.8 --saturation 0.1
 cwal --img /path/to/image.jpg --skip-cursor  # Skip OSC 12 cursor color sequence
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 `cwal` follows the **XDG Base Directory Specification**.
 
@@ -260,7 +260,7 @@ size = 12
 ```
 
 
-## 🎨 Templates
+## Templates
 
 `cwal` searches for templates in the following order:
 
@@ -314,7 +314,7 @@ foreground = {color1.strip}
 foreground_red = {color1.red}
 ```
 
-## 🔧 Advanced Usage
+## Advanced Usage
 
 - Check available backends: `cwal --list-backends`
 - Choose backend: `cwal --img image.jpg --backend libimagequant`
@@ -329,7 +329,7 @@ done
 ```
 
 
-## 🧩 Lua Scripting Support
+## Lua Scripting Support
 
 cwal now supports custom backends using Lua scripts. This allows you to implement your own color quantization algorithms or image processing techniques.
 
@@ -374,7 +374,7 @@ cwal --img ~/Pictures/wallpapers/forest.jpg --backend mybackend
 `image_path` is the wallpaper path passed in by `cwal`. You can ignore it like this example does, or use it later when you want more custom logic.
 
 
-## 🐚 Shell Completions
+## Shell Completions
 
 `cwal` includes comprehensive, XDG-compliant completion scripts for **Bash**, **Zsh**, and **Fish**. These scripts provide smart suggestions for flags, theme names, and image files.
 
@@ -384,7 +384,7 @@ cwal --img ~/Pictures/wallpapers/forest.jpg --backend mybackend
 
 For manual installation, you can source the scripts located in the `shell/` directory.
 
-## 🖊 Name and Attribution
+## Name and Attribution
 
 The name "cwal" is the official project name for the upstream repository:
 https://github.com/nitinbhat972/cwal
@@ -393,13 +393,13 @@ If you distribute modified versions of this project, please use a different
 name to avoid confusion with the original project.
 
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute and our commit message conventions.
 
 Report issues, request features, or contribute via PRs. See the GitHub repository for more info.
 
-## 📄 License
+## License
 
 Licensed under GNU GPL v3.0 — always free and open-source.
 
