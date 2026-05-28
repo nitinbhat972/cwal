@@ -238,8 +238,10 @@ colors-waybar.css = ~/.config/waybar/colors.css | pkill -USR2 waybar
 # Omit the command to only sync the file
 colors-kitty.conf = ~/.config/kitty/current-theme.conf
 
-# Omit the destination path to only run a reload command
-colors-mako = | makoctl reload
+# Omit the destination to only run a reload command.
+# The template name is arbitrary use any alias.
+_ = | pkill -USR2 waybar
+mako = | makoctl reload
 ```
 
 ### Surgical Injection (Placeholders)
