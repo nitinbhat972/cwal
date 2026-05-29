@@ -130,4 +130,6 @@ BREAKING CHANGE: the `output_dir` config key has been renamed to
 - `cache`
 - `utils`
 
-Scopes should reflect the area of the codebase affected. If a change genuinely spans multiple scopes, consider splitting it into separate commits. For small changes that touch multiple areas, scopes may be comma-separated (e.g., `refactor(backend,color): ...`).
+Scopes are based on **logical concept**, not file/module boundaries. If a change is conceptually about config defaults, use `config` even if it also touches `cli.c` or `main.c`. The scope describes *what* you changed, not *which files*.
+
+If a change genuinely spans multiple logical scopes, consider splitting it into separate commits. For small changes, scopes may be comma-separated (e.g., `refactor(backend,color): ...`).
