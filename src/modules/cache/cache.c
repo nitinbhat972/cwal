@@ -41,8 +41,8 @@ static void generate_cache_filename(char *buffer, size_t buffer_size,
   free(expanded_cache_dir);
 }
 
-void save_palette_to_cache(const Palette *palette, const char *cache_dir,
-                           const char *backend_name) {
+int save_palette_to_cache(const Palette *palette, const char *cache_dir,
+                          const char *backend_name) {
   char cache_filepath[PATH_MAX];
   generate_cache_filename(cache_filepath, sizeof(cache_filepath), palette,
                           cache_dir, backend_name);
@@ -54,14 +54,14 @@ void save_palette_to_cache(const Palette *palette, const char *cache_dir,
   if (validate_or_create_dir(cache_dir_path) != 0) {
     logging(ERROR, "Failed to create cache directory: %s", cache_dir_path);
     free(cache_dir_path);
-    return;
+    return -1;
   }
 
   FILE *file = fopen(cache_filepath, "w");
   if (!file) {
     logging(ERROR, "Failed to open cache file for writing: %s", cache_filepath);
     free(cache_dir_path);
-    return;
+    return -1;
   }
   free(cache_dir_path);
 
@@ -75,6 +75,7 @@ void save_palette_to_cache(const Palette *palette, const char *cache_dir,
 
   fclose(file);
   logging(INFO, "Palette saved to cache: %s", cache_filepath);
+  return 0;
 }
 
 int load_palette_from_cache(Palette *palette, const char *cache_dir,

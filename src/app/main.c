@@ -218,7 +218,9 @@ int main(int argv, char **argc) {
       }
 
       process_colors(&palette);
-      save_palette_to_cache(&palette, args.opts.out_dir, actual_backend_name);
+      if (save_palette_to_cache(&palette, args.opts.out_dir, actual_backend_name) != 0) {
+        logging(WARN, "Failed to cache palette.");
+      }
     }
 
     if (args.backend_specified && backend_success) {

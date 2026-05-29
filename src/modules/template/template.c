@@ -299,16 +299,16 @@ int process_template(const char *output_dir, const Palette *palette,
   if (!out_base) {
     logging(ERROR, "Failed to resolve output directory: %s",
             output_dir ? output_dir : "(null)");
-    return 1;
+    return -1;
   }
   if (validate_or_create_dir(out_base) == -1) {
     free(out_base);
-    return 1;
+    return -1;
   }
   ColorTable *ct = build_color_table(palette);
   if (!ct) {
     free(out_base);
-    return 1;
+    return -1;
   }
 
   char **system_dirs = get_data_dirs();
