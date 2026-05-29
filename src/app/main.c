@@ -139,7 +139,7 @@ int main(int argv, char **argc) {
 
     ImageBackend *backend = backend_get(args.opts.backend);
     if (!backend) {
-      logging(WARN, "Backend '%s' not found. Falling back to cwal.",
+      logging(WARN, "Backend '%s' not found.",
               args.opts.backend);
       free(args.opts.backend);
       args.opts.backend = strdup("cwal");
@@ -166,24 +166,11 @@ int main(int argv, char **argc) {
     palette.wallpaper = image_to_process_path;
     image_to_process_path = NULL;
     ImageBackend *used_backend = backend;
-    bool backend_success = false;
 
     // Loads colors from cache
-    if (load_palette_from_cache(&palette, args.opts.out_dir, args.opts.backend) == 0) {
-      backend_success = (strcmp(original_requested_backend, args.opts.backend) == 0);
-      if (!backend_success) {
-        if (args.backend_specified) {
-          logging(WARN,
-                  "Specified backend '%s' failed or not found. Reverting to "
-                  "previous backend '%s' in config.",
-                  original_requested_backend,
-                  app_config->opts.backend);
-        } else {
-          logging(WARN, "Configured backend '%s' failed. Falling back to '%s'.",
-                  original_requested_backend, args.opts.backend);
-        }
-      }
-    } else {
+    if (load_palette_from_cache(&palette, args.opts.out_dir, args.opts.backend) != 0) {
+      logging(INFO, "Using backend: %s", args.opts.backend);
+
       if (process_with_fallback(backend, path, &palette, &used_backend) != 0) {
         logging(ERROR, "All backends failed to process the image!");
         free(original_requested_backend);
@@ -197,24 +184,8 @@ int main(int argv, char **argc) {
       const char *actual_backend_name =
           used_backend ? used_backend->name : args.opts.backend;
       if (used_backend && strcmp(args.opts.backend, used_backend->name) != 0) {
-        logging(INFO, "Using backend %s", actual_backend_name);
-      }
-
-      backend_success =
-          (used_backend &&
-           strcmp(original_requested_backend, used_backend->name) == 0);
-
-      if (!backend_success) {
-        if (args.backend_specified) {
-          logging(WARN,
-                  "Specified backend '%s' failed. Reverting to previous "
-                  "backend '%s' in config.",
-                  original_requested_backend,
-                  app_config->opts.backend);
-        } else {
-          logging(WARN, "Configured backend '%s' failed. Falling back to '%s'.",
-                  original_requested_backend, actual_backend_name);
-        }
+        logging(WARN, "Backend '%s' failed, using '%s'.",
+                args.opts.backend, used_backend->name);
       }
 
       process_colors(&palette);
@@ -223,10 +194,6 @@ int main(int argv, char **argc) {
       }
     }
 
-    if (args.backend_specified && backend_success) {
-      free(app_config->opts.backend);
-      app_config->opts.backend = strdup(args.opts.backend);
-    }
     free(original_requested_backend);
   }
 
