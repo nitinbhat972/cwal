@@ -218,8 +218,8 @@ void init_backends() {
 }
 
 ImageBackend *backend_get(const char *name) {
-  if (!name || strlen(name) == 0)
-    return &cwal;
+  if (!name)
+    return NULL;
   for (ImageBackend **backend = available_backends; *backend; backend++) {
     if (strcmp(name, (*backend)->name) == 0)
       return (*backend);
