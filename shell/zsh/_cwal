@@ -78,6 +78,8 @@ _arguments \
     '--random[Select random image (optional)]::directory:_directories' \
     '-t[Select a theme (required)]:theme:_cwal_get_themes' \
     '--theme[Select a theme (required)]:theme:_cwal_get_themes' \
+    '-N[Skip cursor color sequence]' \
+    '--skip-cursor[Skip cursor color sequence]' \
     '-p[Show palette preview]' \
     '--preview[Show palette preview]' \
     '-v[Show version]' \

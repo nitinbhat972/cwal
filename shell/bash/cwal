@@ -13,7 +13,7 @@ _cwal_completions() {
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="-m --mode -c --cols16-mode -s --saturation -C --contrast -a --alpha -o --out-dir -b --backend -i --img -S --script -n --no-reload -B --list-backends -T --list-themes -q --quiet -r --random -t --theme -p --preview -v --version -h --help"
+    opts="-m --mode -c --cols16-mode -s --saturation -C --contrast -a --alpha -o --out-dir -b --backend -i --img -S --script -n --no-reload -N --skip-cursor -B --list-backends -T --list-themes -q --quiet -r --random -t --theme -p --preview -v --version -h --help"
 
     case "$prev" in
         --mode|-m)
