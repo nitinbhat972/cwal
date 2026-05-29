@@ -50,6 +50,9 @@ void reverse_colors(Palette *palette) {
 }
 
 void preview_palette() {
+  if (quiet_mode)
+    return;
+
   printf("\n");
   for (int i = 0; i < 16; i++) {
     printf("\033[48;5;%dm    \033[0m", i);
