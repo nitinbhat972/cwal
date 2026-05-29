@@ -177,7 +177,7 @@ int main(int argv, char **argc) {
                   "Specified backend '%s' failed or not found. Reverting to "
                   "previous backend '%s' in config.",
                   original_requested_backend,
-                  app_config->opts.backend ? app_config->opts.backend : "cwal");
+                  app_config->opts.backend);
         } else {
           logging(WARN, "Configured backend '%s' failed. Falling back to '%s'.",
                   original_requested_backend, args.opts.backend);
@@ -210,7 +210,7 @@ int main(int argv, char **argc) {
                   "Specified backend '%s' failed. Reverting to previous "
                   "backend '%s' in config.",
                   original_requested_backend,
-                  app_config->opts.backend ? app_config->opts.backend : "cwal");
+                  app_config->opts.backend);
         } else {
           logging(WARN, "Configured backend '%s' failed. Falling back to '%s'.",
                   original_requested_backend, actual_backend_name);

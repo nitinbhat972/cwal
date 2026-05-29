@@ -237,7 +237,7 @@ Config *load_config(void) {
     free(config);
     return NULL;
   }
-  config->opts.backend = NULL;
+  config->opts.backend = strdup("cwal");
   config->opts.mode = DARK;
   config->opts.cols16_mode = DARKEN;
   config->opts.alpha = 1.0;
@@ -333,7 +333,7 @@ void save_config(const Config *config) {
   fprintf(file, "out_dir = %s\n",
           config->opts.out_dir ? config->opts.out_dir : "");
   fprintf(file, "backend = %s\n",
-          config->opts.backend ? config->opts.backend : "cwal");
+          config->opts.backend);
   fprintf(file, "script_path = %s\n",
           config->opts.script_path ? config->opts.script_path : "");
 

@@ -67,8 +67,7 @@ void print_usage(const char *prog_name) {
 
 CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
   args->opts = config->opts; // copy all shared defaults from config
-  args->opts.backend =
-      strdup(config->opts.backend ? config->opts.backend : "cwal");
+  args->opts.backend = strdup(config->opts.backend);
   args->opts.script_path =
       config->opts.script_path ? strdup(config->opts.script_path) : NULL;
   args->opts.out_dir = strdup(config->opts.out_dir);
