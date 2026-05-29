@@ -33,16 +33,17 @@ static char *trim_value(char *s) {
 
 static void parse_key_value(Config *config, const char *key,
                             const char *value) {
+  if (strlen(value) == 0)
+    return;
+
   if (strncmp(key, "out_dir", 8) == 0) {
-    if (strlen(value) > 0) {
-      char *new_value = strdup(value);
-      if (!new_value) {
-        logging(ERROR, "Failed to allocate out_dir");
-        return;
-      }
-      free(config->opts.out_dir);
-      config->opts.out_dir = new_value;
+    char *new_value = strdup(value);
+    if (!new_value) {
+      logging(ERROR, "Failed to allocate out_dir");
+      return;
     }
+    free(config->opts.out_dir);
+    config->opts.out_dir = new_value;
   } else if (strncmp(key, "backend", 8) == 0) {
     char *new_value = strdup(value);
     if (!new_value) {
@@ -52,60 +53,46 @@ static void parse_key_value(Config *config, const char *key,
     free(config->opts.backend);
     config->opts.backend = new_value;
   } else if (strncmp(key, "alpha", 6) == 0) {
-    if (strlen(value) > 0) {
-      config->opts.alpha = atof(value);
-    }
+    config->opts.alpha = atof(value);
   } else if (strncmp(key, "saturation", 11) == 0) {
-    if (strlen(value) > 0) {
-      config->opts.saturation = atof(value);
-    }
+    config->opts.saturation = atof(value);
   } else if (strncmp(key, "contrast", 9) == 0) {
-    if (strlen(value) > 0) {
-      config->opts.contrast = atof(value);
-    }
+    config->opts.contrast = atof(value);
   } else if (strncmp(key, "script_path", 12) == 0) {
-    if (strlen(value) > 0) {
-      char *new_value = strdup(value);
-      if (!new_value) {
-        logging(ERROR, "Failed to allocate script_path");
-        return;
-      }
-      free(config->opts.script_path);
-      config->opts.script_path = new_value;
+    char *new_value = strdup(value);
+    if (!new_value) {
+      logging(ERROR, "Failed to allocate script_path");
+      return;
     }
+    free(config->opts.script_path);
+    config->opts.script_path = new_value;
   } else if (strncmp(key, "random_dir", 11) == 0) {
-    if (strlen(value) > 0) {
-      char *new_value = strdup(value);
-      if (!new_value) {
-        logging(ERROR, "Failed to allocate random_dir");
-        return;
-      }
-      free(config->opts.random_dir);
-      config->opts.random_dir = new_value;
+    char *new_value = strdup(value);
+    if (!new_value) {
+      logging(ERROR, "Failed to allocate random_dir");
+      return;
     }
+    free(config->opts.random_dir);
+    config->opts.random_dir = new_value;
   } else if (strncmp(key, "mode", 5) == 0) {
-    if (strlen(value) > 0) {
-      if (strncmp(value, "dark", 5) == 0) {
-        config->opts.mode = DARK;
-      } else if (strncmp(value, "light", 6) == 0) {
-        config->opts.mode = LIGHT;
-      } else {
-        logging(WARN, "Invalid mode value in config: %s. Using default.",
-                value);
-      }
+    if (strncmp(value, "dark", 5) == 0) {
+      config->opts.mode = DARK;
+    } else if (strncmp(value, "light", 6) == 0) {
+      config->opts.mode = LIGHT;
+    } else {
+      logging(WARN, "Invalid mode value in config: %s. Using default.",
+              value);
     }
   } else if (strncmp(key, "cols16_mode", 12) == 0) {
-    if (strlen(value) > 0) {
-      if (strncmp(value, "darken", 7) == 0) {
-        config->opts.cols16_mode = DARKEN;
-      } else if (strncmp(value, "lighten", 8) == 0) {
-        config->opts.cols16_mode = LIGHTEN;
-      } else if (strncmp(value, "none", 5) == 0) {
-        config->opts.cols16_mode = NONE;
-      } else {
-        logging(WARN, "Invalid cols16_mode value in config: %s. Using default.",
-                value);
-      }
+    if (strncmp(value, "darken", 7) == 0) {
+      config->opts.cols16_mode = DARKEN;
+    } else if (strncmp(value, "lighten", 8) == 0) {
+      config->opts.cols16_mode = LIGHTEN;
+    } else if (strncmp(value, "none", 5) == 0) {
+      config->opts.cols16_mode = NONE;
+    } else {
+      logging(WARN, "Invalid cols16_mode value in config: %s. Using default.",
+              value);
     }
   } else if (strncmp(key, "skip_cursor", 12) == 0) {
     config->opts.skip_cursor = (strncmp(value, "true", 5) == 0);
