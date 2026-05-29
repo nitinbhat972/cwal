@@ -122,9 +122,11 @@ int execute_command(const char *command) {
 }
 
 void logging(int log_level, const char *format, ...) {
-  if (quiet_mode || format == NULL) {
+  if (format == NULL)
     return;
-  }
+
+  if (quiet_mode && log_level != ERROR)
+    return;
 
   static const char *color[] = {BLUE, YELLOW, RED};
   static const char type[] = {'I', 'W', 'E'};
