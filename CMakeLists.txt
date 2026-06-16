@@ -31,7 +31,7 @@ set(SOURCES
     src/backends/cwal.c
     src/backends/libimagequant.c
     src/backends/lua_backend.c
-    src/color/color_convertion.c
+    src/color/color_conversion.c
     src/color/color_operation.c
     src/color/colors.c
     src/color/image.c
