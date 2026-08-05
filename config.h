@@ -4,6 +4,7 @@
 #define BUILD_DIR "build"
 #define GENERATED_DIR BUILD_DIR "/generated"
 #define SRC_DIR "src"
+#define INSTALL_DIR "/usr/local"
 
 /*
   Uncomment and add your preferred compiler.
@@ -40,4 +41,21 @@ static const char *const PKGS[] = {
     "imagequant",
     "luajit",
     NULL,
+};
+
+/*
+ Pairs of source (relative to root ) and destination (relative to `INSTALL_DIR`
+ or env `CWAL_INSTALL_DIR`) to be installed.
+*/
+static const struct {
+  const char *src;
+  const char *dest;
+} INSTALL_FILES[] = {
+    {BUILD_DIR "/cwal", "bin/cwal"},
+    {"templates", "share/cwal/templates"},
+    {"themes", "share/cwal/themes"},
+    {"shell/bash/cwal", "share/bash-completion/completions/cwal"},
+    {"shell/zsh/_cwal", "share/zsh/site-functions/_cwal"},
+    {"shell/fish/cwal.fish", "share/fish/vendor_completions.d/cwal.fish"},
+    {NULL},
 };

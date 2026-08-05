@@ -1,8 +1,10 @@
+#include "config.h"
+#include <string.h>
 #define NOB_IMPLEMENTATION
 
 #include "nob_helper.h"
 
-static bool walk_dir_cb(Walk_Entry entry) {
+static bool link_cb(Walk_Entry entry) {
   Cmd *cmd = entry.data;
   const char *input = entry.path;
 
@@ -17,11 +19,11 @@ static bool walk_dir_cb(Walk_Entry entry) {
   return true;
 }
 
-static bool build() {
+static bool link_files() {
   Cmd cmd = {0};
 
   append_compiler(&cmd);
-  if (!walk_dir(GENERATED_DIR, walk_dir_cb, .data = &cmd))
+  if (!walk_dir(GENERATED_DIR, link_cb, .data = &cmd))
     return 1;
 
   nob_cc_output(&cmd, BUILD_DIR "/cwal");
@@ -40,23 +42,24 @@ static bool build() {
 
 static bool bootstrap() {
   if (!mkdir_if_not_exists(BUILD_DIR))
-    return false;
+    return 1;
 
   Cmd cmd = {0};
 
   const char *output = BUILD_DIR "/nob_bootstrap";
   const char *input = SRC_DIR "/nob.c";
 
-  if (!file_exists(output)) {
-    append_compiler(&cmd);
-    nob_cc_output(&cmd, output);
-    nob_cc_inputs(&cmd, input);
+  if (file_exists(output))
+    return true;
 
-    if (!cmd_run(&cmd))
-      return false;
-  }
+  append_compiler(&cmd);
+  nob_cc_output(&cmd, output);
+  nob_cc_inputs(&cmd, input);
 
-  nob_cmd_append(&cmd, output);
+  if (!cmd_run(&cmd))
+    return false;
+
+  nob_cmd_append(&cmd, BUILD_DIR "/nob_bootstrap");
 
   if (!cmd_run(&cmd))
     return false;
@@ -64,14 +67,93 @@ static bool bootstrap() {
   return true;
 }
 
+static bool build() {
+  if (!bootstrap())
+    return false;
+
+  if (!link_files())
+    return false;
+
+  return true;
+}
+
+static bool clean_cb(Walk_Entry entry) {
+  if (entry.type == FILE_DIRECTORY)
+    return true;
+
+  if (!delete_file(entry.path))
+    return false;
+
+  return true;
+}
+
+static bool clean() {
+  if (!file_exists(BUILD_DIR))
+    return true;
+
+  if (!walk_dir(BUILD_DIR, clean_cb))
+    return false;
+
+  return true;
+}
+
+static bool install() {
+  const char *install_dir = get_install_dir();
+
+  for (size_t i = 0; INSTALL_FILES[i].src != NULL; ++i) {
+    const char *src = INSTALL_FILES[i].src;
+    const char *dest =
+        temp_sprintf("%s/%s", install_dir, INSTALL_FILES[i].dest);
+
+    if (!copy_recursively(src, dest))
+      return false;
+  }
+  return true;
+}
+
+static bool uninstall() {
+  const char *install_dir = get_install_dir();
+
+  for (size_t i = 0; INSTALL_FILES[i].dest != NULL; ++i) {
+    const char *dest =
+        temp_sprintf("%s/%s", install_dir, INSTALL_FILES[i].dest);
+    if (!delete_file(dest))
+      return false;
+  }
+  return true;
+}
+
 int main(int argc, char **argv) {
   NOB_GO_REBUILD_URSELF_PLUS(argc, argv, "nob.h", "nob_helper.h", "config.h");
 
-  if (!bootstrap())
-    return 1;
+  shift_args(&argc, &argv);
 
-  if (!build())
-    return 1;
+  if (argc > 0) {
+    const char *subcmd = shift_args(&argc, &argv);
+    if (strcmp(subcmd, "build") == 0) {
+      if (!build())
+        return 1;
+    } else if (strcmp(subcmd, "clean") == 0) {
+      if (!clean())
+        return 1;
+    } else if (strcmp(subcmd, "install") == 0) {
+      if (!build())
+        return 1;
+      if (!install())
+        return 1;
+    } else if (strcmp(subcmd, "uninstall") == 0) {
+      // Need to handle non-empty dirs
+      nob_log(INFO, "TODO: WIP uninstall command");
+      // if (!uninstall())
+      //   return 1;
+    } else {
+      nob_log(ERROR, "Unknown subcommand: %s", subcmd);
+      return 1;
+    }
+  } else {
+    if (!build())
+      return 1;
+  }
 
   return 0;
 }

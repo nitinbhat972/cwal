@@ -103,3 +103,56 @@ static bool get_deps(const char *path, Cmd *out) {
 
   return true;
 }
+
+static const char *get_install_dir() {
+  const char *install_dir = getenv("CWAL_INSTALL_DIR");
+  return install_dir ? install_dir : INSTALL_DIR;
+}
+
+static bool mkdir_p(const char *src) {
+  String_View parent = sv_from_cstr(src);
+  String_Builder dir_sb = {0};
+  if (parent.count > 0 && parent.data[0] == '/')
+    sb_append_cstr(&dir_sb, "/");
+
+  while (parent.count > 0) {
+    String_View part = sv_chop_by_delim(&parent, '/');
+    if (part.count == 0)
+      continue;
+
+    if (dir_sb.count > 0 && dir_sb.items[dir_sb.count - 1] != '/')
+      sb_append_cstr(&dir_sb, "/");
+
+    sb_append_sv(&dir_sb, part);
+
+    char *path = temp_strndup(dir_sb.items, dir_sb.count);
+
+    if (!mkdir_if_not_exists(path))
+      return false;
+  }
+
+  return true;
+}
+
+static bool copy_recursively(const char *src, const char *dest) {
+  File_Type type = get_file_type(src);
+  if (type < 0) {
+    nob_log(ERROR, "Failed to get the filetype for %s", src);
+    return false;
+  }
+
+  if (!mkdir_p(temp_dir_name(dest)))
+    return false;
+
+  switch (type) {
+  case FILE_REGULAR:
+    return copy_file(src, dest);
+  case FILE_DIRECTORY:
+    return copy_directory_recursively(src, dest);
+  default:
+    nob_log(ERROR, "Cannot install %s: unsupported filetype", src);
+    return false;
+  }
+
+  return true;
+}
