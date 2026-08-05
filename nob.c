@@ -44,14 +44,19 @@ static bool bootstrap() {
 
   Cmd cmd = {0};
 
-  append_compiler(&cmd);
-  nob_cc_output(&cmd, BUILD_DIR "/nob_bootstrap");
-  nob_cc_inputs(&cmd, SRC_DIR "/nob.c");
+  const char *output = BUILD_DIR "/nob_bootstrap";
+  const char *input = SRC_DIR "/nob.c";
 
-  if (!cmd_run(&cmd))
-    return false;
+  if (!file_exists(output)) {
+    append_compiler(&cmd);
+    nob_cc_output(&cmd, output);
+    nob_cc_inputs(&cmd, input);
 
-  nob_cmd_append(&cmd, BUILD_DIR "/nob_bootstrap");
+    if (!cmd_run(&cmd))
+      return false;
+  }
+
+  nob_cmd_append(&cmd, output);
 
   if (!cmd_run(&cmd))
     return false;

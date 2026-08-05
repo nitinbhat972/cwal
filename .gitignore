@@ -3,3 +3,4 @@ build/
 asserts/
 result/
 nob
+*.old
