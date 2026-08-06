@@ -158,7 +158,7 @@ static void print_usage(const char *program_name) {
   fprintf(stderr, "  build\t\tBuilds the project at `BUILD_DIR`\n");
   fprintf(stderr, "  clean\t\tRemoves all of the files in `BUILD_DIR`\n");
   fprintf(stderr, "  install\tInstalls the cwal and its artifacts in "
-                  "`INSTALL_DIR` or `CWAL_INSTALL_DIR` env\n");
+                  "`INSTALL_DIR` (optionally prefixed by `DESTDIR` env)\n");
   fprintf(stderr, "  uninstall\tUninstalls the cwal along with all of its "
                   "artifacts\n");
   fprintf(stderr, "  help\t\tPrints this help message\n\n");

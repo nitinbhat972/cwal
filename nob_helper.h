@@ -116,8 +116,12 @@ static bool get_deps(const char *path, Cmd *out) {
 }
 
 static const char *get_install_dir() {
-  const char *install_dir = getenv("CWAL_INSTALL_DIR");
-  return install_dir ? install_dir : INSTALL_DIR;
+  const char *destdir = getenv("DESTDIR");
+
+  if (destdir == NULL)
+    return INSTALL_DIR;
+
+  return temp_sprintf("%s%s", destdir, INSTALL_DIR);
 }
 
 static bool mkdir_p(const char *src) {

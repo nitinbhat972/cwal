@@ -4,7 +4,7 @@
 #define BUILD_DIR "build"
 #define GENERATED_DIR BUILD_DIR "/generated"
 #define SRC_DIR "src"
-#define INSTALL_DIR "/usr/local"
+#define INSTALL_DIR "/usr"
 
 /*
   Uncomment and add your preferred compiler.
@@ -60,8 +60,8 @@ static const char *const PKGS[] = {
 };
 
 /*
- Pairs of source (relative to root ) and destination (relative to `INSTALL_DIR`
- or env `CWAL_INSTALL_DIR`) to be installed.
+ Pairs of source (relative to root) and destination (relative to `INSTALL_DIR`,
+ optionally prefixed by the `DESTDIR` env) to be installed.
 */
 static const struct {
   const char *src;
