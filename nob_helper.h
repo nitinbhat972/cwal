@@ -118,10 +118,22 @@ static bool get_deps(const char *path, Cmd *out) {
 static const char *get_install_dir() {
   const char *destdir = getenv("DESTDIR");
 
-  if (destdir == NULL)
-    return INSTALL_DIR;
+  String_Builder path = {0};
 
-  return temp_sprintf("%s%s", destdir, INSTALL_DIR);
+  if (destdir)
+    sb_append_cstr(&path, destdir);
+
+  const char *base = INSTALL_DIR;
+
+  if (base[0] == '~' && (base[1] == '\0' || base[1] == '/')) {
+    sb_append_cstr(&path, getenv("HOME"));
+    sb_append_cstr(&path, base + 1);
+  } else {
+    sb_append_cstr(&path, base);
+  }
+
+  sb_append_null(&path);
+  return temp_strndup(path.items, path.count);
 }
 
 static bool mkdir_p(const char *src) {
