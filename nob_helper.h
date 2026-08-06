@@ -136,10 +136,8 @@ static bool mkdir_p(const char *src) {
 
 static bool copy_recursively(const char *src, const char *dest) {
   File_Type type = get_file_type(src);
-  if (type < 0) {
-    nob_log(ERROR, "Failed to get the filetype for %s", src);
+  if (type < 0)
     return false;
-  }
 
   if (!mkdir_p(temp_dir_name(dest)))
     return false;

@@ -111,15 +111,37 @@ static bool install() {
   return true;
 }
 
+static bool uninstall_cb(Walk_Entry entry) {
+  if (!delete_file(entry.path))
+    return false;
+
+  return true;
+}
+
 static bool uninstall() {
   const char *install_dir = get_install_dir();
 
   for (size_t i = 0; INSTALL_FILES[i].dest != NULL; ++i) {
     const char *dest =
         temp_sprintf("%s/%s", install_dir, INSTALL_FILES[i].dest);
-    if (!delete_file(dest))
+
+    if (!file_exists(dest))
+      continue;
+
+    File_Type type = get_file_type(dest);
+    if (type < 0) {
       return false;
+    }
+
+    if (type == FILE_DIRECTORY) {
+      if (!walk_dir(dest, uninstall_cb, .post_order = true))
+        return false;
+    } else {
+      if (!delete_file(dest))
+        return false;
+    }
   }
+
   return true;
 }
 
@@ -142,10 +164,8 @@ int main(int argc, char **argv) {
       if (!install())
         return 1;
     } else if (strcmp(subcmd, "uninstall") == 0) {
-      // Need to handle non-empty dirs
-      nob_log(INFO, "TODO: WIP uninstall command");
-      // if (!uninstall())
-      //   return 1;
+      if (!uninstall())
+        return 1;
     } else {
       nob_log(ERROR, "Unknown subcommand: %s", subcmd);
       return 1;
