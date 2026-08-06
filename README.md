@@ -144,6 +144,8 @@ environment.systemPackages = with pkgs; [
 
 ### Building from Source
 
+We use [`nob`](https://github.com/tsoding/nob.h) to build this project — a small, stb-style single-header build system developed by tsoding. The build scripts live in `nob.c` and `src/nob.c`, and everything is configured through `config.h`.
+
 1. **Clone the repository:**
 
 ```bash
@@ -151,24 +153,64 @@ git clone https://github.com/nitinbhat972/cwal.git
 cd cwal
 ```
 
-2. **Build and install:**
-
-*User-specific:*
+2. **Build:**
 
 ```bash
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=$HOME/.local ..
-make
-make install
+./nob
 ```
 
-*System-wide:*
+`nob` incrementally compiles `src/` in parallel (controlled by `PROCS` in `config.h`, `0` = auto). Use `./nob clean` to wipe build artifacts.
+
+3. **Install:**
 
 ```bash
-mkdir build && cd build
-cmake ..
-make
-sudo make install
+./nob install
+```
+
+This installs the `cwal` binary, templates, themes, and shell completions into `INSTALL_DIR`, which is defined in `config.h` (default `/usr`). Since `INSTALL_DIR` is a system directory by default, elevated privileges are needed to write there:
+
+```bash
+sudo ./nob install    # or: doas ./nob install
+```
+
+If `INSTALL_DIR` points to a user-local directory, plain `./nob install` suffices. To do that, change `INSTALL_DIR` in `config.h` to the full path of your `.local` directory, for example:
+
+```c
+#define INSTALL_DIR "/home/yourname/.local"
+```
+
+> [!NOTE]
+> Shell variables like `$HOME` are **not** expanded inside `config.h` — it's C source, so a literal path is required.
+
+To remove an installed cwal, run `./nob uninstall` (remember to use `sudo`/`doas` again if you installed into a system directory).
+
+### Build Configuration
+
+The entire build is driven by `config.h`:
+
+- `BUILD_TYPE` — selects the build profile. `DEBUG` compiles with `-g` for debugging; `RELEASE` optimizes with `-O3 -DNDEBUG` and strips the final binary
+- `PROCS` — number of parallel compile jobs (`0` = automatic)
+- `CUSTOM_CC` — your preferred compiler; otherwise `cc` is resolved automatically
+- `INCLUDES` — include directories, passed to the compiler as `-I<dir>`
+- `CFLAGS` — extra compiler flags appended to every compilation
+- `LIBS` / `PKGS` — libraries to link against and pkg-config packages to resolve
+- `INSTALL_DIR` — install prefix used by the `install` command
+- `BUILD_DIR` / `GENERATED_DIR` — where build artifacts are placed
+
+### nob Usage
+
+```
+Usage: ./nob <Command>
+
+Commands:
+  build         Builds the project at `BUILD_DIR`
+  clean         Removes all of the files in `BUILD_DIR`
+  install       Installs the cwal and its artifacts in `INSTALL_DIR` (optionally prefixed by `DESTDIR` env)
+  uninstall     Uninstalls the cwal along with all of its artifacts
+  help          Prints this help message
+
+NOTE:
+  This `nob` build is specific to `cwal` and may not work in your project.
 ```
 
 ## Usage
