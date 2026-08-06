@@ -168,14 +168,17 @@ This installs the `cwal` binary, templates, themes, and shell completions into `
 sudo ./nob install    # or: doas ./nob install
 ```
 
-If `INSTALL_DIR` points to a user-local directory, plain `./nob install` suffices. To do that, change `INSTALL_DIR` in `config.h` to the full path of your `.local` directory, for example:
+If `INSTALL_DIR` points to a user-local directory, plain `./nob install` suffices. To do that, change `INSTALL_DIR` in `config.h` to your `.local` directory. A leading `~` is expanded to your home directory, so:
+
+```c
+#define INSTALL_DIR "~/.local"
+```
+
+is equivalent to:
 
 ```c
 #define INSTALL_DIR "/home/yourname/.local"
 ```
-
-> [!NOTE]
-> Shell variables like `$HOME` are **not** expanded inside `config.h` — it's C source, so a literal path is required.
 
 To remove an installed cwal, run `./nob uninstall` (remember to use `sudo`/`doas` again if you installed into a system directory).
 
