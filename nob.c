@@ -50,15 +50,14 @@ static bool bootstrap() {
   const char *output = BUILD_DIR "/nob_bootstrap";
   const char *input = SRC_DIR "/nob.c";
 
-  if (file_exists(output))
-    return true;
+  if (!file_exists(output)) {
+    append_compiler(&cmd);
+    nob_cc_output(&cmd, output);
+    nob_cc_inputs(&cmd, input);
 
-  append_compiler(&cmd);
-  nob_cc_output(&cmd, output);
-  nob_cc_inputs(&cmd, input);
-
-  if (!cmd_run(&cmd))
-    return false;
+    if (!cmd_run(&cmd))
+      return false;
+  }
 
   nob_cmd_append(&cmd, BUILD_DIR "/nob_bootstrap");
 
