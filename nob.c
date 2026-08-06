@@ -1,4 +1,5 @@
 #include "config.h"
+#include <stdio.h>
 #include <string.h>
 #define NOB_IMPLEMENTATION
 
@@ -145,10 +146,26 @@ static bool uninstall() {
   return true;
 }
 
+static void print_usage(const char *program_name) {
+  fprintf(stderr, "Usage: %s <Command>\n\n", program_name);
+  fprintf(stderr, "Commands:\n");
+  fprintf(stderr, "  build\t\tBuilds the project at `BUILD_DIR`\n");
+  fprintf(stderr, "  clean\t\tRemoves all of the files in `BUILD_DIR`\n");
+  fprintf(stderr, "  install\tInstalls the cwal and its artifacts in "
+                  "`INSTALL_DIR` or `CWAL_INSTALL_DIR` env\n");
+  fprintf(stderr, "  uninstall\tUninstalls the cwal along with all of its "
+                  "artifacts\n");
+  fprintf(stderr, "  help\t\tPrints this help message\n\n");
+
+  fprintf(stderr, "NOTE:\n");
+  fprintf(stderr, "  This `nob` build is specific to `cwal` and may not work "
+                  "in your project.\n");
+}
+
 int main(int argc, char **argv) {
   NOB_GO_REBUILD_URSELF_PLUS(argc, argv, "nob.h", "nob_helper.h", "config.h");
 
-  shift_args(&argc, &argv);
+  const char *program_name = shift_args(&argc, &argv);
 
   if (argc > 0) {
     const char *subcmd = shift_args(&argc, &argv);
@@ -166,8 +183,12 @@ int main(int argc, char **argv) {
     } else if (strcmp(subcmd, "uninstall") == 0) {
       if (!uninstall())
         return 1;
+    } else if (strcmp(subcmd, "help") == 0) {
+      print_usage(program_name);
+      return 0;
     } else {
       nob_log(ERROR, "Unknown subcommand: %s", subcmd);
+      print_usage(program_name);
       return 1;
     }
   } else {
