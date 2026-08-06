@@ -24,6 +24,13 @@ static bool link_files() {
   Cmd cmd = {0};
 
   append_compiler(&cmd);
+
+  if (BUILD_TYPE == RELEASE)
+    cmd_append(&cmd, "-s");
+
+  for (size_t i = 0; CFLAGS[i] != NULL; ++i)
+    cmd_append(&cmd, CFLAGS[i]);
+
   if (!walk_dir(GENERATED_DIR, link_cb, .data = &cmd))
     return 1;
 

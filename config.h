@@ -12,6 +12,22 @@
 */
 // #define CUSTOM_CC "clang"
 
+/*
+  Number of parallel compiler processes.
+  0 = auto (nobs's default)
+*/
+#define PROCS 0
+
+/*
+  Type of build you want to perfom
+  Options: DEBUG, RELEASE
+*/
+#define BUILD_TYPE RELEASE
+
+/*
+  Include directories relative to the project root.
+  Internally converted to -I<dir>.
+*/
 static const char *const INCLUDES[] = {
     "include",
     "src",

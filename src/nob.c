@@ -45,7 +45,7 @@ static bool walk_dir_cb(Walk_Entry entry) {
   nob_cc_inputs(&cmd, input);
   nob_cmd_append(&cmd, "-MMD", "-MF", depfile_path, "-MT", output);
 
-  if (!cmd_run(&cmd, .async = &ctx->procs))
+  if (!cmd_run(&cmd, .async = &ctx->procs, .max_procs = PROCS))
     return false;
 
   return true;

@@ -11,13 +11,18 @@ typedef struct {
 typedef enum {
   PKGCONF_CFLAGS,
   PKGCONF_LIBS,
-} PKGCONF_MODE;
+} Pkgconf_Mode;
+
+typedef enum {
+  DEBUG,
+  RELEASE,
+} Build_Type;
 
 /*
  Append the pkgconf flags from the `list` to `cmd`
  `mode` selects either `--cflags` or `--libs`
 */
-static bool pkgconf(Cmd *cmd, PKGCONF_MODE mode, const char *const list[]) {
+static bool pkgconf(Cmd *cmd, Pkgconf_Mode mode, const char *const list[]) {
   if (list[0] == NULL)
     return true;
 
@@ -77,6 +82,12 @@ static void append_compiler(Cmd *cmd) {
 #endif
 
   nob_cc_flags(cmd);
+
+  if (BUILD_TYPE == RELEASE) {
+    cmd_append(cmd, "-O3", "-DNDEBUG");
+  } else {
+    cmd_append(cmd, "-g");
+  }
 }
 
 static bool get_deps(const char *path, Cmd *out) {
