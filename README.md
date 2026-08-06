@@ -125,11 +125,6 @@ brew install cwal
 
 ## Nix
 
-### Run without installing
-```bash
-nix run github:nitinbhat972/cwal
-```
-
 ### Install (user profile)
 ```bash
 nix profile install nixpkgs#cwal
