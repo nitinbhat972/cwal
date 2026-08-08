@@ -117,6 +117,17 @@ int main(int argv, char **argc) {
         free_cli_args(&args);
         return -1;
       }
+    } else if (args.restore) {
+      image_to_process_path = get_last_wallpaper(args.opts.out_dir);
+      if (!image_to_process_path) {
+        logging(ERROR, "No previous run found: %s/cwal does not exist. Run "
+                       "`cwal --img <image>` or `cwal --random <dir>` first.",
+                args.opts.out_dir);
+        free_config(app_config);
+        free_cli_args(&args);
+        return -1;
+      }
+      logging(INFO, "Re-applying last wallpaper: %s", image_to_process_path);
     }
 
     const char *path = image_to_process_path;

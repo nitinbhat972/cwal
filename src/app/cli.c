@@ -42,6 +42,9 @@ void print_usage(const char *prog_name) {
                   "<script_path>" RESET " Run a script after processing\n");
   fprintf(stderr, "  " YELLOW "-n, --no-reload" RESET
                   "            Do not reload applications after processing\n");
+  fprintf(stderr, "  " YELLOW "-R, --restore" RESET
+                  "              Re-apply the last used wallpaper (no image "
+                  "required)\n");
   fprintf(stderr, "  " YELLOW "-B, --list-backends" RESET
                   "        List all available image processing backends\n");
   fprintf(stderr, "  " YELLOW "-T, --list-themes" RESET
@@ -80,6 +83,7 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
   args->list_themes = false;
   args->quiet = false;
   args->use_random_dir = false;
+  args->restore = false;
   args->use_random_theme = false;
   args->random_mode = RANDOM_ALL;
   args->theme = NULL;
@@ -100,6 +104,7 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       {"list-themes", no_argument, 0, 'T'},
       {"quiet", no_argument, 0, 'q'},
       {"random", optional_argument, 0, 'r'},
+      {"restore", no_argument, 0, 'R'},
       {"theme", required_argument, 0, 't'},
       {"preview", no_argument, 0, 'p'},
       {"skip-cursor", no_argument, 0, 'N'},
@@ -111,7 +116,7 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
   int long_index = 0;
   optind = 1;
 
-  while ((opt = getopt_long(argc, argv, "m:c:s:C:a:b:i:S:o:nBTqr::t:pNvh",
+  while ((opt = getopt_long(argc, argv, "m:c:s:C:a:b:i:S:o:nBTqRr::t:pNvh",
                             long_options, &long_index)) != -1) {
     const char *actual_opt = (optarg && argv[optind - 1] == optarg)
                                  ? argv[optind - 2]
@@ -205,6 +210,9 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
       }
       args->use_random_dir = true;
       break;
+    case 'R':
+      args->restore = true;
+      break;
     case 't':
       if (strncmp(optarg, "random_dark", 12) == 0) {
         args->random_mode = RANDOM_DARK;
@@ -241,9 +249,9 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
 
   if (!args->image_path && !args->list_backends && !args->list_themes &&
       !args->use_random_dir && !args->preview && !args->theme &&
-      !args->use_random_theme) {
-    logging(ERROR, "Missing --img <image_path>, --random <directory>, or "
-                   "--theme <theme_name> argument.");
+      !args->use_random_theme && !args->restore) {
+    logging(ERROR, "Missing --img <image_path>, --random <directory>, "
+                   "--theme <theme_name>, or --restore argument.");
     print_usage(argv[0]);
     return CLI_ERROR;
   }
@@ -259,6 +267,13 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
   if (args->image_path && args->opts.random_dir && args->use_random_dir) {
     logging(ERROR,
             "Cannot use both --img and --random arguments simultaneously.");
+    return CLI_ERROR;
+  }
+
+  if (args->restore && (args->image_path || args->use_random_dir ||
+                        args->theme || args->use_random_theme)) {
+    logging(ERROR,
+            "--restore cannot be combined with --img, --random, or --theme.");
     return CLI_ERROR;
   }
 
