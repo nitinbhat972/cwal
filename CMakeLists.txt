@@ -79,3 +79,8 @@ install(DIRECTORY themes DESTINATION share/cwal)
 install(FILES shell/bash/cwal DESTINATION share/bash-completion/completions)
 install(FILES shell/zsh/_cwal DESTINATION share/zsh/site-functions)
 install(FILES shell/fish/cwal.fish DESTINATION share/fish/vendor_completions.d)
+
+# Install man pages
+install(FILES docs/cwal.1 DESTINATION share/man/man1)
+install(FILES docs/cwal.5 DESTINATION share/man/man5)
+install(FILES docs/cwal.7 DESTINATION share/man/man7)
