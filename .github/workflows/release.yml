@@ -29,9 +29,22 @@ jobs:
         env:
           INPUT_TAG: ${{ inputs.tag }}
         run: |
+          if [[ "${{ github.ref_name }}" != "main" ]]; then
+            echo "Releases can only be created from the main branch (current: ${{ github.ref_name }})"
+            exit 1
+          fi
+
           if [[ ! "$INPUT_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Invalid tag: $INPUT_TAG"
             echo "Expected format: vX.Y.Z"
+            exit 1
+          fi
+
+          git fetch --tags origin
+          latest_tag=$(git tag --sort=-v:refname | head -n 1)
+          if [[ -n "$latest_tag" && \
+                "$(printf '%s\n' "$latest_tag" "$INPUT_TAG" | sort -V | tail -n 1)" != "$INPUT_TAG" ]]; then
+            echo "Tag $INPUT_TAG is not greater than the latest tag $latest_tag"
             exit 1
           fi
 
