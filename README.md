@@ -187,6 +187,7 @@ Usage: cwal [OPTIONS] --img <image_path>
 - `--backend <name>`                    Set image processing backend
 - `--script <script_path>`              Run custom script after processing
 - `--no-reload`                         Disable reloading
+- `--restore`                           Re-apply the last used wallpaper (no image required)
 - `--list-backends`                     List available backends
 - `--list-themes`                       List all available themes
 - `--quiet`                             Suppress all output
