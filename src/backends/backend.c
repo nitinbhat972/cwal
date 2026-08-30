@@ -271,6 +271,10 @@ ImageBackend *backend_get(const char *name) {
   return NULL;
 }
 
+ImageBackend **get_all_backends(void) {
+  return available_backends;
+}
+
 void list_all_backends() {
   printf("Available Backends:\n");
   for (ImageBackend **backend = available_backends; *backend; backend++) {

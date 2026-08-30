@@ -23,6 +23,7 @@ typedef struct {
     bool        quiet;          // Flag to suppress all output.
     bool        use_random_dir; // Flag to use random image selection.
     bool        use_random_theme; // Flag to use a random theme.
+    bool        restore;         // Flag re-apply the last used wallpaper.
     RandomMode  random_mode;    // Mode for random theme selection.
     char       *theme;          // Name of the theme to load.
     bool        preview;        // Show palette preview.

@@ -19,3 +19,4 @@ int validate_or_create_dir(const char *dir_in);
 char *get_random_image_path(const char *directory);
 char *build_path_internal(const char *first, ...);
 #define build_path(...) build_path_internal(__VA_ARGS__, NULL)
+char *get_last_wallpaper(const char *out_dir);

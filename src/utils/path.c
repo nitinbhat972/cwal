@@ -307,3 +307,32 @@ char *build_path_internal(const char *first, ...) {
 
   return result;
 }
+
+char *get_last_wallpaper(const char *out_dir){
+  char *resolved_out_dir = expand_home(out_dir);
+
+  if(!resolved_out_dir)
+    return NULL;
+
+  char *path = build_path(resolved_out_dir, "cwal");
+
+  free(resolved_out_dir);
+
+  FILE *f = fopen(path, "r");
+  free(path);
+
+  if(!f)
+    return NULL;
+
+  char buffer[PATH_MAX];
+
+  size_t len = fread(buffer, 1, sizeof(buffer) - 1, f);
+  fclose(f);
+
+  buffer[len] = '\0';
+
+  while(len > 0 && buffer[len - 1] == '\n')
+    buffer[--len] = '\0';
+
+  return len > 0 ? strdup(buffer) : NULL;
+}

@@ -20,6 +20,7 @@ typedef struct {
 } ImageBackend;
 
 ImageBackend *backend_get(const char *name);
+ImageBackend **get_all_backends(void);
 void list_all_backends(void);
 int process_with_fallback(ImageBackend *backend, const char *image_path,
                           Palette *palette, ImageBackend **used_backend);
