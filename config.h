@@ -13,7 +13,7 @@
     cc nob.c -o nob   — compile the builder
     ./nob build       — build cwal
     ./nob clean       — remove build artifacts
-    ./nob install     — install to INSTALL_DIR (sudo if /usr)
+    ./nob install     — install to INSTALL_DIR (sudo if /usr) (expanding `~` is supported)
     ./nob uninstall   — remove installed files
     ./nob help        — show help
   No flags are supported configure only by editing this file.
