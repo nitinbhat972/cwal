@@ -8,6 +8,30 @@
  *  Any contributions or forks must retain this original header.
  */
 
+/*
+  Build commands:
+    cc nob.c -o nob   — compile the builder
+    ./nob build       — build cwal
+    ./nob clean       — remove build artifacts
+    ./nob install     — install to INSTALL_DIR (sudo if /usr)
+    ./nob uninstall   — remove installed files
+    ./nob help        — show help
+  No flags are supported configure only by editing this file.
+
+  cwal build configuration read before editing
+
+  How to enable/disable a feature:
+    - Features are toggled by commenting or uncommenting a #define line
+      Enabled:  #define USE_LIBIMAGEQUANT
+      Disabled: // #define USE_LIBIMAGEQUANT
+    - Do not change the value to 0/1 just comment or uncomment
+    - After toggling, rebuild: cc nob.c -o nob && ./nob build
+
+  Warning: do not edit PKGS, INCLUDES, CFLAGS, LIBS or INSTALL_FILES
+  unless you know what you are doing. They are wired to the toggles
+  and pkgconf/linker wrong edits will break the build.
+*/
+
 #pragma once
 #include <stddef.h>
 
