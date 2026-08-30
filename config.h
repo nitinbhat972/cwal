@@ -30,6 +30,12 @@
 #define GENERATE_COMPILE_COMMANDS
 
 /*
+  Optional backends. Comment to disable
+*/
+#define USE_LIBIMAGEQUANT
+#define USE_LUA_BACKEND
+
+/*
   Include directories relative to the project root.
   Internally converted to -I<dir>.
 */
@@ -57,10 +63,13 @@ static const char *const LIBS[] = {
   Just put the name of the pkgconf package it will be resolved internally.
 */
 static const char *const PKGS[] = {
-    /* libs */
     "MagickWand",
+#ifdef USE_LIBIMAGEQUANT
     "imagequant",
+#endif
+#ifdef USE_LUA_BACKEND
     "luajit",
+#endif
     NULL,
 };
 

@@ -20,6 +20,17 @@ static bool walk_dir_cb(Walk_Entry entry) {
   if (sv_eq(sv_from_cstr(input), sv_from_cstr(SRC_DIR "/nob.c")))
     return true;
 
+#ifndef USE_LIBIMAGEQUANT
+  if (sv_eq(sv_from_cstr(input),
+            sv_from_cstr(SRC_DIR "/backends/libimagequant.c")))
+    return true;
+#endif
+#ifndef USE_LUA_BACKEND
+  if (sv_eq(sv_from_cstr(input),
+            sv_from_cstr(SRC_DIR "/backends/lua_backend.c")))
+    return true;
+#endif
+
   Cmd cmd = {0};
   nob_cmd_extend(&cmd, &ctx->base_cmd);
 

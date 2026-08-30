@@ -15,6 +15,15 @@ static bool link_cb(Walk_Entry entry) {
   if (!sv_ends_with_cstr(sv_from_cstr(input), ".o"))
     return true;
 
+#ifndef USE_LIBIMAGEQUANT
+  if (sv_ends_with_cstr(sv_from_cstr(input), "libimagequant.c.o"))
+    return true;
+#endif
+#ifndef USE_LUA_BACKEND
+  if (sv_ends_with_cstr(sv_from_cstr(input), "lua_backend.c.o"))
+    return true;
+#endif
+
   cmd_append(cmd, temp_strdup(entry.path));
 
   return true;
