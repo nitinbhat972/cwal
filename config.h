@@ -25,6 +25,11 @@
 #define BUILD_TYPE RELEASE
 
 /*
+  Generate compile_commands.json at BUILD_DIR/compile_commands.json
+*/
+#define GENERATE_COMPILE_COMMANDS
+
+/*
   Include directories relative to the project root.
   Internally converted to -I<dir>.
 */

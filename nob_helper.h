@@ -3,10 +3,85 @@
 #include "config.h"
 #include "nob.h"
 
+#ifdef GENERATE_COMPILE_COMMANDS
+static void cdb_escape(String_Builder *sb, const char *s) {
+  for (; *s; ++s) {
+    if (*s == '"')
+      sb_append_cstr(sb, "\\\"");
+    else if (*s == '\\')
+      sb_append_cstr(sb, "\\\\");
+    else if (*s == '\n')
+      sb_append_cstr(sb, "\\n");
+    else if (*s == '\r')
+      sb_append_cstr(sb, "\\r");
+    else if (*s == '\t')
+      sb_append_cstr(sb, "\\t");
+    else
+      da_append(sb, *s);
+  }
+}
+#endif
+
 typedef struct {
   Cmd base_cmd;
   Procs procs;
+#ifdef GENERATE_COMPILE_COMMANDS
+  String_Builder cdb_buf;
+  const char *cdb_dir;
+#endif
 } Build_Ctx;
+
+#ifdef GENERATE_COMPILE_COMMANDS
+static bool cdb_append(Build_Ctx *ctx, const char *input, const char *output,
+                       Cmd *cmd) {
+  if (!ctx->cdb_dir)
+    ctx->cdb_dir = get_current_dir_temp();
+  if (!ctx->cdb_dir)
+    return false;
+
+  if (ctx->cdb_buf.count > 0)
+    sb_append_cstr(&ctx->cdb_buf, ",\n");
+
+  String_Builder render = {0};
+  for (size_t i = 0; i < cmd->count; ++i) {
+    if (i > 0)
+      sb_append_cstr(&render, " ");
+    sb_append_cstr(&render, cmd->items[i]);
+  }
+  sb_append_null(&render);
+
+  const char *abs_input =
+      input[0] == '/' ? input : temp_sprintf("%s/%s", ctx->cdb_dir, input);
+  const char *abs_output =
+      output[0] == '/' ? output : temp_sprintf("%s/%s", ctx->cdb_dir, output);
+
+  sb_append_cstr(&ctx->cdb_buf, "  {\n    \"directory\": \"");
+  cdb_escape(&ctx->cdb_buf, ctx->cdb_dir);
+  sb_append_cstr(&ctx->cdb_buf, "\",\n    \"file\": \"");
+  cdb_escape(&ctx->cdb_buf, abs_input);
+  sb_append_cstr(&ctx->cdb_buf, "\",\n    \"output\": \"");
+  cdb_escape(&ctx->cdb_buf, abs_output);
+  sb_append_cstr(&ctx->cdb_buf, "\",\n    \"command\": \"");
+  cdb_escape(&ctx->cdb_buf, render.items);
+  sb_append_cstr(&ctx->cdb_buf, "\"\n  }");
+  free(render.items);
+  return true;
+}
+
+static bool cdb_write(Build_Ctx *ctx) {
+  if (!mkdir_if_not_exists(BUILD_DIR))
+    return false;
+  String_Builder out = {0};
+  sb_append_cstr(&out, "[\n");
+  sb_append_buf(&out, ctx->cdb_buf.items, ctx->cdb_buf.count);
+  sb_append_cstr(&out, "\n]\n");
+  sb_append_null(&out);
+  bool ok = write_entire_file(BUILD_DIR "/compile_commands.json", out.items,
+                              out.count - 1);
+  free(out.items);
+  return ok;
+}
+#endif
 
 typedef enum {
   PKGCONF_CFLAGS,

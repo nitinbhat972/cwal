@@ -38,12 +38,18 @@ static bool walk_dir_cb(Walk_Entry entry) {
 
   if (ok < 0)
     return false;
-  if (ok == 0)
-    return true;
 
   nob_cc_output(&cmd, output);
   nob_cc_inputs(&cmd, input);
   nob_cmd_append(&cmd, "-MMD", "-MF", depfile_path, "-MT", output);
+
+#ifdef GENERATE_COMPILE_COMMANDS
+  if (!cdb_append(ctx, input, output, &cmd))
+    return false;
+#endif
+
+  if (ok == 0)
+    return true;
 
   if (!cmd_run(&cmd, .async = &ctx->procs, .max_procs = PROCS))
     return false;
@@ -67,11 +73,21 @@ static bool build(Build_Ctx *ctx) {
   if (!pkgconf(&ctx->base_cmd, PKGCONF_CFLAGS, PKGS))
     return false;
 
+#ifdef GENERATE_COMPILE_COMMANDS
+  ctx->cdb_buf = (String_Builder){0};
+  ctx->cdb_dir = NULL;
+#endif
+
   if (!walk_dir(SRC_DIR, walk_dir_cb, .data = ctx))
     return false;
 
   if (!procs_flush(&ctx->procs))
     return false;
+
+#ifdef GENERATE_COMPILE_COMMANDS
+  if (!cdb_write(ctx))
+    return false;
+#endif
 
   return true;
 }
