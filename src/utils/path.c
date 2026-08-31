@@ -9,15 +9,16 @@
  */
 
 #include "path.h"
+#include "../../config.h"
 #include "utils.h"
 #include <dirent.h>
 #include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
-#include <strings.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/stat.h>
 #include <time.h>
 
@@ -78,49 +79,19 @@ char *get_data_home(void) {
 }
 
 char **get_data_dirs(void) {
-  const char *env = getenv("XDG_DATA_DIRS");
-  if (!env || strlen(env) == 0) {
-    env = "/usr/local/share:/usr/share";
-  }
-
-  char *env_copy = strdup(env);
-  if (!env_copy)
+  char *expanded = expand_home(INSTALL_DIR);
+  char *share = expanded ? build_path(expanded, "share") : NULL;
+  free(expanded);
+  if (!share)
     return NULL;
 
-  int count = 0;
-  char *temp = env_copy;
-  while (*temp) {
-    if (*temp == ':')
-      count++;
-    temp++;
-  }
-  count++; // Add one for the last element
-
-  char **dirs = malloc(sizeof(char *) * (count + 1));
+  char **dirs = malloc(sizeof(char *) * 2);
   if (!dirs) {
-    free(env_copy);
+    free(share);
     return NULL;
   }
-
-  int i = 0;
-  char *saveptr;
-  char *token = strtok_r(env_copy, ":", &saveptr);
-  while (token != NULL) {
-    char *dup = strdup(token);
-    if (!dup) {
-      for (int j = 0; j < i; j++) {
-        free(dirs[j]);
-      }
-      free(dirs);
-      free(env_copy);
-      return NULL;
-    }
-    dirs[i++] = dup;
-    token = strtok_r(NULL, ":", &saveptr);
-  }
-  dirs[i] = NULL;
-
-  free(env_copy);
+  dirs[0] = share;
+  dirs[1] = NULL;
   return dirs;
 }
 
@@ -289,7 +260,7 @@ char *build_path_internal(const char *first, ...) {
     }
 
     strcat(result, separator);
-    
+
     const char *to_add = next;
     if (to_add[0] == '/') {
       to_add++;
@@ -308,10 +279,10 @@ char *build_path_internal(const char *first, ...) {
   return result;
 }
 
-char *get_last_wallpaper(const char *out_dir){
+char *get_last_wallpaper(const char *out_dir) {
   char *resolved_out_dir = expand_home(out_dir);
 
-  if(!resolved_out_dir)
+  if (!resolved_out_dir)
     return NULL;
 
   char *path = build_path(resolved_out_dir, "cwal");
@@ -321,7 +292,7 @@ char *get_last_wallpaper(const char *out_dir){
   FILE *f = fopen(path, "r");
   free(path);
 
-  if(!f)
+  if (!f)
     return NULL;
 
   char buffer[PATH_MAX];
@@ -331,7 +302,7 @@ char *get_last_wallpaper(const char *out_dir){
 
   buffer[len] = '\0';
 
-  while(len > 0 && buffer[len - 1] == '\n')
+  while (len > 0 && buffer[len - 1] == '\n')
     buffer[--len] = '\0';
 
   return len > 0 ? strdup(buffer) : NULL;

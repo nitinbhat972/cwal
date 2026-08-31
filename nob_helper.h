@@ -256,6 +256,7 @@ static bool copy_recursively(const char *src, const char *dest) {
 
   switch (type) {
   case FILE_REGULAR:
+  case FILE_SYMLINK:
     return copy_file(src, dest);
   case FILE_DIRECTORY:
     return copy_directory_recursively(src, dest);
