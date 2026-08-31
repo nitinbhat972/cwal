@@ -16,6 +16,7 @@ alt="cwal showcase" width="700"/>
 - [Usage](#usage)
 - [Configuration](#configuration)
 - [Templates](#templates)
+- [Themes](#themes)
 - [Advanced Usage](#advanced-usage)
 - [Lua Scripting Support](#lua-scripting-support)
 - [Shell Completions](#shell-completions)
@@ -356,6 +357,30 @@ background_alpha = {color0.rgba}
 foreground = {color1.strip}
 foreground_red = {color1.red}
 ```
+
+## Themes
+
+`cwal` searches for themes in the following order:
+
+1. `${XDG_CONFIG_HOME:-~/.config}/cwal/themes` (user config)
+2. `${XDG_DATA_HOME:-~/.local/share}/cwal/themes` (user local)
+3. `${INSTALL_DIR:-/usr}/share/cwal/themes` (system-wide, set at build time in `config.h`)
+
+Themes are `*.cwal` files in `dark/` and `light/` subdirectories. List with `cwal --list-themes`, load with `cwal --theme <name>` or `cwal --theme random_all`.
+
+### Creating Custom Themes
+
+Create a `*.cwal` file in `${XDG_CONFIG_HOME:-~/.config}/cwal/themes/dark/` or `light/`:
+
+```ini
+mode=dark
+color0=26,28,33
+color1=197,95,95
+# ... color2..color15
+color15=220,220,220
+```
+
+Use `colorN=R,G,B` (0-255) and `mode=dark|light`. Place as `mytheme.cwal` then `cwal --theme mytheme` or `cwal --list-themes` will find it. See `themes/dark/` for examples.
 
 ## Advanced Usage
 
