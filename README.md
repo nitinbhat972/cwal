@@ -307,9 +307,9 @@ size = 12
 
 `cwal` searches for templates in the following order:
 
-1. `${XDG_DATA_DIRS:-/usr/local/share:/usr/share}/cwal/templates` (system-wide)
+1. `${XDG_CONFIG_HOME:-~/.config}/cwal/templates` (user config)
 2. `${XDG_DATA_HOME:-~/.local/share}/cwal/templates` (user local)
-3. `${XDG_CONFIG_HOME:-~/.config}/cwal/templates` (user config)
+3. `${INSTALL_DIR:-/usr}/share/cwal/templates` (system-wide, set at build time in `config.h`)
 
 **Supported apps:**
 Terminal emulators (Alacritty, Kitty, Wezterm, Ghostty, Foot), window managers (i3, bspwm, Hyprland, Sway), system monitors (Btop), text editors (Vim, Neovim, VS Code), and more.
