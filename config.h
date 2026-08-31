@@ -1,0 +1,125 @@
+/*
+ *  cwal: Blazing-fast pywal-like color palette generator written in C.
+ *  Copyright (c) 2026 Nitin Bhat <nitinbhat972@gmail.com>
+ *  Repository: https://github.com/nitinbhat972/cwal
+ *
+ *  Licensed under the GNU General Public License v3.0.
+ *  If you find this code useful, please consider giving it a star on GitHub!
+ *  Any contributions or forks must retain this original header.
+ */
+
+/*
+  Build commands:
+    cc nob.c -o nob   — compile the builder
+    ./nob build       — build cwal
+    ./nob clean       — remove build artifacts
+    ./nob install     — install to INSTALL_DIR (sudo if /usr) (expanding `~` is supported)
+    ./nob uninstall   — remove installed files
+    ./nob help        — show help
+  No flags are supported configure only by editing this file.
+
+  cwal build configuration read before editing
+
+  How to enable/disable a feature:
+    - Features are toggled by commenting or uncommenting a #define line
+      Enabled:  #define USE_LIBIMAGEQUANT
+      Disabled: // #define USE_LIBIMAGEQUANT
+    - Do not change the value to 0/1 just comment or uncomment
+    - After toggling, rebuild: cc nob.c -o nob && ./nob build
+
+  Warning: do not edit PKGS, INCLUDES, CFLAGS, LIBS or INSTALL_FILES
+  unless you know what you are doing. They are wired to the toggles
+  and pkgconf/linker wrong edits will break the build.
+*/
+
+#pragma once
+#include <stddef.h>
+
+#define BUILD_DIR "build"
+#define GENERATED_DIR BUILD_DIR "/generated"
+#define SRC_DIR "src"
+#define INSTALL_DIR "/usr"
+
+/*
+  Uncomment and add your preferred compiler.
+  Otherwise `nob_cc` will resolve compiler for you.
+*/
+// #define CUSTOM_CC "clang"
+
+/*
+  Number of parallel compiler processes.
+  0 = auto (nobs's default)
+*/
+#define PROCS 0
+
+/*
+  Type of build you want to perfom
+  Options: DEBUG, RELEASE
+*/
+#define BUILD_TYPE RELEASE
+
+/*
+  Generate compile_commands.json at BUILD_DIR/compile_commands.json
+*/
+#define GENERATE_COMPILE_COMMANDS
+
+/*
+  Optional backends. Comment to disable
+*/
+#define USE_LIBIMAGEQUANT
+#define USE_LUA_BACKEND
+
+/*
+  Include directories relative to the project root.
+  Internally converted to -I<dir>.
+*/
+static const char *const INCLUDES[] = {
+    "include",
+    "src",
+    NULL,
+};
+
+/*
+  Add your custom compiler flags.
+  By default -Wall and -Wextra are added by `nob_cc_flags`.
+*/
+static const char *const CFLAGS[] = {
+    /* flags */
+    NULL,
+};
+
+static const char *const LIBS[] = {
+    "m",
+    NULL,
+};
+
+/*
+  Just put the name of the pkgconf package it will be resolved internally.
+*/
+static const char *const PKGS[] = {
+    "MagickWand",
+#ifdef USE_LIBIMAGEQUANT
+    "imagequant",
+#endif
+#ifdef USE_LUA_BACKEND
+    "luajit",
+#endif
+    NULL,
+};
+
+/*
+ Pairs of source (relative to root) and destination (relative to `INSTALL_DIR`,
+ optionally prefixed by the `DESTDIR` env) to be installed.
+*/
+static const struct {
+  const char *src;
+  const char *dest;
+} INSTALL_FILES[] = {
+    {BUILD_DIR "/cwal", "bin/cwal"},
+    {"templates", "share/cwal/templates"},
+    {"themes", "share/cwal/themes"},
+    {"shell/bash/cwal", "share/bash-completion/completions/cwal"},
+    {"shell/zsh/_cwal", "share/zsh/site-functions/_cwal"},
+    {"shell/fish/cwal.fish", "share/fish/vendor_completions.d/cwal.fish"},
+    {NULL},
+};

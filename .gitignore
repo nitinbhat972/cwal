@@ -2,3 +2,5 @@ build/
 .cache/
 asserts/
 result/
+nob
+*.old

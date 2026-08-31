@@ -9,7 +9,10 @@
  */
 
 #include "backend.h"
+#include "../../config.h"
+#ifdef USE_LUA_BACKEND
 #include "lua_backend.h"
+#endif
 #include "utils/path.h"
 #include <dirent.h>
 #include <stdio.h>
@@ -17,20 +20,27 @@
 #include <string.h>
 
 extern ImageBackend cwal;
+#ifdef USE_LIBIMAGEQUANT
 extern ImageBackend libimagequant;
+#endif
 
 #define MAX_BACKENDS 64
 static ImageBackend *available_backends[MAX_BACKENDS];
 static int num_backends = 0;
+#ifdef USE_LUA_BACKEND
 static char *lua_script_paths[MAX_BACKENDS];
 static int num_lua_scripts = 0;
+#endif
 
 static void init_builtin_backends() {
   available_backends[num_backends++] = &cwal;
+#ifdef USE_LIBIMAGEQUANT
   available_backends[num_backends++] = &libimagequant;
+#endif
   available_backends[num_backends] = NULL;
 }
 
+#ifdef USE_LUA_BACKEND
 static int is_lua_file(const char *filename) {
   size_t len = strlen(filename);
   return len > 4 && strcmp(filename + len - 4, ".lua") == 0;
@@ -52,6 +62,7 @@ static char *get_script_name(const char *filepath) {
   name[len] = '\0';
   return name;
 }
+
 
 static void scan_lua_backends(void) {
   char *config_home = get_config_home();
@@ -112,7 +123,16 @@ static void create_lua_backends() {
   }
   available_backends[num_backends] = NULL;
 }
+#else
+static void scan_lua_backends(void) {}
+int is_lua_backend(ImageBackend *backend) {
+  (void)backend;
+  return -1;
+}
+static void create_lua_backends() {}
+#endif
 
+#ifdef USE_LUA_BACKEND
 static int run_lua_backend(ImageBackend *backend, const char *script_path,
                            const char *image_path, Palette *palette) {
   if (!backend || !script_path || !image_path || !palette) {
@@ -131,6 +151,7 @@ static int run_lua_backend(ImageBackend *backend, const char *script_path,
 
   return status;
 }
+#endif
 
 static int run_raw_backend(ImageBackend *backend, RawImage *raw_img,
                            Palette *palette) {
@@ -160,6 +181,7 @@ int process_with_fallback(ImageBackend *backend, const char *image_path,
   RawImage *raw_img = NULL;
   bool processed = false;
 
+#ifdef USE_LUA_BACKEND
   int lua_index = is_lua_backend(backend);
   if (lua_index >= 0) {
     processed = run_lua_backend(backend, lua_script_paths[lua_index],
@@ -170,6 +192,14 @@ int process_with_fallback(ImageBackend *backend, const char *image_path,
       processed = run_raw_backend(backend, raw_img, palette) == 0;
     }
   }
+#else
+  {
+    raw_img = image_load_from_file(image_path);
+    if (raw_img) {
+      processed = run_raw_backend(backend, raw_img, palette) == 0;
+    }
+  }
+#endif
   if (processed && used_backend) {
     *used_backend = backend;
   }
@@ -185,6 +215,7 @@ int process_with_fallback(ImageBackend *backend, const char *image_path,
       continue;
     }
 
+#ifdef USE_LUA_BACKEND
     int lua_idx = is_lua_backend(fallback);
     if (lua_idx >= 0) {
       processed = run_lua_backend(fallback, lua_script_paths[lua_idx],
@@ -198,6 +229,17 @@ int process_with_fallback(ImageBackend *backend, const char *image_path,
         processed = run_raw_backend(fallback, raw_img, palette) == 0;
       }
     }
+#else
+    {
+      if (!raw_img) {
+        raw_img = image_load_from_file(image_path);
+      }
+
+      if (raw_img) {
+        processed = run_raw_backend(fallback, raw_img, palette) == 0;
+      }
+    }
+#endif
     if (processed && used_backend) {
       *used_backend = fallback;
     }
@@ -211,7 +253,9 @@ int process_with_fallback(ImageBackend *backend, const char *image_path,
 
 void init_backends() {
   num_backends = 0;
+#ifdef USE_LUA_BACKEND
   num_lua_scripts = 0;
+#endif
   init_builtin_backends();
   scan_lua_backends();
   create_lua_backends();
