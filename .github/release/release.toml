@@ -3,7 +3,7 @@ body = """
 {% for group, commits in commits | group_by(attribute="group") %}
 ### {{ group | striptags | trim }}
 {% for commit in commits -%}
-- {% if commit.breaking %}[breaking] {% endif %}{{ commit.message | upper_first }}{% if commit.remote.username %} by [@{{ commit.remote.username }}](https://github.com/{{ commit.remote.username }}){% endif %}{% if commit.remote.pr_number %} in [#{{ commit.remote.pr_number }}](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/pull/{{ commit.remote.pr_number }}){% else %} · [`{{ commit.id | truncate(length=7, end="") }}`](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/commit/{{ commit.id }}){% endif %}
+- {% if commit.breaking %}[breaking] {% endif %}{{ commit.message | upper_first }}{% if commit.remote.username %} by @{{ commit.remote.username }}{% endif %}{% if commit.remote.pr_number %} in #{{ commit.remote.pr_number }}{% else %} · {{ commit.id | truncate(length=7, end="") }}{% endif %}
 {% endfor %}
 
 {% endfor %}
@@ -11,7 +11,7 @@ body = """
 {% if new_contributors | length > 0 %}
 ### New Contributors
 {% for contributor in new_contributors -%}
-- [@{{ contributor.username }}](https://github.com/{{ contributor.username }}) made their first contribution{% if contributor.pr_number %} in [#{{ contributor.pr_number }}](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/pull/{{ contributor.pr_number }}){% endif %}
+- @{{ contributor.username }} made their first contribution{% if contributor.pr_number %} in #{{ contributor.pr_number }}{% endif %}
 {% endfor %}
 {% endif %}
 {% if previous and previous.version %}
