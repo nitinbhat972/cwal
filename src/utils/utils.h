@@ -26,7 +26,11 @@ void preview_palette();
 #define RESET "\x1b[0m"
 
 // Enumeration for different logging levels.
-enum Logging { INFO, WARN, ERROR };
+enum Logging {
+  INFO,
+  WARN,
+  ERROR
+};
 void logging(int log_level, const char *format, ...);
 void set_quiet_mode(bool quiet);
 char *replace_placeholder(const char *str, const char *old, const char *new_str);

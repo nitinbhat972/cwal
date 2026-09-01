@@ -14,25 +14,25 @@
 #include "modules/theme/themes.h"
 
 typedef struct {
-    AppOptions  opts;           // Options from AppOptions
-    char       *image_path;     // Path to the wallpaper image.
-    bool        backend_specified; // Flag: backend was explicitly set via CLI.
-    bool        no_reload;      // Flag to prevent reloading applications.
-    bool        list_backends;  // Flag to list available backends.
-    bool        list_themes;    // Flag to list available themes.
-    bool        quiet;          // Flag to suppress all output.
-    bool        use_random_dir; // Flag to use random image selection.
-    bool        use_random_theme; // Flag to use a random theme.
-    bool        restore;         // Flag re-apply the last used wallpaper.
-    RandomMode  random_mode;    // Mode for random theme selection.
-    char       *theme;          // Name of the theme to load.
-    bool        preview;        // Show palette preview.
+  AppOptions opts;        // Options from AppOptions
+  char *image_path;       // Path to the wallpaper image.
+  bool backend_specified; // Flag: backend was explicitly set via CLI.
+  bool no_reload;         // Flag to prevent reloading applications.
+  bool list_backends;     // Flag to list available backends.
+  bool list_themes;       // Flag to list available themes.
+  bool quiet;             // Flag to suppress all output.
+  bool use_random_dir;    // Flag to use random image selection.
+  bool use_random_theme;  // Flag to use a random theme.
+  bool restore;           // Flag re-apply the last used wallpaper.
+  RandomMode random_mode; // Mode for random theme selection.
+  char *theme;            // Name of the theme to load.
+  bool preview;           // Show palette preview.
 } CliArgs;
 
 typedef enum {
-    CLI_OK,
-    CLI_ERROR,
-    CLI_EXIT
+  CLI_OK,
+  CLI_ERROR,
+  CLI_EXIT
 } CliStatus;
 
 CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args);

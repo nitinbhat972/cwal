@@ -8,8 +8,8 @@
  *  Any contributions or forks must retain this original header.
  */
 
-#include "core.h"
 #include "lua_backend.h"
+#include "core.h"
 #include "utils/utils.h"
 #include <lauxlib.h>
 #include <lua.h>

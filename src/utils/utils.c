@@ -62,7 +62,9 @@ void preview_palette() {
   printf("\n");
 }
 
-void set_quiet_mode(bool quiet) { quiet_mode = quiet; }
+void set_quiet_mode(bool quiet) {
+  quiet_mode = quiet;
+}
 
 char *replace_placeholder(const char *str, const char *old,
                           const char *new_str) {

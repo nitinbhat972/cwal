@@ -21,22 +21,22 @@ typedef struct {
 } Link;
 
 typedef struct {
-  COLOR_MODE  mode;         // Theme mode (dark or light).
-  SHADE_MODE  cols16_mode;  // 16-color generation mode (darken or lighten).
-  float       alpha;        // Alpha value for the palette.
-  float       saturation;   // Saturation adjustment.
-  float       contrast;     // Contrast adjustment.
-  char       *backend;      // Image processing backend name.
-  char       *script_path;  // Post-hook script path.
-  char       *out_dir;      // Output directory for generated files.
-  char       *random_dir;   // Directory for random image selection.
-  bool        skip_cursor;  // If true, skip writing the OSC 12 cursor color sequence.
+  COLOR_MODE mode;        // Theme mode (dark or light).
+  SHADE_MODE cols16_mode; // 16-color generation mode (darken or lighten).
+  float alpha;            // Alpha value for the palette.
+  float saturation;       // Saturation adjustment.
+  float contrast;         // Contrast adjustment.
+  char *backend;          // Image processing backend name.
+  char *script_path;      // Post-hook script path.
+  char *out_dir;          // Output directory for generated files.
+  char *random_dir;       // Directory for random image selection.
+  bool skip_cursor;       // If true, skip writing the OSC 12 cursor color sequence.
 } AppOptions;
 
 typedef struct {
-  AppOptions  opts;        // All shared persistent+CLI-overridable options.
-  Link       *links;       // Array of file links (config-only).
-  int         num_links;   // Current number of links (config-only).
+  AppOptions opts; // All shared persistent+CLI-overridable options.
+  Link *links;     // Array of file links (config-only).
+  int num_links;   // Current number of links (config-only).
 } Config;
 
 Config *load_config(void);

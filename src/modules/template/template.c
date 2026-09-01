@@ -35,8 +35,8 @@ typedef struct {
   char alpha_int[8];
 } ColorTable;
 
-static const char *fmt_names[] = {"hex",  "xhex", "hexa",  "strip", "rgb",
-                                  "rgba", "red",  "green", "blue"};
+static const char *fmt_names[] = {"hex", "xhex", "hexa", "strip", "rgb",
+                                  "rgba", "red", "green", "blue"};
 
 static ColorTable *build_color_table(const Palette *palette) {
   ColorTable *ct = malloc(sizeof(ColorTable));

@@ -20,9 +20,16 @@ typedef struct {
   uint8_t blue;
 } Color;
 
-typedef enum { DARK, LIGHT } COLOR_MODE;
+typedef enum {
+  DARK,
+  LIGHT
+} COLOR_MODE;
 
-typedef enum { NONE, LIGHTEN, DARKEN } SHADE_MODE;
+typedef enum {
+  NONE,
+  LIGHTEN,
+  DARKEN
+} SHADE_MODE;
 
 typedef struct {
   char *wallpaper;

@@ -177,13 +177,13 @@ static void print_usage(const char *program_name) {
   fprintf(stderr, "  build\t\tBuild project at BUILD_DIR\n");
   fprintf(stderr, "  clean\t\tRemove all files in BUILD_DIR\n");
   fprintf(stderr, "  install\tInstall cwal and artifacts in INSTALL_DIR"
-                   " (optionally prefixed by DESTDIR)\n");
+                  " (optionally prefixed by DESTDIR)\n");
   fprintf(stderr, "  uninstall\tUninstall cwal and all artifacts\n");
   fprintf(stderr, "  help\t\tPrint this help message\n\n");
 
   fprintf(stderr, "NOTE:\n");
   fprintf(stderr, "  This nob build is specific to cwal and may not work"
-                   " in your project.\n");
+                  " in your project.\n");
 }
 
 int main(int argc, char **argv) {

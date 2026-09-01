@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include <stdbool.h>
 #include "app/config.h"
+#include <stdbool.h>
 
 void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload);

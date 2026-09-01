@@ -1,0 +1,15 @@
+BasedOnStyle: LLVM
+Language: C
+ColumnLimit: 0
+IndentWidth: 2
+TabWidth: 8
+UseTab: Never
+BreakBeforeBraces: Attach
+
+AllowShortEnumsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+InsertBraces: false
