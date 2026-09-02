@@ -277,6 +277,15 @@ CliStatus parse_cli_args(int argc, char **argv, Config *config, CliArgs *args) {
     return CLI_ERROR;
   }
 
+  if (args->preview && (args->image_path || args->list_backends ||
+                        args->list_themes || args->use_random_dir ||
+                        args->theme || args->use_random_theme ||
+                        args->restore)) {
+    logging(ERROR, "--preview cannot be combined with other options.");
+    print_usage(argv[0]);
+    return CLI_ERROR;
+  }
+
   return CLI_OK;
 }
 
