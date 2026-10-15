@@ -386,7 +386,7 @@ Use `colorN=R,G,B` (0-255) and `mode=dark|light`. Place as `mytheme.cwal` then `
 
 - Check available backends: `cwal --list-backends`
 - Choose backend: `cwal --img image.jpg --backend libimagequant`
-- Post-process script: `cwal --img image.jpg --script "~/.local/bin/update-theme.sh $current_wallpaper"`
+- Post-process script: `cwal --img image.jpg --script '~/.local/bin/update-theme.sh $current_wallpaper'`
   *(Note: You can use the `$current_wallpaper` placeholder in your script path or arguments, and `cwal` will automatically replace it with the path of the currently processed image).*
 - Batch processing:
 
