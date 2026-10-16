@@ -123,14 +123,12 @@ static void create_lua_backends() {
   available_backends[num_backends] = NULL;
 }
 #else
-static void scan_lua_backends(void) {
-}
+static void scan_lua_backends(void) {}
 int is_lua_backend(ImageBackend *backend) {
   (void)backend;
   return -1;
 }
-static void create_lua_backends() {
-}
+static void create_lua_backends() {}
 #endif
 
 #ifdef USE_LUA_BACKEND
