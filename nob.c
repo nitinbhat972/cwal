@@ -51,7 +51,7 @@ static bool link_files() {
     cmd_append(&cmd, CFLAGS[i]);
 
   if (!walk_dir(GENERATED_DIR, link_cb, .data = &cmd))
-    return 1;
+    return false;
 
   nob_cc_output(&cmd, BUILD_DIR "/cwal");
 
@@ -69,7 +69,7 @@ static bool link_files() {
 
 static bool bootstrap() {
   if (!mkdir_if_not_exists(BUILD_DIR))
-    return 1;
+    return false;
 
   Cmd cmd = {0};
 
