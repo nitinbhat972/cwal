@@ -1,2 +1,5 @@
 e4d9f434efd6498d979956910917c9478226b626
 # ignore style: add .clang-format and format the whole codebase
+
+134d04478647ea1e90c34313d0b157222e385a5b
+# ignore style: allow empty short functions
