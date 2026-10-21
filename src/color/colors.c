@@ -43,7 +43,7 @@ static void boost_dark_colors(Palette *palette) {
     }
 
     // If the color is too desaturated (grayish), boost its saturation
-    if (hsv.s < MIN_SATURATION) {
+    if (hsv.s < MIN_SATURATION && !is_neutral(palette->colors[i])) {
       hsv.s += SATURATION_BOOST * (1.0f - hsv.s);
       needs_boost = true;
     }
@@ -68,7 +68,7 @@ static void boost_light_colors(Palette *palette) {
 
     // Apply similar saturation boost if desaturated
     HSV hsv = rgb_to_hsv(palette->colors[i]);
-    if (hsv.s < MIN_SATURATION) {
+    if (hsv.s < MIN_SATURATION && !is_neutral(palette->colors[i])) {
       hsv.s += SATURATION_BOOST * (1.0f - hsv.s);
       palette->colors[i] = hsv_to_rgb(hsv);
     }

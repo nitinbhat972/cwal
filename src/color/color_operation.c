@@ -31,7 +31,16 @@ Color lighten_color(Color clr, float amount) {
   };
 }
 
+bool is_neutral(Color clr) {
+  float max = fmaxf(fmaxf(clr.red, clr.green), clr.blue);
+  float min = fminf(fminf(clr.red, clr.green), clr.blue);
+  return (max - min) <= NEUTRAL_THRESHOLD;
+}
+
 Color saturate_color(Color clr, float amount) {
+  if (is_neutral(clr))
+    return clr;
+
   HSL hsl = rgb_to_hsl(clr);
   hsl.s = clamp_value(hsl.s + amount);
   Color result = hls_to_rgb(hsl);

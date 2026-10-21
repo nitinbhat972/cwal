@@ -12,9 +12,12 @@
 
 #include "core.h"
 
+#define NEUTRAL_THRESHOLD 8
+
 Color darken_color(Color clr, float amount);
 Color lighten_color(Color clr, float amount);
 Color saturate_color(Color clr, float amount);
+bool is_neutral(Color clr);
 float w3_luminance(Color clr);
 Color binary_luminance_adjust(float luminance_desired, float hue, float s_min,
                               float s_max, float v_min, float v_max,
