@@ -104,8 +104,11 @@ static char *read_file_to_buffer(const char *path, size_t *size) {
 static void sync_file(const char *src_path, const char *dest_path) {
   size_t src_size;
   char *src_content = read_file_to_buffer(src_path, &src_size);
-  if (!src_content)
+  if (!src_content) {
+    logging(WARN, "Template '%s' not found, skipping link to %s", src_path,
+            dest_path);
     return;
+  }
 
   char *resolved_dest_path = expand_home(dest_path);
   if (!resolved_dest_path) {
@@ -178,6 +181,8 @@ static void sync_file(const char *src_path, const char *dest_path) {
   if (f) {
     fwrite(src_content, 1, src_size, f);
     fclose(f);
+  } else {
+    logging(WARN, "Failed to write %s", resolved_dest_path);
   }
   free(src_content);
   free(resolved_dest_path);
