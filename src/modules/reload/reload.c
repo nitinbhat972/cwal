@@ -101,19 +101,19 @@ static char *read_file_to_buffer(const char *path, size_t *size) {
   return buffer;
 }
 
-static void sync_file(const char *src_path, const char *dest_path) {
+static bool sync_file(const char *src_path, const char *dest_path) {
   size_t src_size;
   char *src_content = read_file_to_buffer(src_path, &src_size);
   if (!src_content) {
     logging(WARN, "Template '%s' not found, skipping link to %s", src_path,
             dest_path);
-    return;
+    return false;
   }
 
   char *resolved_dest_path = expand_home(dest_path);
   if (!resolved_dest_path) {
     free(src_content);
-    return;
+    return false;
   }
 
   char *dest_copy = strdup(resolved_dest_path);
@@ -139,6 +139,7 @@ static void sync_file(const char *src_path, const char *dest_path) {
       // Surgical Injection
       logging(INFO, "Injecting colors into %s", resolved_dest_path);
 
+      bool ok = false;
       FILE *f = fopen(resolved_dest_path, "wb");
       if (f) {
         char *start_write_pos = strchr(start_marker, '\n');
@@ -160,11 +161,14 @@ static void sync_file(const char *src_path, const char *dest_path) {
 
         fwrite(end_write_pos, 1, strlen(end_write_pos), f);
         fclose(f);
+        ok = true;
+      } else {
+        logging(WARN, "Failed to write %s", resolved_dest_path);
       }
       free(src_content);
       free(dest_content);
       free(resolved_dest_path);
-      return;
+      return ok;
     }
   }
   free(dest_content);
@@ -177,15 +181,18 @@ static void sync_file(const char *src_path, const char *dest_path) {
   }
 
   logging(INFO, "Replacing file: %s", resolved_dest_path);
+  bool ok = false;
   FILE *f = fopen(resolved_dest_path, "wb");
   if (f) {
     fwrite(src_content, 1, src_size, f);
     fclose(f);
+    ok = true;
   } else {
     logging(WARN, "Failed to write %s", resolved_dest_path);
   }
   free(src_content);
   free(resolved_dest_path);
+  return ok;
 }
 
 void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload) {
@@ -233,14 +240,15 @@ void apply_colors_to_apps(const char *out_dir, Config *config, bool no_reload) {
 
   // 4. Dynamic Links & Reloads
   for (int i = 0; i < config->num_links; i++) {
+    bool synced = true;
     if (config->links[i].target_path &&
         strlen(config->links[i].target_path) > 0) {
       char *src = build_path(resolved_out_dir, config->links[i].template_name);
-      sync_file(src, config->links[i].target_path);
+      synced = sync_file(src, config->links[i].target_path);
       free(src);
     }
 
-    if (config->links[i].reload_cmd) {
+    if (config->links[i].reload_cmd && synced) {
       logging(INFO, "Running reload command: %s", config->links[i].reload_cmd);
       execute_command(config->links[i].reload_cmd);
     }
