@@ -52,14 +52,6 @@ static bool cdb_append(Build_Ctx *ctx, const char *input, const char *output,
   if (ctx->cdb_buf.count > 0)
     sb_append_cstr(&ctx->cdb_buf, ",\n");
 
-  String_Builder render = {0};
-  for (size_t i = 0; i < cmd->count; ++i) {
-    if (i > 0)
-      sb_append_cstr(&render, " ");
-    sb_append_cstr(&render, cmd->items[i]);
-  }
-  sb_append_null(&render);
-
   const char *abs_input =
       input[0] == '/' ? input : temp_sprintf("%s/%s", ctx->cdb_dir, input);
   const char *abs_output =
@@ -71,10 +63,15 @@ static bool cdb_append(Build_Ctx *ctx, const char *input, const char *output,
   cdb_escape(&ctx->cdb_buf, abs_input);
   sb_append_cstr(&ctx->cdb_buf, "\",\n    \"output\": \"");
   cdb_escape(&ctx->cdb_buf, abs_output);
-  sb_append_cstr(&ctx->cdb_buf, "\",\n    \"command\": \"");
-  cdb_escape(&ctx->cdb_buf, render.items);
-  sb_append_cstr(&ctx->cdb_buf, "\"\n  }");
-  free(render.items);
+  sb_append_cstr(&ctx->cdb_buf, "\",\n    \"arguments\": [");
+  for (size_t i = 0; i < cmd->count; ++i) {
+    if (i > 0)
+      sb_append_cstr(&ctx->cdb_buf, ", ");
+    sb_append_cstr(&ctx->cdb_buf, "\"");
+    cdb_escape(&ctx->cdb_buf, cmd->items[i]);
+    sb_append_cstr(&ctx->cdb_buf, "\"");
+  }
+  sb_append_cstr(&ctx->cdb_buf, "]\n  }");
   return true;
 }
 
