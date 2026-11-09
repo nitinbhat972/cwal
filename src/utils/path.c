@@ -123,7 +123,7 @@ static int mkdir_p(const char *path, mode_t mode) {
 int validate_or_create_dir(const char *dir_in) {
   if (!dir_in) {
     errno = EINVAL;
-    logging(ERROR, "validate_or_create_dir: NULL input\n");
+    logging(ERROR, "validate_or_create_dir: NULL input");
     return -1;
   }
 
@@ -158,7 +158,7 @@ char *get_random_image_path(const char *directory_in) {
 
   d = opendir(directory);
   if (!d) {
-    logging(ERROR, "Could not open directory: %s\n", directory);
+    logging(ERROR, "Could not open directory: %s", directory);
     free(directory);
     return NULL;
   }
@@ -170,7 +170,7 @@ char *get_random_image_path(const char *directory_in) {
 
     char *name = strdup(dir->d_name);
     if (!name) {
-      logging(ERROR, "Memory allocation failed for file name.\n");
+      logging(ERROR, "Memory allocation failed for file name.");
       closedir(d);
       free(directory);
       for (int i = 0; i < count; i++) {
@@ -182,7 +182,7 @@ char *get_random_image_path(const char *directory_in) {
 
     char **resized = realloc(image_files, sizeof(char *) * (count + 1));
     if (!resized) {
-      logging(ERROR, "Memory allocation failed for image files.\n");
+      logging(ERROR, "Memory allocation failed for image files.");
       free(name);
       closedir(d);
       free(directory);
@@ -200,7 +200,7 @@ char *get_random_image_path(const char *directory_in) {
   closedir(d);
 
   if (count == 0) {
-    logging(ERROR, "No image files found in directory: %s\n", directory);
+    logging(ERROR, "No image files found in directory: %s", directory);
     free(directory);
     return NULL;
   }
@@ -241,7 +241,7 @@ char *build_path_internal(const char *first, ...) {
 
   char *result = malloc(total_len + 1);
   if (!result) {
-    logging(ERROR, "Memory allocation failed for build_path.\n");
+    logging(ERROR, "Memory allocation failed for build_path.");
     return NULL;
   }
 

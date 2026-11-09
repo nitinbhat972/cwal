@@ -63,7 +63,7 @@ int main(int argv, char **argc) {
   }
 
   if (args.preview) {
-    logging(INFO, "Current colorscheme:\n");
+    logging(INFO, "Current colorscheme:");
     preview_palette();
     free_config(app_config);
     free_cli_args(&args);
